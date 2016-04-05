@@ -5,6 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -12,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -27,6 +31,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.AddMemoryFragment;
 import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
@@ -50,6 +56,8 @@ public class HistoryFragment extends MapMainFragment {
     private View view;
     private boolean needToCallUpdateGeofences = true;
     private boolean isMonitoringGeofences = false;
+    private boolean offCampusView = false;
+    private Fragment map_fragment = null;
 
     //The geofences the user is currently in
     ArrayList<GeofenceObjectContent> currentGeofences;
@@ -81,6 +89,7 @@ public class HistoryFragment extends MapMainFragment {
         final TextView txtRequestGeofences = (TextView) view.findViewById(txt_try_getting_geofences);
         final Button btnRequestGeofences = (Button) view.findViewById(R.id.btn_request_geofences);
         final Button btnGetNearbyMemories = (Button) view.findViewById(R.id.btn_get_nearby_memories);
+        final ImageButton btnToggleOffCampusView = (ImageButton) view.findViewById(R.id.btn_off_campus_view);
         ImageView imgQuestion = (ImageView) view.findViewById(R.id.img_question);
         imgQuestion.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,6 +104,13 @@ public class HistoryFragment extends MapMainFragment {
             public void onClick(View v) {
                 //Shows a popover displaying nearby memories
                 showMemoriesPopover();
+            }
+        });
+
+        btnToggleOffCampusView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleOffCampusView();
             }
         });
 
@@ -227,8 +243,10 @@ public class HistoryFragment extends MapMainFragment {
     private void addMarker(HashMap<String, GeofenceInfoContent[]> geofenceToAdd){
         System.gc();
         MainActivity mainActivity = (MainActivity) getActivity();
+        Log.i("HistoryFragment", "addMarker");
 
         for(Map.Entry<String, GeofenceInfoContent[]> e : geofenceToAdd.entrySet()){
+
             if(!currentGeofencesInfoMap.containsKey(e.getKey())) {
                 currentGeofencesInfoMap.put(e.getKey(), e.getValue());
                 geofenceNamesBeingQueriedForInfo.remove(e.getKey());
@@ -237,6 +255,7 @@ public class HistoryFragment extends MapMainFragment {
                 Bitmap markerIcon = BitmapFactory.decodeResource(getResources(), R.drawable.basic_map_marker);
                 LatLng position = new LatLng(geofence.getGeofence().getLocation().getLat(), geofence.getGeofence().getLocation().getLng());
                 BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(markerIcon);
+                Log.i("HistoryFragment", "addMarker : adding a marker!");
                 MarkerOptions geofenceMarkerOptions = new MarkerOptions()
                         .position(position)
                         .title(curGeofenceName)
@@ -274,17 +293,16 @@ public class HistoryFragment extends MapMainFragment {
 
     /**
      * Handles the result of a query for information about a geofence.
-     * @param result is a GeofenceInfoObject that contains information
-     *               about all geofences the user is currently in
-     */
+
+     *//*
     @Override
     public void handleResult(GeofenceInfoObject result) {
         super.handleResult(result);
 
-        /*This is a call from the VolleyRequester, so this check prevents the app from
+        *//*This is a call from the VolleyRequester, so this check prevents the app from
         crashing if the user leaves the tab while the app is trying
         to get quests from the server
-         */
+         *//*
         if(this.isResumed()) {
             MainActivity mainActivity = (MainActivity) getActivity();
             if(mainActivity != null) {
@@ -326,6 +344,34 @@ public class HistoryFragment extends MapMainFragment {
                     }
                 }
             }
+        }
+    }*/
+
+    public void showUnableToGetGeofences(){
+        final Button btnRequestInfo = (Button) view.findViewById(R.id.btn_request_info);
+        final TextView txtRequestGeofences = (TextView) view.findViewById(txt_try_getting_geofences);
+        btnRequestInfo.setVisibility(View.VISIBLE);
+        txtRequestGeofences.setText(getResources().getString(R.string.no_info_retrieved));
+        txtRequestGeofences.setVisibility(View.VISIBLE);
+        btnRequestInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                txtRequestGeofences.setText(getResources().getString(R.string.retrieving_info));
+                btnRequestInfo.setVisibility(View.GONE);
+                MainActivity activity = (MainActivity) getActivity();
+                activity.requestAllGeofences();
+                handleGeofenceChange(currentGeofences);
+            }
+        });
+    }
+
+    public void hideUnableToGetGeofences(){
+        final Button btnRequestInfo = (Button) view.findViewById(R.id.btn_request_info);
+        final TextView txtRequestGeofences = (TextView) view.findViewById(txt_try_getting_geofences);
+        btnRequestInfo.setVisibility(View.GONE);
+        txtRequestGeofences.setVisibility(View.GONE);
+        if(debugMode) {
+            displayGeofenceInfo();
         }
     }
 
@@ -445,13 +491,13 @@ public class HistoryFragment extends MapMainFragment {
      * Called from VolleyRequester. Handles the JSONObjects received
      * when we requested new geofences from the server
      * @param geofencesContent
-     */
+     *//*
     @Override
     public void handleNewGeofences(GeofenceObjectContent[] geofencesContent){
-        /*This is a call from the VolleyRequester, so this check prevents the app from
+        *//*This is a call from the VolleyRequester, so this check prevents the app from
         crashing if the user leaves the tab while the app is trying
         to get quests from the server
-         */
+         *//*
         MainActivity mainActivity = (MainActivity) getActivity();
         if(mainActivity == null){
             return;
@@ -478,27 +524,31 @@ public class HistoryFragment extends MapMainFragment {
             e.printStackTrace();
         }
     }
+*/
 
-    /**
+
+
+   /* *//**
      * When geofences change, queries database for information about geofences
      * @param currentGeofences
-     */
+     *//*
     @Override
     public void handleGeofenceChange(ArrayList<GeofenceObjectContent> currentGeofences) {
         super.handleGeofenceChange(currentGeofences);
         MainActivity mainActivity = (MainActivity) getActivity();
-
-        for (int i = 0; i<currentGeofenceMarkers.size(); i++){
-            boolean removeMarker = true;
-            for(int j =0; j<currentGeofences.size(); j++){
-                if(currentGeofenceMarkers.get(i).getTitle().equals(currentGeofences.get(j).getName())){
-                    removeMarker = false;
+        if(currentGeofenceMarkers != null) {
+            for (int i = 0; i < currentGeofenceMarkers.size(); i++) {
+                boolean removeMarker = true;
+                for (int j = 0; j < currentGeofences.size(); j++) {
+                    if (currentGeofenceMarkers.get(i).getTitle().equals(currentGeofences.get(j).getName())) {
+                        removeMarker = false;
+                    }
                 }
-            }
-            if(removeMarker){
-                currentGeofenceMarkers.get(i).remove();
-                currentGeofencesInfoMap.remove(currentGeofencesInfoMap.get(currentGeofenceMarkers.get(i).getTitle()));
-                currentGeofenceMarkers.remove(i);
+                if (removeMarker) {
+                    currentGeofenceMarkers.get(i).remove();
+                    currentGeofencesInfoMap.remove(currentGeofencesInfoMap.get(currentGeofenceMarkers.get(i).getTitle()));
+                    currentGeofenceMarkers.remove(i);
+                }
             }
         }
 
@@ -519,6 +569,55 @@ public class HistoryFragment extends MapMainFragment {
             }
 
         }
+    }*/
+
+
+     /**
+     * When geofences change, queries database for information about geofences
+     * @param currentGeofences
+     */
+    @Override
+    public void handleGeofenceChange(ArrayList<GeofenceObjectContent> currentGeofences) {
+        super.handleGeofenceChange(currentGeofences);
+        MainActivity mainActivity = (MainActivity) getActivity();
+        if(currentGeofenceMarkers != null) {
+            for (int i = 0; i < currentGeofenceMarkers.size(); i++) {
+                boolean removeMarker = true;
+                for (int j = 0; j < currentGeofences.size(); j++) {
+                    if (currentGeofenceMarkers.get(i).getTitle().equals(currentGeofences.get(j).getName())) {
+                        removeMarker = false;
+                    }
+                }
+                if (removeMarker) {
+                    currentGeofenceMarkers.get(i).remove();
+                    currentGeofencesInfoMap.remove(currentGeofencesInfoMap.get(currentGeofenceMarkers.get(i).getTitle()));
+                    currentGeofenceMarkers.remove(i);
+                }
+            }
+        }
+
+        this.currentGeofences = currentGeofences;
+        if(mainActivity != null && currentGeofences != null) {
+            Log.i("HistoryFragment", "handleGeofenceChange : mainActivity not null, current geofences not null. Adding markers");
+
+            HashMap<String, GeofenceInfoContent[]> geofenceToAdd = mainActivity.getCurrentGeofenceInfo(currentGeofences);
+            if(geofenceToAdd.size() < currentGeofences.size()){
+                startRetryRequestTimer();
+            }
+            Log.i("HistoryFragment", "handleGeofenceChange : adding markers!");
+
+            addMarker(geofenceToAdd);
+        }
+    }
+
+    private void startRetryRequestTimer(){
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable(){
+            public void run() {
+                handleGeofenceChange(currentGeofences);
+            }}, 3000);
+
     }
 
     /**
@@ -527,6 +626,8 @@ public class HistoryFragment extends MapMainFragment {
      */
     public void updateGeofences() {
         MainActivity mainActivity = (MainActivity) getActivity();
+        Log.i(logMessages.GEOFENCE_MONITORING, "HistoryFragment : updateGeofences");
+
         if(view != null) {
             Log.i(logMessages.GEOFENCE_MONITORING, "HistoryFragment : updateGeofences : view is not null ");
 
@@ -610,4 +711,36 @@ public class HistoryFragment extends MapMainFragment {
         super.onPause();
         needToCallUpdateGeofences = true;
     }
+
+    private void replaceHistoryFragment(Fragment fragment) {
+        if(offCampusView){
+            offCampusView = false;
+           getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentByTag("off_campus_view")).commit();
+        }else{
+            offCampusView = true;
+            OffCampusHistoryFragment currentFragment = (OffCampusHistoryFragment) fragment;
+            MainActivity activity = (MainActivity) getActivity();
+            currentFragment.setGeofenceInfoContent(activity.getAllGeofenceInfo());
+            int commit = getFragmentManager()
+                    .beginTransaction().replace(R.id.my_map, fragment, "off_campus_view").commit();
+        }
+
+
+
+    }
+
+    private void toggleOffCampusView(){
+        ImageButton imgButton = (ImageButton) view.findViewById(R.id.btn_off_campus_view);
+        if(offCampusView){
+            imgButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_exploration_active));
+            replaceHistoryFragment(map_fragment);
+        }else{
+            imgButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_explore_inactive));
+            if(map_fragment == null){
+                map_fragment = new OffCampusHistoryFragment();
+            }
+            replaceHistoryFragment(map_fragment);
+        }
+    }
+
 }

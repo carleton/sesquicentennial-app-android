@@ -16,11 +16,17 @@
             android:layout_weight="20"
             android:layout_height="0dp">
 
-            <fragment
-                android:id="@+id/my_map"
+            <RelativeLayout
+                android:id="@+id/map_container"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                class="com.google.android.gms.maps.SupportMapFragment" />
+                android:layout_height="match_parent">
+                <fragment
+                    android:id="@+id/my_map"
+                    android:tag="map_fragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    class="com.google.android.gms.maps.SupportMapFragment" />
+            </RelativeLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -29,12 +35,27 @@
                 android:layout_height="wrap_content">
 
 
+            <RelativeLayout
+                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageButton
+                    android:id="@+id/btn_off_campus_view"
+                    android:background="@color/colorPrimaryDark"
+                    android:src="@drawable/ic_exploration_active"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
                 <LinearLayout
                     android:orientation="vertical"
                     android:background="@color/windowBackground"
                     android:layout_gravity="center"
-                    android:layout_width="match_parent"
+                    android:layout_toLeftOf="@+id/btn_off_campus_view"
+                    android:layout_width="fill_parent"
                     android:layout_height="wrap_content">
+
                     <TextView
                         android:id="@+id/txt_try_getting_geofences"
                         android:text="Getting geofences. Please wait..."
@@ -67,6 +88,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                 </LinearLayout>
+                </RelativeLayout>
 
                 <TextView
                     android:id="@+id/txt_geopoint_info"

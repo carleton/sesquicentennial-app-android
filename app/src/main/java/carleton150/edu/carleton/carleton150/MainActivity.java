@@ -13,6 +13,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -29,6 +30,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.FragmentChangeListener;
@@ -40,6 +42,9 @@ import carleton150.edu.carleton.carleton150.MainFragments.QuestInProgressFragmen
 import carleton150.edu.carleton.carleton150.Models.GeofenceErrorMessages;
 import carleton150.edu.carleton.carleton150.Models.GeofenceMonitor;
 import carleton150.edu.carleton.carleton150.Models.VolleyRequester;
+import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
+import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoObject;
+import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObject;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectContent;
 
 /**
@@ -61,6 +66,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private LogMessages logMessages = new LogMessages();
     MainFragment curFragment = null;
     public boolean needToShowGPSAlert = true;
+
+    ArrayList<GeofenceObjectContent> currentGeofences = null;
+
+    private GeofenceInfoObject allGeofenceInfo = null;
+    private GeofenceObjectContent[] allGeofences = null;
+    private boolean requestingGeofences = false;
 
     private Handler handler = new Handler();
 
@@ -150,6 +161,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
                 int commit = getSupportFragmentManager()
                         .beginTransaction().replace(R.id.containerLayout, curFragment).commit();
+
+                handleGeofenceChange(currentGeofences);
+
             }
 
             @Override
@@ -162,6 +176,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             }
         });
+
+        if(checkIfGPSEnabled()) {
+            //starts the mainActivity monitoring geofences
+            getGeofenceMonitor().startGeofenceMonitoring();
+            requestAllGeofences();
+
+        }
 
 
     }
@@ -310,6 +331,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Assign the new location
         mLastLocation = location;
         tellFragmentLocationChanged();
+        requestAllGeofences();
     }
 
     /**
@@ -342,6 +364,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (curFragment != null) {
             curFragment.handleGeofenceChange(content);
         }
+        this.currentGeofences = content;
     }
 
 
@@ -454,7 +477,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * @param content
      */
     public void handleNewGeofences(GeofenceObjectContent[] content) {
+        requestAllGeofenceInfo(content);
+        allGeofences = content;
         curFragment.handleNewGeofences(content);
+        geofenceMonitor.handleNewGeofences(content);
     }
 
     /**
@@ -577,6 +603,55 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 });
         final AlertDialog alert = builder.create();
         alert.show();
+    }
+
+    public void requestAllGeofences(){
+        if(allGeofences == null && !requestingGeofences){
+            requestingGeofences = true;
+            geofenceMonitor.getNewGeofences();
+        }else{
+            requestAllGeofenceInfo(allGeofences);
+        }
+    }
+
+    public void requestAllGeofenceInfo(GeofenceObjectContent[] geofences){
+        if(allGeofenceInfo == null && geofences != null) {
+            GeofenceObjectContent[] singleGeofence = new GeofenceObjectContent[1];
+            for(int i = 0; i<geofences.length; i++){
+                singleGeofence[0] = geofences[i];
+                mVolleyRequester.request(this, singleGeofence);
+
+            }
+        }
+    }
+
+    public GeofenceInfoObject getAllGeofenceInfo(){
+        return allGeofenceInfo;
+    }
+
+    public HashMap<String, GeofenceInfoContent[]> getCurrentGeofenceInfo(ArrayList<GeofenceObjectContent> currentGeofences){
+        HashMap<String, GeofenceInfoContent[]> geofenceInfo = new HashMap<>();
+        for(int i = 0; i<currentGeofences.size(); i++) {
+            if(allGeofenceInfo != null) {
+                if (allGeofenceInfo.getContent().containsKey(currentGeofences.get(i).getName())) {
+                    geofenceInfo.put(currentGeofences.get(i).getName(),
+                            allGeofenceInfo.getContent().get(currentGeofences.get(i).getName()));
+                }
+            }
+        }
+        return geofenceInfo;
+    }
+
+    public void handleGeofenceInfo(GeofenceInfoObject geofenceInfoObject){
+        if(allGeofenceInfo == null){
+            allGeofenceInfo = geofenceInfoObject;
+        }else {
+            if (geofenceInfoObject != null) {
+                for (HashMap.Entry<String, GeofenceInfoContent[]> e : geofenceInfoObject.getContent().entrySet()) {
+                    this.allGeofenceInfo.getContent().put(e.getKey(), e.getValue());
+                }
+            }
+        }
     }
 
 }

@@ -56,15 +56,15 @@ public class VolleyRequester {
      * @param callerFragment the fragment that called request()
      * @param mGeofenceList the list of geofences that we are requesting information for
      */
-    public void request(final MainFragment callerFragment, ArrayList<GeofenceObjectContent> mGeofenceList) {
+    public void request(final MainActivity mainActivity, GeofenceObjectContent[] mGeofenceList) {
         if(mGeofenceList == null){
             return;
         }
         final GeofenceInfoRequestObject geofenceInfoRequestObject = new GeofenceInfoRequestObject();
-        String[] geofenceStrings = new String[mGeofenceList.size()];
+        String[] geofenceStrings = new String[mGeofenceList.length];
 
-        for(int i = 0 ; i<mGeofenceList.size(); i++){
-            geofenceStrings[i] = mGeofenceList.get(i).getName();
+        for(int i = 0 ; i<mGeofenceList.length; i++){
+            geofenceStrings[i] = mGeofenceList[i].getName();
         }
         geofenceInfoRequestObject.setGeofences(geofenceStrings);
 
@@ -87,9 +87,13 @@ public class VolleyRequester {
                         try {
                             GeofenceInfoObject geofenceInfoResponseObject = gson.fromJson(responseString, GeofenceInfoObject.class);
                             Log.i(logMessages.VOLLEY, "request : length of response: " + geofenceInfoResponseObject.getContent().size());
-                            callerFragment.handleResult(geofenceInfoResponseObject);
+                            Log.i(logMessages.VOLLEY, "VolleyRequester : request : successfully parsed with gson");
+                            Log.i(logMessages.VOLLEY, "VolleyRequester : request : string that successfully parsed: " + responseString);
+
+                            mainActivity.handleGeofenceInfo(geofenceInfoResponseObject);
                         }catch (Exception e){
                             Log.i(logMessages.VOLLEY, "VolleyRequester : request : unable to parse with gson");
+                            Log.i(logMessages.VOLLEY, "VolleyRequester : request : string that won't parse: " + responseString);
                         }
                     }
                 },
@@ -98,7 +102,7 @@ public class VolleyRequester {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         error.printStackTrace();
-                        callerFragment.handleResult(null);
+                        mainActivity.handleGeofenceInfo(null);
                         Log.i(logMessages.VOLLEY, "request : error response");
 
                     }
