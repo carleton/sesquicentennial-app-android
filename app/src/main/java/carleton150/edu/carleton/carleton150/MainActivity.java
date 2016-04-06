@@ -672,4 +672,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    public ArrayList<GeofenceObjectContent> getCurrentGeofences(){
+        return this.currentGeofences;
+    }
+
 }

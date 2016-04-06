@@ -234,6 +234,7 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
         if(needToCallUpdateGeofences) {
             updateGeofences();
         }
+        handleGeofenceChange(mainActivity.getCurrentGeofences());
     }
 
     /**
@@ -626,7 +627,7 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
      * and draws markers on the map
      */
     public void updateGeofences() {
-        /*MainActivity mainActivity = (MainActivity) getActivity();
+       /* MainActivity mainActivity = (MainActivity) getActivity();
         Log.i(logMessages.GEOFENCE_MONITORING, "HistoryFragment : updateGeofences");
 
         if(view != null) {
@@ -638,6 +639,8 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
             Log.i(logMessages.GEOFENCE_MONITORING, "HistoryFragment : updateGeofences : about to get new geofences ");
 
             if (mainActivity.getGeofenceMonitor().allGeopointsByName.size() == 0) {
+                Log.i(logMessages.GEOFENCE_MONITORING, "HistoryFragment : updateGeofences : allGeopointsByName is null! ");
+
                 boolean gotGeofences = mainActivity.getGeofenceMonitor().getNewGeofences();
                 boolean mainActivityGotGeofences = mainActivity.succesfullyRetrievedGeofences();
                 if (!gotGeofences && !mainActivityGotGeofences) {
@@ -651,6 +654,14 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
                 }
             }
         }*/
+    }
+
+    public void attemptToGetGeofencesFailed(){
+        showUnableToGetGeofences();
+    }
+
+    public void attemptToGetGeofencesSuccess(){
+        hideUnableToGetGeofences();
     }
 
     /**
