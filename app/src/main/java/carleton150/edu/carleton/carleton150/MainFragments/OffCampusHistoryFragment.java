@@ -3,6 +3,8 @@ package carleton150.edu.carleton.carleton150.MainFragments;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
@@ -10,13 +12,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.OvershootInterpolator;
+import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import carleton150.edu.carleton.carleton150.Adapters.HistoryAdapter;
 import carleton150.edu.carleton.carleton150.Adapters.MyScaleInAnimationAdapter;
 import carleton150.edu.carleton.carleton150.Adapters.OffCampusViewAdapter;
+import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
+import carleton150.edu.carleton.carleton150.Interfaces.OffCampusViewListener;
 import carleton150.edu.carleton.carleton150.Interfaces.RecyclerViewClickListener;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoObject;
@@ -28,12 +34,18 @@ import carleton150.edu.carleton.carleton150.R;
 public class OffCampusHistoryFragment extends Fragment implements RecyclerViewClickListener {
 
     public ArrayList<GeofenceInfoContent[]> allGeofenceInfo = new ArrayList<>();
+    public HashMap<String, GeofenceInfoContent[]> allGeofenceInfoMap = new HashMap<>();
     public ArrayList<GeofenceInfoContent> recyclerViewGeofenceInfo = new ArrayList<>();
     private View view;
     private OffCampusViewAdapter viewAdapter = null;
+    private OffCampusViewListener offCampusViewListener;
 
     public OffCampusHistoryFragment(){
        //required empty public constructor
+    }
+
+    public void initialize(OffCampusViewListener offCampusViewListener){
+        this.offCampusViewListener = offCampusViewListener;
     }
 
     @Override
@@ -46,28 +58,58 @@ public class OffCampusHistoryFragment extends Fragment implements RecyclerViewCl
     public void setGeofenceInfoContent(GeofenceInfoObject geofenceInfoObject){
         if(geofenceInfoObject != null) {
             for (Map.Entry<String, GeofenceInfoContent[]> e : geofenceInfoObject.getContent().entrySet()) {
-                allGeofenceInfo.add(e.getValue());
-                boolean isImage = false;
-                GeofenceInfoContent firstImageContent = null;
+                /*String title = "";
                 int i = 0;
-                while (!isImage && i<e.getValue().length) {
-                    firstImageContent = e.getValue()[i];
-                    i++;
-                    if (firstImageContent.getType().equals(firstImageContent.TYPE_IMAGE)) {
-                        isImage = true;
+                while(title.equals("") && i<e.getValue().length){
+                    if(!e.getValue()[i].getName().equals("")){
+                        title = e.getValue()[i].getName();
+                    }
+                }*/
+                String title = e.getKey();
+                if(!itemAlreadyAdded(title)) {
+                    allGeofenceInfo.add(e.getValue());
+                    allGeofenceInfoMap.put(title, e.getValue());
+
+                    boolean isImage = false;
+                    GeofenceInfoContent firstImageContent = null;
+                    int i = 0;
+                    while (!isImage && i < e.getValue().length) {
+                        firstImageContent = e.getValue()[i];
+                        i++;
+                        if (firstImageContent.getType().equals(firstImageContent.TYPE_IMAGE)) {
+                            isImage = true;
+                        }
+                    }
+                    firstImageContent.setName(title);
+                    if (firstImageContent != null) {
+                        recyclerViewGeofenceInfo.add(firstImageContent);
+                    } else {
+                        e.getValue()[0].setName(title);
+                        recyclerViewGeofenceInfo.add(e.getValue()[0]);
+                    }
+                    if (viewAdapter != null) {
+                        viewAdapter.notifyDataSetChanged();
                     }
                 }
-                if (firstImageContent != null) {
-                    recyclerViewGeofenceInfo.add(firstImageContent);
-                } else {
-                    recyclerViewGeofenceInfo.add(e.getValue()[0]);
-                }
-                if(viewAdapter != null){
-                    viewAdapter.notifyDataSetChanged();
-                }
-
             }
         }
+    }
+
+    private boolean itemAlreadyAdded(String title){
+        if(allGeofenceInfoMap.containsKey(title)){
+            return true;
+        }
+        return false;
+        /*if(title != null) {
+            for (int i = 0; i < allGeofenceInfo.size(); i++) {
+                if(allGeofenceInfo.get(i)[0].getName() != null) {
+                    if (allGeofenceInfo.get(i)[0].getName().equals(title)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;*/
     }
 
 
@@ -92,6 +134,8 @@ public class OffCampusHistoryFragment extends Fragment implements RecyclerViewCl
 
     @Override
     public void recyclerViewListClicked(View v, int position) {
-        //TODO: show popover
+        GeofenceInfoContent geofenceClicked = recyclerViewGeofenceInfo.get(position);
+        GeofenceInfoContent[] infoForGeofenceClicked = allGeofenceInfoMap.get(geofenceClicked.getName());
+        offCampusViewListener.geofenceClicked(infoForGeofenceClicked, geofenceClicked.getName());
     }
 }

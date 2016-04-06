@@ -36,6 +36,7 @@ import java.util.TimerTask;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.AddMemoryFragment;
 import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
+import carleton150.edu.carleton.carleton150.Interfaces.OffCampusViewListener;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoObject;
@@ -51,7 +52,7 @@ import static carleton150.edu.carleton.carleton150.R.id.txt_try_getting_geofence
  * Displays a map with markers indicating nearby points of interest. When a marker is clicked,
  * creates a RecyclerViewPopoverFragment to display the info for that point
  */
-public class HistoryFragment extends MapMainFragment {
+public class HistoryFragment extends MapMainFragment implements OffCampusViewListener{
 
     private View view;
     private boolean needToCallUpdateGeofences = true;
@@ -134,8 +135,8 @@ public class HistoryFragment extends MapMainFragment {
 
         if(mainActivity.checkIfGPSEnabled()) {
             //starts the mainActivity monitoring geofences
-            mainActivity.getGeofenceMonitor().startGeofenceMonitoring();
-            isMonitoringGeofences = true;
+           // mainActivity.getGeofenceMonitor().startGeofenceMonitoring();
+           // isMonitoringGeofences = true;
         }
 
         if(mainActivity.isConnectedToNetwork()) {
@@ -413,7 +414,7 @@ public class HistoryFragment extends MapMainFragment {
      *
      * @param geofenceInfoObject
      */
-    private void showPopup(GeofenceInfoContent[] geofenceInfoObject, String name){
+    public void showPopup(GeofenceInfoContent[] geofenceInfoObject, String name){
         RelativeLayout relLayoutTutorial = (RelativeLayout) view.findViewById(R.id.tutorial);
         relLayoutTutorial.setVisibility(View.GONE);
         GeofenceInfoContent[] sortedContent = sortByDate(geofenceInfoObject);
@@ -625,7 +626,7 @@ public class HistoryFragment extends MapMainFragment {
      * and draws markers on the map
      */
     public void updateGeofences() {
-        MainActivity mainActivity = (MainActivity) getActivity();
+        /*MainActivity mainActivity = (MainActivity) getActivity();
         Log.i(logMessages.GEOFENCE_MONITORING, "HistoryFragment : updateGeofences");
 
         if(view != null) {
@@ -635,28 +636,21 @@ public class HistoryFragment extends MapMainFragment {
             TextView txtRequestGeofences = (TextView) view.findViewById(txt_try_getting_geofences);
 
             Log.i(logMessages.GEOFENCE_MONITORING, "HistoryFragment : updateGeofences : about to get new geofences ");
-            boolean gotGeofences = mainActivity.getGeofenceMonitor().getNewGeofences();
-            if (!gotGeofences) {
-                btnRequestGeofences.setVisibility(View.VISIBLE);
-                txtRequestGeofences.setText(getResources().getString(R.string.no_geofences_retrieved));
-            }
 
             if (mainActivity.getGeofenceMonitor().allGeopointsByName.size() == 0) {
-                gotGeofences = mainActivity.getGeofenceMonitor().getNewGeofences();
-                if (!gotGeofences) {
-                    btnRequestGeofences.setVisibility(View.VISIBLE);
-                    txtRequestGeofences.setText(getResources().getString(R.string.no_geofences_retrieved));
+                boolean gotGeofences = mainActivity.getGeofenceMonitor().getNewGeofences();
+                boolean mainActivityGotGeofences = mainActivity.succesfullyRetrievedGeofences();
+                if (!gotGeofences && !mainActivityGotGeofences) {
+                    showUnableToGetGeofences();
                 }else{
-                    btnRequestGeofences.setVisibility(View.GONE);
-                    txtRequestGeofences.setVisibility(View.GONE);
+                    hideUnableToGetGeofences();
                 }
             } else {
                 if (txtRequestGeofences != null) {
-                    txtRequestGeofences.setVisibility(View.GONE);
-                    btnRequestGeofences.setVisibility(View.GONE);
+                   hideUnableToGetGeofences();
                 }
             }
-        }
+        }*/
     }
 
     /**
@@ -719,14 +713,12 @@ public class HistoryFragment extends MapMainFragment {
         }else{
             offCampusView = true;
             OffCampusHistoryFragment currentFragment = (OffCampusHistoryFragment) fragment;
+            currentFragment.initialize(this);
             MainActivity activity = (MainActivity) getActivity();
             currentFragment.setGeofenceInfoContent(activity.getAllGeofenceInfo());
             int commit = getFragmentManager()
                     .beginTransaction().replace(R.id.my_map, fragment, "off_campus_view").commit();
         }
-
-
-
     }
 
     private void toggleOffCampusView(){
@@ -743,4 +735,12 @@ public class HistoryFragment extends MapMainFragment {
         }
     }
 
+    public void handleGeofenceRetrieval(){
+        hideUnableToGetGeofences();
+    }
+
+    @Override
+    public void geofenceClicked(GeofenceInfoContent[] infoForGeofenceClicked, String geofenceName) {
+        showPopup(infoForGeofenceClicked, geofenceName);
+    }
 }

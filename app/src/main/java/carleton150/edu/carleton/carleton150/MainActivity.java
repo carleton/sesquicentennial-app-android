@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private LogMessages logMessages = new LogMessages();
     MainFragment curFragment = null;
     public boolean needToShowGPSAlert = true;
+    private boolean geofenceRetrievalSuccessful = false;
 
     ArrayList<GeofenceObjectContent> currentGeofences = null;
 
@@ -608,8 +609,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void requestAllGeofences(){
         if(allGeofences == null && !requestingGeofences){
             requestingGeofences = true;
-            geofenceMonitor.getNewGeofences();
+            geofenceRetrievalSuccessful = geofenceMonitor.getNewGeofences();
+            if(geofenceRetrievalSuccessful){
+                tellFragmentGeofencesRetrieved();
+            }else {
+                Log.i("GEOFENCE MONITORING", "requestAllGeofences: retrieval unsuccessful");
+            }
         }else{
+            Log.i("GEOFENCE MONITORING", "requestiongGeofences is: " + requestingGeofences);
+
             requestAllGeofenceInfo(allGeofences);
         }
     }
@@ -651,6 +659,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     this.allGeofenceInfo.getContent().put(e.getKey(), e.getValue());
                 }
             }
+        }
+    }
+
+    public boolean succesfullyRetrievedGeofences(){
+        return geofenceRetrievalSuccessful;
+    }
+
+    public void tellFragmentGeofencesRetrieved(){
+        if (curFragment != null && curFragment instanceof HistoryFragment) {
+            ((HistoryFragment) curFragment).handleGeofenceRetrieval();
         }
     }
 
