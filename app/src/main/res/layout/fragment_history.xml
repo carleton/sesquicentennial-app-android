@@ -63,6 +63,7 @@
                             android:id="@+id/txt_try_getting_geofences"
                             android:text="Getting geofences. Please wait..."
                             android:layout_width="match_parent"
+                            android:visibility="gone"
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
                             android:gravity="center"

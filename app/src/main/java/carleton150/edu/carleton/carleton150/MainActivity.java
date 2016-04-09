@@ -94,6 +94,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Log.i("GEOFENCE MONITORING", "onCreate in MainActivity called");
+
+
         networkAlertDialog = new AlertDialog.Builder(MainActivity.this).create();
         playServicesConnectivityAlertDialog = new AlertDialog.Builder(MainActivity.this).create();
         // check availability of play services for location data and geofencing
@@ -182,6 +185,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             //starts the mainActivity monitoring geofences
             getGeofenceMonitor().startGeofenceMonitoring();
             requestAllGeofences();
+
+        }else{
+            Log.i("GEOFENCE MONITORING", "mainActivity: GPS not enabled");
 
         }
 
@@ -609,15 +615,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void requestAllGeofences(){
         if(allGeofences == null && !requestingGeofences){
             requestingGeofences = true;
-            geofenceRetrievalSuccessful = geofenceMonitor.getNewGeofences();
-            if(geofenceRetrievalSuccessful){
-                tellFragmentGeofencesRetrieved();
-            }else {
-                Log.i("GEOFENCE MONITORING", "requestAllGeofences: retrieval unsuccessful");
+            if(geofenceRetrievalSuccessful != true) {
+                geofenceRetrievalSuccessful = geofenceMonitor.getNewGeofences();
             }
         }else{
             Log.i("GEOFENCE MONITORING", "requestiongGeofences is: " + requestingGeofences);
-
             requestAllGeofenceInfo(allGeofences);
         }
     }
@@ -662,15 +664,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    public boolean succesfullyRetrievedGeofences(){
-        return geofenceRetrievalSuccessful;
-    }
-
-    public void tellFragmentGeofencesRetrieved(){
-        if (curFragment != null && curFragment instanceof HistoryFragment) {
-            ((HistoryFragment) curFragment).handleGeofenceRetrieval();
-        }
-    }
 
     public ArrayList<GeofenceObjectContent> getCurrentGeofences(){
         return this.currentGeofences;
