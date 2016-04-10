@@ -139,30 +139,19 @@ public class MapMainFragment extends MainFragment {
 
 
     /**
-     * Sets the camera for the map. If we have user location, sets the camera to that location.
-     * Otherwise, the camera target is the center of campus.
+     * Sets the camera for the map.
+     * The camera target is the center of campus.
      */
     protected void setCamera(){
         MainActivity mainActivity = (MainActivity) getActivity();
         if(mainActivity != null) {
-
-            if (mainActivity.getGeofenceMonitor().currentLocation != null && zoomCamera) {
-                zoomCamera = false;
-                CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(new LatLng(mainActivity.getGeofenceMonitor().currentLocation.getLatitude(), mainActivity.getGeofenceMonitor().currentLocation.getLongitude()))
-                        .zoom(constants.DEFAULT_ZOOM)
-                        .bearing(constants.DEFAULT_BEARING)
-                        .build();
-                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            }
-            if (mainActivity.getGeofenceMonitor().currentLocation == null) {
-                CameraPosition cameraPosition = new CameraPosition.Builder()
+            CameraPosition cameraPosition = new CameraPosition.Builder()
                         .target(new LatLng(constants.CENTER_CAMPUS.latitude, constants.CENTER_CAMPUS.longitude))
                         .zoom(constants.DEFAULT_ZOOM)
                         .bearing(constants.DEFAULT_BEARING)
                         .build();
                 mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            }
+
         }
     }
 

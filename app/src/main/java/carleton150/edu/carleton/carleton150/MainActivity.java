@@ -13,7 +13,6 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -40,11 +39,9 @@ import carleton150.edu.carleton.carleton150.MainFragments.MainFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestInProgressFragment;
 import carleton150.edu.carleton.carleton150.Models.GeofenceErrorMessages;
-import carleton150.edu.carleton.carleton150.Models.GeofenceMonitor;
 import carleton150.edu.carleton.carleton150.Models.VolleyRequester;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoObject;
-import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObject;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectContent;
 
 /**
@@ -67,12 +64,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     MainFragment curFragment = null;
     public boolean needToShowGPSAlert = true;
     private boolean geofenceRetrievalSuccessful = false;
-
-    ArrayList<GeofenceObjectContent> currentGeofences = null;
-
     private GeofenceInfoObject allGeofenceInfo = null;
     private GeofenceObjectContent[] allGeofences = null;
     private boolean requestingGeofences = false;
+    private HashMap<String, GeofenceObjectContent> allGeofencesMap = new HashMap<>();
 
     private Handler handler = new Handler();
 
@@ -87,7 +82,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public VolleyRequester mVolleyRequester = new VolleyRequester();
     AlertDialog networkAlertDialog;
     AlertDialog playServicesConnectivityAlertDialog;
-    public GeofenceMonitor geofenceMonitor = new GeofenceMonitor(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,8 +160,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 int commit = getSupportFragmentManager()
                         .beginTransaction().replace(R.id.containerLayout, curFragment).commit();
 
-                handleGeofenceChange(currentGeofences);
-
             }
 
             @Override
@@ -181,15 +173,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
-        if(checkIfGPSEnabled()) {
-            //starts the mainActivity monitoring geofences
-            getGeofenceMonitor().startGeofenceMonitoring();
-            requestAllGeofences();
-
-        }else{
-            Log.i("GEOFENCE MONITORING", "mainActivity: GPS not enabled");
-
-        }
+        checkIfGPSEnabled();
 
 
     }
@@ -269,9 +253,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 startLocationUpdates();
             }
         }
-        //tells the geofenceMonitor that googlePlayServices is connected so that
-        //it can register geofences
-        geofenceMonitor.googlePlayServicesConnected();
 
     }
 
@@ -335,6 +316,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     @Override
     public void onLocationChanged(Location location) {
+
+        Log.i("GEOFENCE MONITORING", "onLocationChanged ");
+
         // Assign the new location
         mLastLocation = location;
         tellFragmentLocationChanged();
@@ -358,21 +342,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return mLastLocation;
     }
 
-    /**
-     * Method called from the geofenceMonitor when the geofences currently
-     * triggered by the user change. Passes this information on to
-     * the fragment currently in view. GeofenceMonitor stores a record
-     * of which fragment is in view, so this will only be called if the
-     * HistoryFragment is in view.
-     *
-     * @param content
-     */
-    public void handleGeofenceChange(ArrayList<GeofenceObjectContent> content) {
-        if (curFragment != null) {
-            curFragment.handleGeofenceChange(content);
-        }
-        this.currentGeofences = content;
-    }
 
 
     /**
@@ -484,20 +453,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * @param content
      */
     public void handleNewGeofences(GeofenceObjectContent[] content) {
+        Log.i("GEOFENCE MONITORING", "handleNewGeofences ");
+
+        if(content == null){
+            Log.i("GEOFENCE MONITORING", "handleNewGeofences: content is null ");
+        }else{
+            geofenceRetrievalSuccessful = true;
+        }
         requestAllGeofenceInfo(content);
+        for(int i = 0; i<content.length; i++){
+            allGeofencesMap.put(content[i].getName(), content[i]);
+        }
         allGeofences = content;
-        curFragment.handleNewGeofences(content);
-        geofenceMonitor.handleNewGeofences(content);
     }
 
-    /**
-     * returns the geofenceMonitor
-     *
-     * @return GeofenceMonitor
-     */
-    public GeofenceMonitor getGeofenceMonitor() {
-        return this.geofenceMonitor;
+    public HashMap<String, GeofenceObjectContent> getAllGeofencesMap(){
+        return allGeofencesMap;
     }
+
 
     /**
      * Runs when the result of calling addGeofences() and removeGeofences() becomes available.
@@ -509,7 +482,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     public void onResult(Status status) {
         if (status.isSuccess()) {
-            geofenceMonitor.mGeofencesAdded = !geofenceMonitor.mGeofencesAdded;
         } else {
             // Get the status code and log it.
             String errorMessage = GeofenceErrorMessages.getErrorString(this,
@@ -614,20 +586,36 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     public void requestAllGeofences(){
         if(allGeofences == null && !requestingGeofences){
+            Log.i("GEOFENCE MONITORING", "requestiongAllGeofences. about to request them ");
+
             requestingGeofences = true;
             if(geofenceRetrievalSuccessful != true) {
-                geofenceRetrievalSuccessful = geofenceMonitor.getNewGeofences();
+                Log.i("GEOFENCE MONITORING", "requestAllGeofences: geofenceRetrieval successful is not true ");
+                requestingGeofences = getNewGeofences();
+            }else{
+                Log.i("GEOFENCE MONITORING", "requestAllGeofences: geofenceRetrieval successful is true ");
             }
-        }else{
-            Log.i("GEOFENCE MONITORING", "requestiongGeofences is: " + requestingGeofences);
-            requestAllGeofenceInfo(allGeofences);
         }
     }
 
     public void requestAllGeofenceInfo(GeofenceObjectContent[] geofences){
+        Log.i("GEOFENCE MONITORING", "requestAllGeofenceInfo ");
+
+        if(allGeofenceInfo == null){
+            Log.i("GEOFENCE MONITORING", "requestAllGeofenceInfo : allGeofenceInfo is null ");
+        }
+        if(geofences != null){
+            Log.i("GEOFENCE MONITORING", "requestAllGeofenceInfo : geofences not null ");
+
+        }
+
         if(allGeofenceInfo == null && geofences != null) {
+            Log.i("GEOFENCE MONITORING", "requestingAllGeofenceInfo: in if loop: ");
+
             GeofenceObjectContent[] singleGeofence = new GeofenceObjectContent[1];
             for(int i = 0; i<geofences.length; i++){
+                Log.i("GEOFENCE MONITORING", "requestAllGeofenceInfo: in for loop");
+
                 singleGeofence[0] = geofences[i];
                 mVolleyRequester.request(this, singleGeofence);
 
@@ -635,38 +623,56 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    public GeofenceInfoObject getAllGeofenceInfo(){
-        return allGeofenceInfo;
-    }
-
-    public HashMap<String, GeofenceInfoContent[]> getCurrentGeofenceInfo(ArrayList<GeofenceObjectContent> currentGeofences){
-        HashMap<String, GeofenceInfoContent[]> geofenceInfo = new HashMap<>();
-        for(int i = 0; i<currentGeofences.size(); i++) {
-            if(allGeofenceInfo != null) {
-                if (allGeofenceInfo.getContent().containsKey(currentGeofences.get(i).getName())) {
-                    geofenceInfo.put(currentGeofences.get(i).getName(),
-                            allGeofenceInfo.getContent().get(currentGeofences.get(i).getName()));
-                }
-            }
-        }
-        return geofenceInfo;
-    }
-
+    /**
+     * Method called from the VolleyRequester when it recieves info about a geofence
+     * @param geofenceInfoObject
+     */
     public void handleGeofenceInfo(GeofenceInfoObject geofenceInfoObject){
+        Log.i("GEOFENCE MONITORING", "handleGeofenceInfo");
+
+
         if(allGeofenceInfo == null){
+            Log.i("GEOFENCE MONITORING", "allGeofenceInfo was null");
+
             allGeofenceInfo = geofenceInfoObject;
         }else {
+            Log.i("GEOFENCE MONITORING", "allGeofenceInfo was not null");
+
             if (geofenceInfoObject != null) {
+                Log.i("GEOFENCE MONITORING", "geofenceInfoObject was not null");
+
+                HashMap<String, GeofenceInfoContent[]> newGeofence = new HashMap<>();
                 for (HashMap.Entry<String, GeofenceInfoContent[]> e : geofenceInfoObject.getContent().entrySet()) {
+                    Log.i("GEOFENCE MONITORING", "handleGeofenceInfo: in for loop");
+
                     this.allGeofenceInfo.getContent().put(e.getKey(), e.getValue());
+                    newGeofence.clear();
+                    newGeofence.put(e.getKey(), e.getValue());
+                    curFragment.addNewGeofenceInfo(newGeofence);
                 }
             }
         }
     }
 
+    /**
+     * Requests geofences from server using VolleyRequester
+     */
+    public boolean getNewGeofences(){
+        if(mLastLocation == null){
+            Log.i("GEOFENCE MONITORING", "getNewGeofences: mLastLocation is null ");
+        }else {
+            try {
+                this.mVolleyRequester.requestGeofences(mLastLocation.getLatitude(),
+                        mLastLocation.getLongitude(), this);
+                return true;
+            } catch (Exception e) {
+                Log.i("GEOFENCE MONITORING", "getNewGeofences: error is :   " + e.getMessage());
 
-    public ArrayList<GeofenceObjectContent> getCurrentGeofences(){
-        return this.currentGeofences;
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return false;
     }
 
 }

@@ -18,9 +18,8 @@
 
             <RelativeLayout
                 android:id="@+id/map_container"
-                android:layout_above="@+id/btn_get_nearby_memories"
                 android:layout_width="match_parent"
-                android:layout_height="fill_parent">
+                android:layout_height="match_parent">
                 <fragment
                     android:id="@+id/my_map"
                     android:tag="map_fragment"
@@ -42,20 +41,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="fill_parent">
 
-                    <ImageButton
-                        android:id="@+id/btn_off_campus_view"
-                        android:background="@color/colorPrimaryDark"
-                        android:layout_alignParentBottom="true"
-                        android:src="@drawable/ic_exploration_active"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
                     <LinearLayout
                         android:orientation="vertical"
                         android:background="@color/windowBackground"
                         android:layout_gravity="center"
-                        android:layout_toRightOf="@+id/btn_off_campus_view"
-                        android:layout_width="fill_parent"
+                        android:layout_width="match_parent"
                         android:layout_alignParentBottom="true"
                         android:layout_height="wrap_content">
 
@@ -93,34 +83,6 @@
                             android:layout_height="wrap_content" />
                     </LinearLayout>
                 </RelativeLayout>
-
-                <TextView
-                    android:id="@+id/txt_geopoint_info"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="20sp"
-                    android:visibility="gone"
-                    android:paddingTop="10dp"
-                    android:paddingLeft="10dp"
-                    />
-
-                <TextView
-                    android:id="@+id/txt_lat"
-                    android:visibility="gone"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="20sp"
-                    android:paddingTop="10dp"
-                    android:paddingLeft="10dp" />
-                <TextView
-                    android:id="@+id/txt_long"
-                    android:visibility="gone"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="20sp"
-                    android:paddingLeft="10dp"
-                    android:paddingTop="10dp" />
-
 
 
             </RelativeLayout>

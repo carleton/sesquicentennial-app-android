@@ -394,7 +394,7 @@ public class QuestInProgressFragment extends MapMainFragment {
         setCamera();
         drawLocationMarker(newLocation);
         MainActivity mainActivity = (MainActivity) getActivity();
-        if(mainActivity.getGeofenceMonitor().currentLocation != null) {
+        if(mainActivity.mLastLocation != null) {
             setUpMapIfNeeded();
         }
     }
