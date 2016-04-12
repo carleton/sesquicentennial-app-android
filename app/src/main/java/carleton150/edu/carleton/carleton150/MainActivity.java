@@ -104,11 +104,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             showGooglePlayServicesUnavailableDialog();
         }
 
-        ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-//Prefer mobile over wifi
-        cm.setNetworkPreference(ConnectivityManager.TYPE_MOBILE);
-
-
         //managing fragments and UI
         // fragmentManager = getSupportFragmentManager();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -322,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Assign the new location
         mLastLocation = location;
         tellFragmentLocationChanged();
-        requestAllGeofences();
+        //requestAllGeofences();
     }
 
     /**
@@ -584,7 +579,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         alert.show();
     }
 
-    public void requestAllGeofences(){
+   public void requestAllGeofences(){
         if(allGeofences == null && !requestingGeofences){
             Log.i("GEOFENCE MONITORING", "requestiongAllGeofences. about to request them ");
 
@@ -651,6 +646,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     curFragment.addNewGeofenceInfo(newGeofence);
                 }
             }
+        }
+    }
+
+    public HashMap<String, GeofenceInfoContent[]> getAllGeofenceInfo(){
+        if(allGeofenceInfo != null) {
+            return this.allGeofenceInfo.getContent();
+        }else{
+            return null;
         }
     }
 

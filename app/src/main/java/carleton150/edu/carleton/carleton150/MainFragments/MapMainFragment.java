@@ -27,6 +27,7 @@ public class MapMainFragment extends MainFragment {
 
 
     protected boolean zoomCamera = true;
+    protected boolean zoomToUserLocation = true;
     public GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
 
@@ -98,10 +99,10 @@ public class MapMainFragment extends MainFragment {
         mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
-                setCamera();
+                setCamera(zoomToUserLocation);
                 if (cameraPosition.zoom <= constants.DEFAULT_MAX_ZOOM) {
                     if (cameraPosition.target == null) {
-                        setCamera();
+                        setCamera(zoomToUserLocation);
                     }
                     mMap.animateCamera(CameraUpdateFactory.zoomTo(constants.DEFAULT_MAX_ZOOM));
                 }
@@ -134,34 +135,46 @@ public class MapMainFragment extends MainFragment {
             }
         });
 
-        setCamera();
+       setCamera(zoomToUserLocation);
     }
 
 
-    /**
+   /* /**
      * Sets the camera for the map.
      * The camera target is the center of campus.
      */
-    protected void setCamera(){
+    protected void setCamera(boolean zoomOnUserLocation){
         MainActivity mainActivity = (MainActivity) getActivity();
         if(mainActivity != null) {
-            CameraPosition cameraPosition = new CameraPosition.Builder()
+
+            if (mainActivity.mLastLocation != null && zoomCamera && zoomOnUserLocation) {
+                zoomCamera = false;
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                        .target(new LatLng(mainActivity.mLastLocation.getLatitude(), mainActivity.mLastLocation.getLongitude()))
+                        .zoom(constants.DEFAULT_ZOOM)
+                        .bearing(constants.DEFAULT_BEARING)
+                        .build();
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            }
+            else if(zoomCamera) {
+                zoomCamera = false;
+                CameraPosition cameraPosition = new CameraPosition.Builder()
                         .target(new LatLng(constants.CENTER_CAMPUS.latitude, constants.CENTER_CAMPUS.longitude))
                         .zoom(constants.DEFAULT_ZOOM)
                         .bearing(constants.DEFAULT_BEARING)
                         .build();
                 mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
+            }
         }
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        drawTiles();
+       drawTiles();
 
     }
 
-    /**
+   /* /**
      * Draws map tiling for campus
      */
     public void drawTiles(){

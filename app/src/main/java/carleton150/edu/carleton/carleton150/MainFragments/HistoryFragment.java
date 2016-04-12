@@ -5,9 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -15,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -23,7 +19,6 @@ import android.widget.TextView;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -31,17 +26,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.AddMemoryFragment;
 import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.OffCampusViewListener;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
-import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoObject;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectContent;
-import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectLocation;
 import carleton150.edu.carleton.carleton150.R;
 
 import static carleton150.edu.carleton.carleton150.R.id.txt_try_getting_geofences;
@@ -55,11 +46,6 @@ import static carleton150.edu.carleton.carleton150.R.id.txt_try_getting_geofence
 public class HistoryFragment extends MapMainFragment implements OffCampusViewListener{
 
     private View view;
-    private boolean isMonitoringGeofences = false;
-
-    //The geofences the user is currently in
-    ArrayList<GeofenceObjectContent> currentGeofences;
-
     //The Markers for geofences that are currently being displayed
     ArrayList<Marker> currentGeofenceMarkers = new ArrayList<Marker>();
 
@@ -68,8 +54,6 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
 
     //A Map of geofences the user is in that are currently being queried for using VolleyRequester
     HashMap<String, Integer> geofenceNamesBeingQueriedForInfo = new HashMap<>();
-
-    private boolean debugMode = false;
 
     public HistoryFragment() {
         // Required empty public constructor
@@ -83,6 +67,7 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
 
             return null;
         }
+        zoomToUserLocation = false;
         Log.i("GEOFENCE MONITORING", "onCreateView: called");
 
         view = inflater.inflate(R.layout.fragment_history, container, false);
@@ -123,17 +108,26 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
             }
         });
 
+
         MainActivity mainActivity = (MainActivity) getActivity();
 
-        if(mainActivity.isConnectedToNetwork()) {
+       if(mainActivity.isConnectedToNetwork()) {
             setUpMapIfNeeded(); // For setting up the MapFragment
-        }
+       }
 
         // Toggle tutorial if first time using app
-        if (checkFirstHistoryRun()) {
-            toggleTutorial();
+       if (checkFirstHistoryRun()) {
+          toggleTutorial();
         }
+
         return view;
+    }
+
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        drawAllGeofenceMarkers();
+        super.onViewCreated(view, savedInstanceState);
     }
 
     /**
@@ -167,10 +161,10 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
         super.setUpMapIfNeeded();
         if (mMap != null) {
             //Shows history popover on marker clicks
-            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+           mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker) {
-                    showPopup(getContentFromMarker(marker), marker.getTitle());
+                   // showPopup(getContentFromMarker(marker), marker.getTitle());
                     return true;
                 }
             });
@@ -190,8 +184,8 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
         super.setUpMap();
         // For showing a move to my location button and a blue
         // dot to show user's location
-        MainActivity mainActivity = (MainActivity) getActivity();
-        mMap.setMyLocationEnabled(mainActivity.checkIfGPSEnabled());
+       MainActivity mainActivity = (MainActivity) getActivity();
+       mMap.setMyLocationEnabled(mainActivity.checkIfGPSEnabled());
     }
 
 
@@ -208,7 +202,7 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
             setUpMapIfNeeded();
         }
 
-        mMap.setMyLocationEnabled(mainActivity.checkIfGPSEnabled());
+      mMap.setMyLocationEnabled(mainActivity.checkIfGPSEnabled());
     }
 
     /**
@@ -252,7 +246,7 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
     public void handleLocationChange(Location newLocation) {
         super.handleLocationChange(newLocation);
         MainActivity mainActivity = (MainActivity) getActivity();
-        setCamera();
+        //setCamera(zoomToUserLocation);
         if(mainActivity.mLastLocation != null) {
             setUpMapIfNeeded();
         }
@@ -382,5 +376,12 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
     @Override
     public void addNewGeofenceInfo(HashMap<String, GeofenceInfoContent[]> geofenceToAdd) {
         addMarker(geofenceToAdd);
+    }
+
+    private void drawAllGeofenceMarkers(){
+        MainActivity mainActivity = (MainActivity) getActivity();
+        if(mainActivity.getAllGeofenceInfo() != null) {
+            addMarker(mainActivity.getAllGeofenceInfo());
+        }
     }
 }

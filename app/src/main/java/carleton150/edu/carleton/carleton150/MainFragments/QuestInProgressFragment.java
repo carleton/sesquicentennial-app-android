@@ -292,7 +292,7 @@ public class QuestInProgressFragment extends MapMainFragment {
      */
     private void returnZoomToUserLocation(){
         zoomCamera = true;
-        setCamera();
+        setCamera(zoomToUserLocation);
     }
 
     /**
@@ -391,7 +391,7 @@ public class QuestInProgressFragment extends MapMainFragment {
     @Override
     public void handleLocationChange(Location newLocation) {
         super.handleLocationChange(newLocation);
-        setCamera();
+        setCamera(zoomToUserLocation);
         drawLocationMarker(newLocation);
         MainActivity mainActivity = (MainActivity) getActivity();
         if(mainActivity.mLastLocation != null) {
@@ -587,7 +587,7 @@ public class QuestInProgressFragment extends MapMainFragment {
             }
             drawTiles();
         }
-        setCamera();
+        setCamera(zoomToUserLocation);
         if(isResumed()) {
             ImageView imgClue = (ImageView) v.findViewById(R.id.img_clue_image_front);
             ImageView imgHint = (ImageView) v.findViewById(R.id.img_hint_image_back);
