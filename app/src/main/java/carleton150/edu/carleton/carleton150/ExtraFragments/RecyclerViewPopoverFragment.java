@@ -327,6 +327,6 @@ public class RecyclerViewPopoverFragment extends Fragment{
      * Calles a method in the parentFragment to show the popover to add a memory
      */
     private void showAddMemoriesFragment(){
-        //parentFragment.showAddMemoriesPopover();
-        }
+        parentFragment.showAddMemoriesPopover();
+    }
 }

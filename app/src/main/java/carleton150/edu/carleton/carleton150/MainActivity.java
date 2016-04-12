@@ -317,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Assign the new location
         mLastLocation = location;
         tellFragmentLocationChanged();
-        //requestAllGeofences();
+        requestAllGeofences();
     }
 
     /**

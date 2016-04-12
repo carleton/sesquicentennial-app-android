@@ -164,7 +164,7 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker) {
-                   // showPopup(getContentFromMarker(marker), marker.getTitle());
+                    showPopup(getContentFromMarker(marker), marker.getTitle());
                     return true;
                 }
             });
@@ -246,7 +246,6 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
     public void handleLocationChange(Location newLocation) {
         super.handleLocationChange(newLocation);
         MainActivity mainActivity = (MainActivity) getActivity();
-        //setCamera(zoomToUserLocation);
         if(mainActivity.mLastLocation != null) {
             setUpMapIfNeeded();
         }
