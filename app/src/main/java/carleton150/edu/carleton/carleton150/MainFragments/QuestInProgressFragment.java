@@ -90,6 +90,9 @@ public class QuestInProgressFragment extends MapMainFragment {
         Button btnFoundItHint = (Button) v.findViewById(R.id.btn_found_location_hint);
         cardFace = v.findViewById(R.id.clue_view_front);
         cardBack = v.findViewById(R.id.clue_view_back);
+        final ImageButton btnReturnToUserLocation = (ImageButton) v.findViewById(R.id.btn_return_to_my_location);
+        final ImageButton btnReturnToCampus = (ImageButton) v.findViewById(R.id.btn_return_to_campus);
+
         ImageView imgQuestion = (ImageView) v.findViewById(R.id.img_question);
         /*
         Sets listeners to show the progress popover
@@ -129,6 +132,25 @@ public class QuestInProgressFragment extends MapMainFragment {
         if (completedQuest){
             showCompletedQuestMessage();
         }
+
+        final MainActivity mainActivity = (MainActivity) getActivity();
+
+        btnReturnToUserLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                zoomCamera = true;
+                setCamera(mainActivity.getLastLocation(), true);
+            }
+        });
+
+        btnReturnToCampus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                zoomCamera = true;
+                setCamera(null, false);
+            }
+        });
+
         return v;
     }
 
@@ -136,7 +158,6 @@ public class QuestInProgressFragment extends MapMainFragment {
      * Sets text and images for the clue and hint based on the numClue
      */
     private void setClueAndHintFields(){
-        ImageButton btnReturnToMyLocation = (ImageButton) v.findViewById(R.id.btn_return_to_my_location);
         TextView txtHint = (TextView) v.findViewById(R.id.txt_hint);
         SlidingDrawer slidingDrawerClue = (SlidingDrawer) v.findViewById(R.id.front_drawer);
         SlidingDrawer slidingDrawerHint = (SlidingDrawer) v.findViewById(R.id.back_drawer);
@@ -187,13 +208,6 @@ public class QuestInProgressFragment extends MapMainFragment {
                 slidingDrawerHint.setVisibility(View.GONE);
                 relLayoutFoundItHint.setPadding(0, 0, 0, dpAsPixelsSmallPadding);
             }
-
-            btnReturnToMyLocation.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    returnZoomToUserLocation();
-                }
-            });
         }
     }
 
@@ -287,13 +301,6 @@ public class QuestInProgressFragment extends MapMainFragment {
         });
     }
 
-    /**
-     * zooms to the user's current location
-     */
-    private void returnZoomToUserLocation(){
-        zoomCamera = true;
-        setCamera(zoomToUserLocation);
-    }
 
     /**
      * replaces the RelativeLayout named my_map with a SupportMapFragment
@@ -391,7 +398,7 @@ public class QuestInProgressFragment extends MapMainFragment {
     @Override
     public void handleLocationChange(Location newLocation) {
         super.handleLocationChange(newLocation);
-        setCamera(zoomToUserLocation);
+        setCamera(newLocation, zoomToUserLocation);
         drawLocationMarker(newLocation);
         MainActivity mainActivity = (MainActivity) getActivity();
         if(mainActivity.mLastLocation != null) {
@@ -587,7 +594,7 @@ public class QuestInProgressFragment extends MapMainFragment {
             }
             drawTiles();
         }
-        setCamera(zoomToUserLocation);
+        setCamera(mainActivity.getLastLocation(), zoomToUserLocation);
         if(isResumed()) {
             ImageView imgClue = (ImageView) v.findViewById(R.id.img_clue_image_front);
             ImageView imgHint = (ImageView) v.findViewById(R.id.img_hint_image_back);

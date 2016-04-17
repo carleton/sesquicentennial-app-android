@@ -18,6 +18,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import carleton150.edu.carleton.carleton150.MainActivity;
+import carleton150.edu.carleton.carleton150.POJO.GeofenceRequestObject.Location;
 import carleton150.edu.carleton.carleton150.R;
 
 /**
@@ -95,22 +96,25 @@ public class MapMainFragment extends MainFragment {
      */
     protected void setUpMap() {
 
+        MainActivity mainActivity = (MainActivity) getActivity();
+        final android.location.Location location = mainActivity.getLastLocation();
+
         //Makes it so user can't zoom out very far
         mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
-                setCamera(zoomToUserLocation);
+                setCamera(location, zoomToUserLocation);
                 if (cameraPosition.zoom <= constants.DEFAULT_MAX_ZOOM) {
                     if (cameraPosition.target == null) {
-                        setCamera(zoomToUserLocation);
+                        setCamera(location, zoomToUserLocation);
                     }
                     mMap.animateCamera(CameraUpdateFactory.zoomTo(constants.DEFAULT_MAX_ZOOM));
                 }
 
                 //makes it so user can't scroll too far off campus
-                double latitude = cameraPosition.target.latitude;
-                double longitude = cameraPosition.target.longitude;
-                if (cameraPosition.target.longitude > constants.MAX_LONGITUDE) {
+                /*double latitude = cameraPosition.target.latitude;
+                double longitude = cameraPosition.target.longitude;*/
+                /*if (cameraPosition.target.longitude > constants.MAX_LONGITUDE) {
                     longitude = constants.MAX_LONGITUDE;
                 }
                 if (cameraPosition.target.longitude < constants.MIN_LONGITUDE) {
@@ -121,21 +125,21 @@ public class MapMainFragment extends MainFragment {
                 }
                 if (cameraPosition.target.latitude < constants.MIN_LATITUDE) {
                     latitude = constants.MIN_LATITUDE;
-                }
+                }*/
 
-                CameraPosition newCameraPosition = new CameraPosition.Builder()
+               /* CameraPosition newCameraPosition = new CameraPosition.Builder()
                         .target(new LatLng(latitude, longitude))
                         .zoom(cameraPosition.zoom)
                         .bearing(cameraPosition.bearing)
                         .build();
                 if(mMap != null) {
                     mMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition));
-                }
+                }*/
 
             }
         });
 
-       setCamera(zoomToUserLocation);
+       setCamera(location, zoomToUserLocation);
     }
 
 
@@ -143,14 +147,12 @@ public class MapMainFragment extends MainFragment {
      * Sets the camera for the map.
      * The camera target is the center of campus.
      */
-    protected void setCamera(boolean zoomOnUserLocation){
-        MainActivity mainActivity = (MainActivity) getActivity();
-        if(mainActivity != null) {
+    protected void setCamera(android.location.Location location, boolean zoomOnUserLocation){
 
-            if (mainActivity.mLastLocation != null && zoomCamera && zoomOnUserLocation) {
+            if (location != null && zoomCamera && zoomOnUserLocation) {
                 zoomCamera = false;
                 CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(new LatLng(mainActivity.mLastLocation.getLatitude(), mainActivity.mLastLocation.getLongitude()))
+                        .target(new LatLng(location.getLatitude(), location.getLongitude()))
                         .zoom(constants.DEFAULT_ZOOM)
                         .bearing(constants.DEFAULT_BEARING)
                         .build();
@@ -165,7 +167,7 @@ public class MapMainFragment extends MainFragment {
                         .build();
                 mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             }
-        }
+
     }
 
     @Override

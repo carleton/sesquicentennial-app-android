@@ -23,14 +23,28 @@
 
         <ImageButton
             android:id="@+id/btn_return_to_my_location"
-            android:background="@color/windowBackground"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:adjustViewBounds="true"
-            android:padding="5dp"
-            android:src="@drawable/ic_device_gps_fixed"
+            android:layout_margin="10dp"
+            android:padding="3dp"
             android:layout_width="wrap_content"
+            android:layout_alignParentTop="true"
+            android:elevation="5dp"
+            android:background="@drawable/bg_map_buttons"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/ic_device_gps_fixed"
             android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/btn_return_to_campus"
+            android:layout_margin="10dp"
+            android:padding="3dp"
+            android:layout_width="wrap_content"
+            android:elevation="5dp"
+            android:layout_below="@+id/btn_return_to_my_location"
+            android:background="@drawable/bg_map_buttons"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/ic_school"
+            android:layout_height="wrap_content" />
+
     </RelativeLayout>
 
     <LinearLayout

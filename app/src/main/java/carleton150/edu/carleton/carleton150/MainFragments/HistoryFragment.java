@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -33,6 +34,7 @@ import carleton150.edu.carleton.carleton150.Interfaces.OffCampusViewListener;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectContent;
+import carleton150.edu.carleton.carleton150.POJO.Quests.Image;
 import carleton150.edu.carleton.carleton150.R;
 
 import static carleton150.edu.carleton.carleton150.R.id.txt_try_getting_geofences;
@@ -76,6 +78,9 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
         final TextView txtRequestGeofences = (TextView) view.findViewById(txt_try_getting_geofences);
         final Button btnRequestGeofences = (Button) view.findViewById(R.id.btn_request_geofences);
         final Button btnGetNearbyMemories = (Button) view.findViewById(R.id.btn_get_nearby_memories);
+        final ImageButton btnReturnToUserLocation = (ImageButton) view.findViewById(R.id.btn_return_to_my_location);
+        final ImageButton btnReturnToCampus = (ImageButton) view.findViewById(R.id.btn_return_to_campus);
+
         ImageView imgQuestion = (ImageView) view.findViewById(R.id.img_question);
         imgQuestion.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -109,9 +114,27 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
         });
 
 
-        MainActivity mainActivity = (MainActivity) getActivity();
 
-       if(mainActivity.isConnectedToNetwork()) {
+        final MainActivity mainActivity = (MainActivity) getActivity();
+
+        btnReturnToUserLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                zoomCamera = true;
+                setCamera(mainActivity.getLastLocation(), true);
+            }
+        });
+
+        btnReturnToCampus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                zoomCamera = true;
+                setCamera(null, false);
+            }
+        });
+
+
+        if(mainActivity.isConnectedToNetwork()) {
             setUpMapIfNeeded(); // For setting up the MapFragment
        }
 
