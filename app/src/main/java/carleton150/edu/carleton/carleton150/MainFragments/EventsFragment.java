@@ -19,6 +19,7 @@ import java.util.Map;
 import carleton150.edu.carleton.carleton150.Adapters.EventDateCardAdapter;
 import carleton150.edu.carleton.carleton150.Adapters.EventsListAdapter;
 import carleton150.edu.carleton.carleton150.Interfaces.RecyclerViewDatesClickListener;
+import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.Events;
 import carleton150.edu.carleton.carleton150.R;
@@ -61,7 +62,9 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
         txtTryAgain = (TextView) v.findViewById(R.id.txt_request_events);
 
         // Before buildRecyclerViews is called, we need to grab all events
-        requestEvents();
+        MainActivity mainActivity = (MainActivity) getActivity();
+        eventsMapByDate = mainActivity.getEventsMapByDate();
+
 
         eventsListView = (ExpandableListView) v.findViewById(R.id.lst_events);
         eventsListAdapter = new EventsListAdapter(getActivity(), eventsList);
@@ -75,12 +78,21 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
             public void onClick(View v) {
                 txtTryAgain.setText(getString(R.string.requesting_events));
                 btnTryAgain.setVisibility(View.GONE);
-                requestEvents();
+                MainActivity mainActivity = (MainActivity) getActivity();
+                mainActivity.requestEvents();
             }
         });
 
         // Build RecyclerViews to display date tabs
         buildRecyclerViews();
+
+        if(eventsMapByDate == null){
+            mainActivity.requestEvents();
+        }else if(eventsMapByDate.size() == 0){
+            mainActivity.requestEvents();
+        }else{
+            handleNewEvents(eventsMapByDate);
+        }
 
         return v;
     }
@@ -103,69 +115,23 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
         eventDateCardAdapter.notifyDataSetChanged();
     }
 
-    /**
-     * Requests events from server using the volleyRequester
-     */
-    private void requestEvents(){
-        Calendar c = Calendar.getInstance();
-        int year = c.get(Calendar.YEAR);
-        int month = c.get(Calendar.MONTH) + 1;
-        int day = c.get(Calendar.DAY_OF_MONTH) - 1;
-        String monthString = String.format("%02d", month);
-        String dayString = String.format("%02d", day);
-        String startTime = monthString + "/" + dayString + "/" + year;
-        txtTryAgain.setText(getString(R.string.requesting_events));
-        txtTryAgain.setVisibility(View.VISIBLE);
-        volleyRequester.requestEvents(startTime, 1000, this);
-    }
 
     /**
      * Called from VolleyRequester. Handles new events from server
-     * @param events
+     * @param eventsMapByDate
      */
     @Override
-    public void handleNewEvents(Events events) {
-        String completeDate;
-        String[] completeDateArray;
-        String dateByDay;
-        eventsMapByDate.clear();
+    public void handleNewEvents(LinkedHashMap<String, ArrayList<EventContent>> eventsMapByDate) {
 
-        /*This is a call from the VolleyRequester, so this check prevents the app from
-        crashing if the user leaves the tab while the app is trying
-        to get quests from the server
-         */
-        try {
-
-            try {
-                EventContent[] eventContents = events.getContent();
-                for (int i = 0; i < eventContents.length; i++) {
-
-                    // Add new date values to hashmap if not already there
-                    completeDate = eventContents[i].getStartTime();
-                    completeDateArray = completeDate.split("T");
-                    dateByDay = completeDateArray[0];
-
-
-                    // If key already there, add + update new values
-                    if (!eventsMapByDate.containsKey(dateByDay)) {
-                        tempEventContentLst.clear();
-                        tempEventContentLst.add(eventContents[i]);
-                        ArrayList<EventContent> eventContents1 = new ArrayList<>();
-                        for(int k = 0; k<tempEventContentLst.size(); k++){
-                            eventContents1.add(tempEventContentLst.get(k));
-                        }
-                        eventsMapByDate.put(dateByDay, eventContents1);
-                    }
-                    else {
-                        tempEventContentLst.add(eventContents[i]);
-                        ArrayList<EventContent> eventContents1 = new ArrayList<>();
-                        for(int k = 0; k<tempEventContentLst.size(); k++){
-                            eventContents1.add(tempEventContentLst.get(k));
-                        }
-                        eventsMapByDate.put(dateByDay, eventContents1);
-                    }
-
-                }
+        this.eventsMapByDate = eventsMapByDate;
+        if(eventsMapByDate == null) {
+            if (eventsList.size() == 0) {
+                txtTryAgain.setText(getString(R.string.no_events_retrieved));
+                txtTryAgain.setVisibility(View.VISIBLE);
+                btnTryAgain.setVisibility(View.VISIBLE);
+                eventsListView.setVisibility(View.GONE);
+            }
+        }
                 dateInfo.clear();
                 for (Map.Entry<String, ArrayList<EventContent>> entry : eventsMapByDate.entrySet()) {
                     dateInfo.add(entry.getKey());
@@ -185,19 +151,10 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
                 eventsListView.setVisibility(View.VISIBLE);
                 eventsListAdapter.notifyDataSetChanged();
 
-            } catch (NullPointerException e) {
-                if (eventsList.size() == 0) {
-                    txtTryAgain.setText(getString(R.string.no_events_retrieved));
-                    txtTryAgain.setVisibility(View.VISIBLE);
-                    btnTryAgain.setVisibility(View.VISIBLE);
-                    eventsListView.setVisibility(View.GONE);
-                    e.printStackTrace();
-                }
             }
-        }catch (IllegalStateException e){
-            e.printStackTrace();
-        }
-    }
+
+
+
 
     @Override
     public void recyclerViewListClicked(String dateInfo) {

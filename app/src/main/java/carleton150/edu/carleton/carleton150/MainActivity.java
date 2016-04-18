@@ -33,7 +33,10 @@ import com.google.android.gms.location.LocationServices;
 import com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.FragmentChangeListener;
@@ -44,6 +47,8 @@ import carleton150.edu.carleton.carleton150.MainFragments.QuestFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestInProgressFragment;
 import carleton150.edu.carleton.carleton150.Models.GeofenceErrorMessages;
 import carleton150.edu.carleton.carleton150.Models.VolleyRequester;
+import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
+import carleton150.edu.carleton.carleton150.POJO.EventObject.Events;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoObject;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectContent;
@@ -90,7 +95,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
     private boolean requestingQuests = false;
-    private ArrayList<Quest> questInfo;
+    private ArrayList<Quest> questInfo = null;
+
+    private LinkedHashMap<String, ArrayList<EventContent>> eventsMapByDate = new LinkedHashMap<String, ArrayList<EventContent>>();
+    private ArrayList<EventContent> tempEventContentLst = new ArrayList<EventContent>();
+    private boolean requestingEvents = false;
+
+
 
 
 
@@ -180,8 +191,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
 
         checkIfGPSEnabled();
-        mVolleyRequester.requestQuests(this);
-        requestingQuests = true;
 
 
     }
@@ -660,6 +669,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             }
         }
+
+        if(eventsMapByDate.size() == 0){
+            requestEvents();
+        }if(questInfo == null){
+            requestQuests();
+        }
     }
 
     public HashMap<String, GeofenceInfoContent[]> getAllGeofenceInfo(){
@@ -718,10 +733,84 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void requestQuests(){
         if(questInfo == null && !requestingQuests)
         mVolleyRequester.requestQuests(this);
+        requestingQuests = true;
     }
 
     public ArrayList<Quest> getQuests(){
         return this.questInfo;
     }
+
+    /**
+     * Requests events from server using the volleyRequester
+     */
+    public void requestEvents(){
+        if(!requestingEvents && eventsMapByDate.size() == 0) {
+            requestingEvents = true;
+            Calendar c = Calendar.getInstance();
+            int year = c.get(Calendar.YEAR);
+            int month = c.get(Calendar.MONTH) + 1;
+            int day = c.get(Calendar.DAY_OF_MONTH) - 1;
+            String monthString = String.format("%02d", month);
+            String dayString = String.format("%02d", day);
+            String startTime = monthString + "/" + dayString + "/" + year;
+
+            mVolleyRequester.requestEvents(startTime, 1000, this);
+        }
+    }
+
+
+
+    /**
+     * Called from VolleyRequester. Handles new events from server
+     * @param events
+     */
+    public void handleNewEvents(Events events) {
+        requestingEvents = false;
+        String completeDate;
+        String[] completeDateArray;
+        String dateByDay;
+        eventsMapByDate.clear();
+
+
+                EventContent[] eventContents = events.getContent();
+                for (int i = 0; i < eventContents.length; i++) {
+
+                    // Add new date values to hashmap if not already there
+                    completeDate = eventContents[i].getStartTime();
+                    completeDateArray = completeDate.split("T");
+                    dateByDay = completeDateArray[0];
+
+
+                    // If key already there, add + update new values
+                    if (!eventsMapByDate.containsKey(dateByDay)) {
+                        tempEventContentLst.clear();
+                        tempEventContentLst.add(eventContents[i]);
+                        ArrayList<EventContent> eventContents1 = new ArrayList<>();
+                        for (int k = 0; k < tempEventContentLst.size(); k++) {
+                            eventContents1.add(tempEventContentLst.get(k));
+                        }
+                        eventsMapByDate.put(dateByDay, eventContents1);
+                    } else {
+                        tempEventContentLst.add(eventContents[i]);
+                        ArrayList<EventContent> eventContents1 = new ArrayList<>();
+                        for (int k = 0; k < tempEventContentLst.size(); k++) {
+                            eventContents1.add(tempEventContentLst.get(k));
+                        }
+                        eventsMapByDate.put(dateByDay, eventContents1);
+                    }
+
+                }
+
+        if(curFragment instanceof EventsFragment){
+            curFragment.handleNewEvents(eventsMapByDate);
+        }
+
+
+    }
+
+    public LinkedHashMap<String, ArrayList<EventContent>> getEventsMapByDate(){
+        return this.eventsMapByDate;
+    }
+
 
 }

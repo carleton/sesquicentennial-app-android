@@ -191,7 +191,7 @@ public class VolleyRequester {
      * @param limit max number of events to retrieve
      * @param mainFragment the fragment that called the function and should be notified of results
      */
-    public void requestEvents(String startTime, int limit, final MainFragment mainFragment){
+    public void requestEvents(String startTime, int limit, final MainActivity mainActivity){
 
         final Gson gson = new Gson();
         //Creates request object
@@ -214,7 +214,7 @@ public class VolleyRequester {
                         Log.i(logMessages.VOLLEY, "requestEvents : response string = : " + responseString);
                         try {
                             Events responseObject = gson.fromJson(responseString, Events.class);
-                            mainFragment.handleNewEvents(responseObject);
+                            mainActivity.handleNewEvents(responseObject);
                         }catch (Exception e){
                             Log.i(logMessages.VOLLEY, "requestEvents : unable to parse result");
                         }
@@ -226,8 +226,8 @@ public class VolleyRequester {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.i(logMessages.VOLLEY, "requestEvents : error : " + error.toString());
-                        if(mainFragment!=null) {
-                            mainFragment.handleNewEvents(null);
+                        if(mainActivity!=null) {
+                            mainActivity.handleNewEvents(null);
                         }
                     }
                 }

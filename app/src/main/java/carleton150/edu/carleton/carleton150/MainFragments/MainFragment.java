@@ -8,10 +8,12 @@ import android.support.v4.app.Fragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.Models.VolleyRequester;
+import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.Events;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoObject;
@@ -108,9 +110,9 @@ public class MainFragment extends Fragment{
 
     /**
      * handles new events from server, called by VolleyRequester
-     * @param events
+     * @param eventsMapByDate
      */
-    public void handleNewEvents(Events events){
+    public void handleNewEvents(LinkedHashMap<String, ArrayList<EventContent>> eventsMapByDate){
 
     }
 
