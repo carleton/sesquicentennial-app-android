@@ -18,6 +18,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -27,6 +30,7 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +47,7 @@ import carleton150.edu.carleton.carleton150.Models.VolleyRequester;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoObject;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectContent;
+import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 
 /**
  * Monitors location and geofence information and calls methods in the main view fragments
@@ -82,6 +87,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public VolleyRequester mVolleyRequester = new VolleyRequester();
     AlertDialog networkAlertDialog;
     AlertDialog playServicesConnectivityAlertDialog;
+
+
+    private boolean requestingQuests = false;
+    private ArrayList<Quest> questInfo;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -169,6 +180,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
 
         checkIfGPSEnabled();
+        mVolleyRequester.requestQuests(this);
+        requestingQuests = true;
 
 
     }
@@ -676,6 +689,39 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }
         return false;
+    }
+
+
+
+    /**
+     * Called by VolleyRequester, handles new quests from the server
+     * @param newQuests
+     */
+    public void handleNewQuests(ArrayList<Quest> newQuests) {
+        /*This is a call from the VolleyRequester, so this check prevents the app from
+        crashing if the user leaves the tab while the app is trying
+        to get quests from the server
+         */
+
+        requestingQuests = false;
+
+        if(newQuests != null) {
+            questInfo = newQuests;
+        }
+
+        if(curFragment instanceof QuestFragment){
+            curFragment.handleNewQuests(questInfo);
+        }
+
+    }
+
+    public void requestQuests(){
+        if(questInfo == null && !requestingQuests)
+        mVolleyRequester.requestQuests(this);
+    }
+
+    public ArrayList<Quest> getQuests(){
+        return this.questInfo;
     }
 
 }

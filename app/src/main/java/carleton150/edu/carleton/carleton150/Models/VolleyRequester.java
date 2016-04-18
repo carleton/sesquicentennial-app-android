@@ -240,7 +240,7 @@ public class VolleyRequester {
      * Requests Quests from server
      * @param callerFragment
      */
-    public void requestQuests(final MainFragment callerFragment){
+    public void requestQuests(final MainActivity callerActivity){
         final Gson gson = new Gson();
         JSONObject emptyRequest = new JSONObject();
         JsonObjectRequest request = new JsonObjectRequest(constants.QUESTS_ENDPOINT, emptyRequest,
@@ -273,7 +273,7 @@ public class VolleyRequester {
 
                         Log.i(logMessages.VOLLEY, "requestQuests : response string = : " + responseString);
                         Log.i(logMessages.VOLLEY, "requestQuests : length of quests is: " + quests.size());
-                        callerFragment.handleNewQuests(quests);
+                        callerActivity.handleNewQuests(quests);
                     }
                 },
 
@@ -282,8 +282,8 @@ public class VolleyRequester {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.i(logMessages.VOLLEY, "requestQuests : error : " + error.toString());
-                        if(callerFragment!=null) {
-                            callerFragment.handleNewQuests(null);
+                        if(callerActivity!=null) {
+                            callerActivity.handleNewQuests(null);
                         }
                     }
                 }

@@ -34,7 +34,6 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
     private QuestAdapter questAdapter;
     private int screenWidth;
     private View view;
-    private boolean requestQuests = true;
 
 
     public QuestFragment() {
@@ -47,6 +46,7 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
         final TextView txtInfo;
         final Button btnTryAgain;
         view =  inflater.inflate(R.layout.fragment_quest, container, false);
+
 
 
         /*Button for user to try getting quests again if the app was unable
@@ -80,7 +80,21 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
             toggleTutorial();
         }
 
+        MainActivity mainActivity = (MainActivity) getActivity();
+        questInfo = mainActivity.getQuests();
+
+        if(questInfo == null){
+            mainActivity.requestQuests();
+        }
+        else{
+            handleNewQuests(questInfo);
+        }
+
         return view;
+    }
+
+    public void setQuests(ArrayList<Quest> allQuests){
+        this.questInfo = allQuests;
     }
 
     /**
@@ -125,67 +139,9 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
         quests.setAdapter(questAdapter);
     }
 
-    /**
-     * Called by VolleyRequester, handles new quests from the server
-     * @param newQuests
-     */
-    @Override
-    public void handleNewQuests(ArrayList<Quest> newQuests) {
-        /*This is a call from the VolleyRequester, so this check prevents the app from
-        crashing if the user leaves the tab while the app is trying
-        to get quests from the server
-         */
-        if(view != null) {
-            try {
-                RecyclerViewPager quests = (RecyclerViewPager) view.findViewById(R.id.lst_quests);
-                TextView txtInfo = (TextView) view.findViewById(R.id.txt_request_quests);
-                Button btnTryAgain = (Button) view.findViewById(R.id.btn_try_getting_quests);
 
-                super.handleNewQuests(newQuests);
-                if(newQuests == null){
-                    requestQuests = true;
 
-                    txtInfo.setText(getString(R.string.no_quests_retrieved));
-                    btnTryAgain.setVisibility(View.VISIBLE);
-                    if (quests != null) {
-                        quests.setVisibility(View.GONE);
-                    }
-                    return;
-                }
-                else if (newQuests != null) {
-                    requestQuests = false;
-                    questInfo = newQuests;
-                    questAdapter.updateQuestList(questInfo);
-                    questAdapter.notifyDataSetChanged();
-                    quests.setVisibility(View.VISIBLE);
-                    Log.i(logMessages.VOLLEY, "QuestFragment: handleNewQuests : questAdapter contains : " + questAdapter.getItemCount());
-                }
-                    if (questInfo == null) {
-                        requestQuests = true;
-                        txtInfo.setText(getString(R.string.no_quests_retrieved));
-                        btnTryAgain.setVisibility(View.VISIBLE);
-                        if (quests != null) {
-                            quests.setVisibility(View.GONE);
-                        }
-                }
-            } catch (IllegalStateException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
-    /**
-     * When the fragment comes into view, requests quests from the server
-     */
-    @Override
-    public void fragmentInView() {
-        super.fragmentInView();
-        Log.i("UI", "QuestFragment : fragmentInView");
-        if(requestQuests) {
-            volleyRequester.requestQuests(this);
-            requestQuests = false;
-        }
-    }
 
     /**
      * Sets view items to null when view is destroyed to avoid
@@ -195,7 +151,6 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
     public void onDestroyView() {
         super.onDestroyView();
         view = null;
-        requestQuests = true;
         questAdapter = null;
         questLayoutManager = null;
         questInfo = null;
@@ -218,5 +173,47 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
                 relLayoutTutorial.setVisibility(View.GONE);
             }
         });
+    }
+
+
+    /**
+     * Called by MainActivity, handles new quests from the server
+     * @param newQuests
+     */
+    @Override
+    public void handleNewQuests(ArrayList<Quest> newQuests) {
+
+            try {
+                RecyclerViewPager quests = (RecyclerViewPager) view.findViewById(R.id.lst_quests);
+                TextView txtInfo = (TextView) view.findViewById(R.id.txt_request_quests);
+                Button btnTryAgain = (Button) view.findViewById(R.id.btn_try_getting_quests);
+
+                super.handleNewQuests(newQuests);
+                if(newQuests == null){
+                    txtInfo.setText(getString(R.string.no_quests_retrieved));
+                    btnTryAgain.setVisibility(View.VISIBLE);
+                    if (quests != null) {
+                        quests.setVisibility(View.GONE);
+                    }
+                    return;
+                }
+                else if (newQuests != null) {
+                    questInfo = newQuests;
+                    questAdapter.updateQuestList(questInfo);
+                    questAdapter.notifyDataSetChanged();
+                    quests.setVisibility(View.VISIBLE);
+                    Log.i(logMessages.VOLLEY, "QuestFragment: handleNewQuests : questAdapter contains : " + questAdapter.getItemCount());
+                }
+                if (questInfo == null) {
+                    txtInfo.setText(getString(R.string.no_quests_retrieved));
+                    btnTryAgain.setVisibility(View.VISIBLE);
+                    if (quests != null) {
+                        quests.setVisibility(View.GONE);
+                    }
+                }
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+            }
+
     }
 }
