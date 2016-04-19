@@ -34,7 +34,6 @@ import carleton150.edu.carleton.carleton150.Interfaces.OffCampusViewListener;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectContent;
-import carleton150.edu.carleton.carleton150.POJO.Quests.Image;
 import carleton150.edu.carleton.carleton150.R;
 
 import static carleton150.edu.carleton.carleton150.R.id.txt_try_getting_geofences;
@@ -136,11 +135,11 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
 
         if(mainActivity.isConnectedToNetwork()) {
             setUpMapIfNeeded(); // For setting up the MapFragment
-       }
+        }
 
         // Toggle tutorial if first time using app
-       if (checkFirstHistoryRun()) {
-          toggleTutorial();
+        if (checkFirstHistoryRun()) {
+            toggleTutorial();
         }
 
         return view;
@@ -184,7 +183,7 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
         super.setUpMapIfNeeded();
         if (mMap != null) {
             //Shows history popover on marker clicks
-           mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker) {
                     showPopup(getContentFromMarker(marker), marker.getTitle());
@@ -207,8 +206,8 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
         super.setUpMap();
         // For showing a move to my location button and a blue
         // dot to show user's location
-       MainActivity mainActivity = (MainActivity) getActivity();
-       mMap.setMyLocationEnabled(mainActivity.checkIfGPSEnabled());
+        MainActivity mainActivity = (MainActivity) getActivity();
+        mMap.setMyLocationEnabled(mainActivity.checkIfGPSEnabled());
     }
 
 
@@ -225,7 +224,7 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
             setUpMapIfNeeded();
         }
 
-      mMap.setMyLocationEnabled(mainActivity.checkIfGPSEnabled());
+        mMap.setMyLocationEnabled(mainActivity.checkIfGPSEnabled());
     }
 
     /**
@@ -385,21 +384,28 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
 
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-    }
-
+    /**
+     * Shows a popup containing information about the goefences that was clicked
+     * @param infoForGeofenceClicked
+     * @param geofenceName
+     */
     @Override
     public void geofenceClicked(GeofenceInfoContent[] infoForGeofenceClicked, String geofenceName) {
         showPopup(infoForGeofenceClicked, geofenceName);
     }
 
+    /**
+     * Adds a new marker to the map for each new geofences in the HashMap
+     * @param geofenceToAdd
+     */
     @Override
     public void addNewGeofenceInfo(HashMap<String, GeofenceInfoContent[]> geofenceToAdd) {
         addMarker(geofenceToAdd);
     }
 
+    /**
+     * Draws geofence markers for every goefence
+     */
     private void drawAllGeofenceMarkers(){
         MainActivity mainActivity = (MainActivity) getActivity();
         if(mainActivity.getAllGeofenceInfo() != null) {

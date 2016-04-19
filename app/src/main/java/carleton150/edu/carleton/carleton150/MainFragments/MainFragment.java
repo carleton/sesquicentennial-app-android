@@ -28,8 +28,6 @@ import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
  */
 public class MainFragment extends Fragment{
 
-    //Communicates with server
-    VolleyRequester volleyRequester = new VolleyRequester();
     public LogMessages logMessages = new LogMessages();
     public boolean isVisible = false;
     public Constants constants = new Constants();
@@ -77,34 +75,10 @@ public class MainFragment extends Fragment{
     }
 
     /**
-     * handles when the geofences that the user is currently in change
-     * @param currentGeofences
-     */
-    public void handleGeofenceChange(ArrayList<GeofenceObjectContent> currentGeofences) {
-
-    }
-
-    /**
-     * Handles results of query for information about geofences
-     * @param result
-     */
-    public void handleResult(GeofenceInfoObject result){
-        }
-
-
-    /**
      * handles when the user's location changes
      * @param newLocation
      */
     public void handleLocationChange(Location newLocation){
-
-    }
-
-    /**
-     * handles when new geofences are set to be monitored
-     * @param newGeofences
-     */
-    public void handleNewGeofences(GeofenceObjectContent[] newGeofences){
 
     }
 

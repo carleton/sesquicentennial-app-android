@@ -18,9 +18,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -30,13 +27,11 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.FragmentChangeListener;
@@ -56,7 +51,8 @@ import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 
 /**
  * Monitors location and geofence information and calls methods in the main view fragments
- * to handle geofence and location changes. Also controls which fragment is in view.
+ * to handle geofence and location changes. Also controls which fragment is in view. Requests events
+ * and quests using VolleyRequester and stores them for the fragments.
  */
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener, ResultCallback<Status>, FragmentChangeListener {
@@ -73,11 +69,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private LogMessages logMessages = new LogMessages();
     MainFragment curFragment = null;
     public boolean needToShowGPSAlert = true;
-    private boolean geofenceRetrievalSuccessful = false;
-    private GeofenceInfoObject allGeofenceInfo = null;
-    private GeofenceObjectContent[] allGeofences = null;
-    private boolean requestingGeofences = false;
-    private HashMap<String, GeofenceObjectContent> allGeofencesMap = new HashMap<>();
 
     private Handler handler = new Handler();
 
@@ -93,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     AlertDialog networkAlertDialog;
     AlertDialog playServicesConnectivityAlertDialog;
 
-
     private boolean requestingQuests = false;
     private ArrayList<Quest> questInfo = null;
 
@@ -102,16 +92,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private boolean requestingEvents = false;
 
 
+    private boolean geofenceRetrievalSuccessful = false;
+    private GeofenceInfoObject allGeofenceInfo = null;
+    private GeofenceObjectContent[] allGeofences = null;
+    private boolean requestingGeofences = false;
+    private HashMap<String, GeofenceObjectContent> allGeofencesMap = new HashMap<>();
 
 
-
+    /**
+     * Sets up Google Play Services and builds a Google API Client. Sets up the tabs in the tab
+     * views.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         Log.i("GEOFENCE MONITORING", "onCreate in MainActivity called");
-
 
         networkAlertDialog = new AlertDialog.Builder(MainActivity.this).create();
         playServicesConnectivityAlertDialog = new AlertDialog.Builder(MainActivity.this).create();
@@ -144,15 +142,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         int commit = getSupportFragmentManager()
                 .beginTransaction().replace(R.id.containerLayout, curFragment).commit();
 
-
-
-        /*
-        Overrides onTabSelected to notify the fragment going out of view that it is
-        going out of view.
-        This is because fragments are kept in onResumed state for the viewPager, so
-        since no lifecycle methods are called, this has to be used so that geofences
-        can be registered and unregistered depending which fragment is in view
-         */
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -189,10 +178,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             }
         });
-
-        checkIfGPSEnabled();
-
-
     }
 
     @Override
@@ -210,6 +195,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return super.onOptionsItemSelected(item);
     }
 
+    //TODO: START and stop location updates from questInProgressFragment? That is the only time location is needed now...
     /**
      * Stops location updates to save battery
      */
@@ -458,31 +444,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    /**
+     * An alternative method to show an alert dialog without a neutral button
+     * as the previous method adds a neutral button before displaying the dialog
+     * @param dialog
+     */
     public void showAlertDialogNoNeutralButton(AlertDialog dialog) {
         dialog.show();
     }
 
-    /**
-     * Method called from VolleyRequester when new geofences are retrieved
-     * from server. Calls a function on whatever fragment is currently in view to
-     * handle the new geofences
-     *
-     * @param content
-     */
-    public void handleNewGeofences(GeofenceObjectContent[] content) {
-        Log.i("GEOFENCE MONITORING", "handleNewGeofences ");
-
-        if(content == null){
-            Log.i("GEOFENCE MONITORING", "handleNewGeofences: content is null ");
-        }else{
-            geofenceRetrievalSuccessful = true;
-        }
-        requestAllGeofenceInfo(content);
-        for(int i = 0; i<content.length; i++){
-            allGeofencesMap.put(content[i].getName(), content[i]);
-        }
-        allGeofences = content;
-    }
 
     public HashMap<String, GeofenceObjectContent> getAllGeofencesMap(){
         return allGeofencesMap;
@@ -574,8 +544,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if(!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
             if(needToShowGPSAlert) {
                 needToShowGPSAlert = false;
-            buildAlertMessageNoGps();
-        }
+                buildAlertMessageNoGps();
+            }
             return false;
         }return true;
     }
@@ -601,20 +571,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         alert.show();
     }
 
-   public void requestAllGeofences(){
-        if(allGeofences == null && !requestingGeofences){
-            Log.i("GEOFENCE MONITORING", "requestiongAllGeofences. about to request them ");
 
-            requestingGeofences = true;
-            if(geofenceRetrievalSuccessful != true) {
-                Log.i("GEOFENCE MONITORING", "requestAllGeofences: geofenceRetrieval successful is not true ");
-                requestingGeofences = getNewGeofences();
-            }else{
-                Log.i("GEOFENCE MONITORING", "requestAllGeofences: geofenceRetrieval successful is true ");
-            }
-        }
-    }
 
+    /**
+     * Using the information retrieved from the requestAllGeofences() method,
+     * requests information about each geofence. Results are handled in handleGeofenceInfo()
+     *
+     * @param geofences
+     */
     public void requestAllGeofenceInfo(GeofenceObjectContent[] geofences){
         Log.i("GEOFENCE MONITORING", "requestAllGeofenceInfo ");
 
@@ -677,6 +641,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    /**
+     * Getter method for getting information about geofences
+     *
+     * @return all the information about geofences as a HashMap where the key is the name
+     * of the geofence and the value is a GeofenceInfoContent[] with info about that geofence
+     */
     public HashMap<String, GeofenceInfoContent[]> getAllGeofenceInfo(){
         if(allGeofenceInfo != null) {
             return this.allGeofenceInfo.getContent();
@@ -685,8 +655,51 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+
     /**
-     * Requests geofences from server using VolleyRequester
+     * Does checks to make sure requesting geofences is necessary, then calls a method to request
+     * geofences and stores a boolean indicating that a geofence request is in progress
+     */
+    public void requestAllGeofences(){
+        if(allGeofences == null && !requestingGeofences){
+            Log.i("GEOFENCE MONITORING", "requestiongAllGeofences. about to request them ");
+
+            requestingGeofences = true;
+            if(geofenceRetrievalSuccessful != true) {
+                Log.i("GEOFENCE MONITORING", "requestAllGeofences: geofenceRetrieval successful is not true ");
+                requestingGeofences = getNewGeofences();
+            }else{
+                Log.i("GEOFENCE MONITORING", "requestAllGeofences: geofenceRetrieval successful is true ");
+            }
+        }
+    }
+
+
+    /**
+     * Method called from VolleyRequester when new geofences are retrieved
+     * from server. Calls a function on whatever fragment is currently in view to
+     * handle the new geofences
+     *
+     * @param content
+     */
+    public void handleNewGeofences(GeofenceObjectContent[] content) {
+        Log.i("GEOFENCE MONITORING", "handleNewGeofences ");
+
+        if(content == null){
+            Log.i("GEOFENCE MONITORING", "handleNewGeofences: content is null ");
+        }else{
+            geofenceRetrievalSuccessful = true;
+        }
+        requestAllGeofenceInfo(content);
+        for(int i = 0; i<content.length; i++){
+            allGeofencesMap.put(content[i].getName(), content[i]);
+        }
+        allGeofences = content;
+    }
+
+
+    /**
+     * Requests all geofences from server using VolleyRequester. Results are handled in handleNewGeofences()
      */
     public boolean getNewGeofences(){
         if(mLastLocation == null){
@@ -730,18 +743,26 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     }
 
+    /**
+     * uses the volleyRequester to retrieve all quests from the server. Results are handled
+     * in handleNewQuests()
+     */
     public void requestQuests(){
         if(questInfo == null && !requestingQuests)
-        mVolleyRequester.requestQuests(this);
+            mVolleyRequester.requestQuests(this);
         requestingQuests = true;
     }
 
+    /**
+     * @return an ArrayList of Quests
+     */
     public ArrayList<Quest> getQuests(){
         return this.questInfo;
     }
 
     /**
-     * Requests events from server using the volleyRequester
+     * Requests events from server using the volleyRequester.
+     * Results are handled in handleNewEvents()
      */
     public void requestEvents(){
         if(!requestingEvents && eventsMapByDate.size() == 0) {
@@ -772,45 +793,47 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         eventsMapByDate.clear();
 
 
-                EventContent[] eventContents = events.getContent();
-                for (int i = 0; i < eventContents.length; i++) {
+        EventContent[] eventContents = events.getContent();
+        for (int i = 0; i < eventContents.length; i++) {
 
-                    // Add new date values to hashmap if not already there
-                    completeDate = eventContents[i].getStartTime();
-                    completeDateArray = completeDate.split("T");
-                    dateByDay = completeDateArray[0];
+            // Add new date values to hashmap if not already there
+            completeDate = eventContents[i].getStartTime();
+            completeDateArray = completeDate.split("T");
+            dateByDay = completeDateArray[0];
 
 
-                    // If key already there, add + update new values
-                    if (!eventsMapByDate.containsKey(dateByDay)) {
-                        tempEventContentLst.clear();
-                        tempEventContentLst.add(eventContents[i]);
-                        ArrayList<EventContent> eventContents1 = new ArrayList<>();
-                        for (int k = 0; k < tempEventContentLst.size(); k++) {
-                            eventContents1.add(tempEventContentLst.get(k));
-                        }
-                        eventsMapByDate.put(dateByDay, eventContents1);
-                    } else {
-                        tempEventContentLst.add(eventContents[i]);
-                        ArrayList<EventContent> eventContents1 = new ArrayList<>();
-                        for (int k = 0; k < tempEventContentLst.size(); k++) {
-                            eventContents1.add(tempEventContentLst.get(k));
-                        }
-                        eventsMapByDate.put(dateByDay, eventContents1);
-                    }
-
+            // If key already there, add + update new values
+            if (!eventsMapByDate.containsKey(dateByDay)) {
+                tempEventContentLst.clear();
+                tempEventContentLst.add(eventContents[i]);
+                ArrayList<EventContent> eventContents1 = new ArrayList<>();
+                for (int k = 0; k < tempEventContentLst.size(); k++) {
+                    eventContents1.add(tempEventContentLst.get(k));
                 }
+                eventsMapByDate.put(dateByDay, eventContents1);
+            } else {
+                tempEventContentLst.add(eventContents[i]);
+                ArrayList<EventContent> eventContents1 = new ArrayList<>();
+                for (int k = 0; k < tempEventContentLst.size(); k++) {
+                    eventContents1.add(tempEventContentLst.get(k));
+                }
+                eventsMapByDate.put(dateByDay, eventContents1);
+            }
+
+        }
 
         if(curFragment instanceof EventsFragment){
             curFragment.handleNewEvents(eventsMapByDate);
         }
-
-
     }
 
+    /**
+     *
+     * @return a LinkedHashMap where the key is the date of the event and the value
+     * is an ArrayList of EventContent
+     */
     public LinkedHashMap<String, ArrayList<EventContent>> getEventsMapByDate(){
         return this.eventsMapByDate;
     }
-
 
 }

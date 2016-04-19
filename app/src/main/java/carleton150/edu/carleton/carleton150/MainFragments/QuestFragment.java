@@ -139,10 +139,6 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
         quests.setAdapter(questAdapter);
     }
 
-
-
-
-
     /**
      * Sets view items to null when view is destroyed to avoid
      * memory leaks
@@ -183,37 +179,37 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
     @Override
     public void handleNewQuests(ArrayList<Quest> newQuests) {
 
-            try {
-                RecyclerViewPager quests = (RecyclerViewPager) view.findViewById(R.id.lst_quests);
-                TextView txtInfo = (TextView) view.findViewById(R.id.txt_request_quests);
-                Button btnTryAgain = (Button) view.findViewById(R.id.btn_try_getting_quests);
+        try {
+            RecyclerViewPager quests = (RecyclerViewPager) view.findViewById(R.id.lst_quests);
+            TextView txtInfo = (TextView) view.findViewById(R.id.txt_request_quests);
+            Button btnTryAgain = (Button) view.findViewById(R.id.btn_try_getting_quests);
 
-                super.handleNewQuests(newQuests);
-                if(newQuests == null){
-                    txtInfo.setText(getString(R.string.no_quests_retrieved));
-                    btnTryAgain.setVisibility(View.VISIBLE);
-                    if (quests != null) {
-                        quests.setVisibility(View.GONE);
-                    }
-                    return;
+            super.handleNewQuests(newQuests);
+            if(newQuests == null){
+                txtInfo.setText(getString(R.string.no_quests_retrieved));
+                btnTryAgain.setVisibility(View.VISIBLE);
+                if (quests != null) {
+                    quests.setVisibility(View.GONE);
                 }
-                else if (newQuests != null) {
-                    questInfo = newQuests;
-                    questAdapter.updateQuestList(questInfo);
-                    questAdapter.notifyDataSetChanged();
-                    quests.setVisibility(View.VISIBLE);
-                    Log.i(logMessages.VOLLEY, "QuestFragment: handleNewQuests : questAdapter contains : " + questAdapter.getItemCount());
-                }
-                if (questInfo == null) {
-                    txtInfo.setText(getString(R.string.no_quests_retrieved));
-                    btnTryAgain.setVisibility(View.VISIBLE);
-                    if (quests != null) {
-                        quests.setVisibility(View.GONE);
-                    }
-                }
-            } catch (IllegalStateException e) {
-                e.printStackTrace();
+                return;
             }
+            else if (newQuests != null) {
+                questInfo = newQuests;
+                questAdapter.updateQuestList(questInfo);
+                questAdapter.notifyDataSetChanged();
+                quests.setVisibility(View.VISIBLE);
+                Log.i(logMessages.VOLLEY, "QuestFragment: handleNewQuests : questAdapter contains : " + questAdapter.getItemCount());
+            }
+            if (questInfo == null) {
+                txtInfo.setText(getString(R.string.no_quests_retrieved));
+                btnTryAgain.setVisibility(View.VISIBLE);
+                if (quests != null) {
+                    quests.setVisibility(View.GONE);
+                }
+            }
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
 
     }
 }

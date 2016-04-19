@@ -132,30 +132,33 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
                 eventsListView.setVisibility(View.GONE);
             }
         }
-                dateInfo.clear();
-                for (Map.Entry<String, ArrayList<EventContent>> entry : eventsMapByDate.entrySet()) {
-                    dateInfo.add(entry.getKey());
-                }
+        dateInfo.clear();
+        for (Map.Entry<String, ArrayList<EventContent>> entry : eventsMapByDate.entrySet()) {
+            dateInfo.add(entry.getKey());
+        }
 
-                eventDateCardAdapter.notifyDataSetChanged();
+        eventDateCardAdapter.notifyDataSetChanged();
 
-                String key = eventsMapByDate.keySet().iterator().next();
-                ArrayList<EventContent> newEvents = eventsMapByDate.get(key);
-                eventsList.clear();
-                for(int i = 0; i<newEvents.size(); i++){
-                    eventsList.add(newEvents.get(i));
-                }
+        String key = eventsMapByDate.keySet().iterator().next();
+        ArrayList<EventContent> newEvents = eventsMapByDate.get(key);
+        eventsList.clear();
+        for(int i = 0; i<newEvents.size(); i++){
+            eventsList.add(newEvents.get(i));
+        }
 
-                txtTryAgain.setVisibility(View.GONE);
-                btnTryAgain.setVisibility(View.GONE);
-                eventsListView.setVisibility(View.VISIBLE);
-                eventsListAdapter.notifyDataSetChanged();
+        txtTryAgain.setVisibility(View.GONE);
+        btnTryAgain.setVisibility(View.GONE);
+        eventsListView.setVisibility(View.VISIBLE);
+        eventsListAdapter.notifyDataSetChanged();
 
-            }
-
-
+    }
 
 
+    /**
+     * When a recycler view date selector is clicked, shows events for that day
+     *
+     * @param dateInfo
+     */
     @Override
     public void recyclerViewListClicked(String dateInfo) {
         ArrayList<EventContent> newEvents = eventsMapByDate.get(dateInfo);

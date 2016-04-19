@@ -53,7 +53,7 @@ public class VolleyRequester {
     /**
      * Requests information about the current active geofences. When information is received, calls
      * a method in the callerFragment to handle this new information.
-     * @param callerFragment the fragment that called request()
+     * @param mainActivity the Activity that called request()
      * @param mGeofenceList the list of geofences that we are requesting information for
      */
     public void request(final MainActivity mainActivity, GeofenceObjectContent[] mGeofenceList) {
@@ -189,7 +189,7 @@ public class VolleyRequester {
      * requests events from server
      * @param startTime time to start getting events from
      * @param limit max number of events to retrieve
-     * @param mainFragment the fragment that called the function and should be notified of results
+     * @param mainActivity the activity that called the function and should be notified of results
      */
     public void requestEvents(String startTime, int limit, final MainActivity mainActivity){
 
@@ -238,7 +238,7 @@ public class VolleyRequester {
 
     /**
      * Requests Quests from server
-     * @param callerFragment
+     * @param callerActivity the activity that is to be notified on the result
      */
     public void requestQuests(final MainActivity callerActivity){
         final Gson gson = new Gson();
