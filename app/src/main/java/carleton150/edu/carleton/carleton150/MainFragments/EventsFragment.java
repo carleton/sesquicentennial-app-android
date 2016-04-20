@@ -24,6 +24,9 @@ import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.Events;
 import carleton150.edu.carleton.carleton150.R;
 
+import static carleton150.edu.carleton.carleton150.R.id.txt_request_events;
+import static carleton150.edu.carleton.carleton150.R.id.txt_try_getting_geofences;
+
 /**
  * The main fragment for the Events portion of the app. Displays
  * and events calendar
@@ -125,30 +128,26 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
 
         this.eventsMapByDate = eventsMapByDate;
         if(eventsMapByDate == null) {
-            if (eventsList.size() == 0) {
-                txtTryAgain.setText(getString(R.string.no_events_retrieved));
-                txtTryAgain.setVisibility(View.VISIBLE);
-                btnTryAgain.setVisibility(View.VISIBLE);
-                eventsListView.setVisibility(View.GONE);
+            showUnableToRetrieveEvents();
+
+        }else if(eventsMapByDate.size() == 0){
+            showUnableToRetrieveEvents();
+        }else {
+            dateInfo.clear();
+            for (Map.Entry<String, ArrayList<EventContent>> entry : eventsMapByDate.entrySet()) {
+                dateInfo.add(entry.getKey());
             }
-        }
-        dateInfo.clear();
-        for (Map.Entry<String, ArrayList<EventContent>> entry : eventsMapByDate.entrySet()) {
-            dateInfo.add(entry.getKey());
-        }
 
-        eventDateCardAdapter.notifyDataSetChanged();
+            eventDateCardAdapter.notifyDataSetChanged();
 
-        String key = eventsMapByDate.keySet().iterator().next();
-        ArrayList<EventContent> newEvents = eventsMapByDate.get(key);
-        eventsList.clear();
-        for(int i = 0; i<newEvents.size(); i++){
-            eventsList.add(newEvents.get(i));
+            String key = eventsMapByDate.keySet().iterator().next();
+            ArrayList<EventContent> newEvents = eventsMapByDate.get(key);
+            eventsList.clear();
+            for (int i = 0; i < newEvents.size(); i++) {
+                eventsList.add(newEvents.get(i));
+            }
+            hideUnableToRetrieveEvents();
         }
-
-        txtTryAgain.setVisibility(View.GONE);
-        btnTryAgain.setVisibility(View.GONE);
-        eventsListView.setVisibility(View.VISIBLE);
         eventsListAdapter.notifyDataSetChanged();
 
     }
@@ -168,5 +167,23 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
         }
 
         eventsListAdapter.notifyDataSetChanged();
+    }
+
+
+    public void showUnableToRetrieveEvents(){
+        final TextView txtRequestGeofences = (TextView) v.findViewById(txt_request_events);
+        final Button btnRequestGeofences = (Button) v.findViewById(R.id.btn_try_getting_events);
+        txtRequestGeofences.setText(getResources().getString(R.string.no_events_retrieved));
+        txtRequestGeofences.setVisibility(View.VISIBLE);
+        btnRequestGeofences.setVisibility(View.VISIBLE);
+        eventsListView.setVisibility(View.GONE);
+    }
+
+    private void hideUnableToRetrieveEvents(){
+        eventsListView.setVisibility(View.VISIBLE);
+        final TextView txtRequestGeofences = (TextView) v.findViewById(txt_request_events);
+        final Button btnRequestGeofences = (Button) v.findViewById(R.id.btn_try_getting_events);
+        txtRequestGeofences.setVisibility(View.GONE);
+        btnRequestGeofences.setVisibility(View.GONE);
     }
 }

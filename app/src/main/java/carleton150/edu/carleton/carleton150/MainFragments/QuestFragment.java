@@ -23,6 +23,9 @@ import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.R;
 
+import static carleton150.edu.carleton.carleton150.R.id.txt_request_events;
+import static carleton150.edu.carleton.carleton150.R.id.txt_request_quests;
+
 /**
  * Class to display quests and allow a user to select a quest to view information about it
  * or start the quest
@@ -84,6 +87,8 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
         questInfo = mainActivity.getQuests();
 
         if(questInfo == null){
+            mainActivity.requestQuests();
+        }else if(questInfo.size() == 0){
             mainActivity.requestQuests();
         }
         else{
@@ -178,38 +183,53 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
      */
     @Override
     public void handleNewQuests(ArrayList<Quest> newQuests) {
+        if(newQuests == null){
+            showUnableToRetrieveQuests();
+        }else if(newQuests.size() == 0){
+            showUnableToRetrieveQuests();
+        }else {
+            hideUnableToRetrieveQuests();
+            try {
+                RecyclerViewPager quests = (RecyclerViewPager) view.findViewById(R.id.lst_quests);
 
-        try {
-            RecyclerViewPager quests = (RecyclerViewPager) view.findViewById(R.id.lst_quests);
-            TextView txtInfo = (TextView) view.findViewById(R.id.txt_request_quests);
-            Button btnTryAgain = (Button) view.findViewById(R.id.btn_try_getting_quests);
-
-            super.handleNewQuests(newQuests);
-            if(newQuests == null){
-                txtInfo.setText(getString(R.string.no_quests_retrieved));
-                btnTryAgain.setVisibility(View.VISIBLE);
-                if (quests != null) {
-                    quests.setVisibility(View.GONE);
+                super.handleNewQuests(newQuests);
+                if (newQuests == null) {
+                    if (quests != null) {
+                        quests.setVisibility(View.GONE);
+                    }
+                    return;
+                } else if (newQuests != null) {
+                    questInfo = newQuests;
+                    questAdapter.updateQuestList(questInfo);
+                    questAdapter.notifyDataSetChanged();
+                    quests.setVisibility(View.VISIBLE);
+                    Log.i(logMessages.VOLLEY, "QuestFragment: handleNewQuests : questAdapter contains : " + questAdapter.getItemCount());
                 }
-                return;
-            }
-            else if (newQuests != null) {
-                questInfo = newQuests;
-                questAdapter.updateQuestList(questInfo);
-                questAdapter.notifyDataSetChanged();
-                quests.setVisibility(View.VISIBLE);
-                Log.i(logMessages.VOLLEY, "QuestFragment: handleNewQuests : questAdapter contains : " + questAdapter.getItemCount());
-            }
-            if (questInfo == null) {
-                txtInfo.setText(getString(R.string.no_quests_retrieved));
-                btnTryAgain.setVisibility(View.VISIBLE);
-                if (quests != null) {
-                    quests.setVisibility(View.GONE);
+                if (questInfo == null) {
+                    if (quests != null) {
+                        quests.setVisibility(View.GONE);
+                    }
                 }
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
             }
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
         }
 
+    }
+
+
+    public void showUnableToRetrieveQuests(){
+        final TextView txtRequestGeofences = (TextView) view.findViewById(txt_request_quests);
+        final Button btnRequestGeofences = (Button) view.findViewById(R.id.btn_try_getting_quests);
+        txtRequestGeofences.setText(getResources().getString(R.string.no_quests_retrieved));
+        txtRequestGeofences.setVisibility(View.VISIBLE);
+        btnRequestGeofences.setVisibility(View.VISIBLE);
+    }
+
+    private void hideUnableToRetrieveQuests(){
+        final TextView txtRequestGeofences = (TextView) view.findViewById(txt_request_quests);
+        final Button btnRequestGeofences = (Button) view.findViewById(R.id.btn_try_getting_quests);
+        txtRequestGeofences.setVisibility(View.GONE);
+        btnRequestGeofences.setVisibility(View.GONE);
     }
 }

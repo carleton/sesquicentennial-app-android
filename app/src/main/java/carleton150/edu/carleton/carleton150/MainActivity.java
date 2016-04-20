@@ -610,13 +610,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     public void handleGeofenceInfo(GeofenceInfoObject geofenceInfoObject){
         Log.i("GEOFENCE MONITORING", "handleGeofenceInfo");
-
+        requestingGeofences = false;
 
         if(allGeofenceInfo == null){
             Log.i("GEOFENCE MONITORING", "allGeofenceInfo was null");
-
+            if(curFragment instanceof HistoryFragment){
+                ((HistoryFragment) curFragment).showUnableToRetrieveGeofences();
+            }
             allGeofenceInfo = geofenceInfoObject;
+            geofenceRetrievalSuccessful = false;
         }else {
+            geofenceRetrievalSuccessful = true;
             Log.i("GEOFENCE MONITORING", "allGeofenceInfo was not null");
 
             if (geofenceInfoObject != null) {
@@ -686,15 +690,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Log.i("GEOFENCE MONITORING", "handleNewGeofences ");
 
         if(content == null){
+            geofenceRetrievalSuccessful = false;
+            requestingGeofences = false;
+            if(curFragment instanceof HistoryFragment){
+                ((HistoryFragment) curFragment).showUnableToRetrieveGeofences();
+            }
             Log.i("GEOFENCE MONITORING", "handleNewGeofences: content is null ");
         }else{
             geofenceRetrievalSuccessful = true;
+            requestAllGeofenceInfo(content);
+            for(int i = 0; i<content.length; i++){
+                allGeofencesMap.put(content[i].getName(), content[i]);
+            }
+            allGeofences = content;
         }
-        requestAllGeofenceInfo(content);
-        for(int i = 0; i<content.length; i++){
-            allGeofencesMap.put(content[i].getName(), content[i]);
-        }
-        allGeofences = content;
     }
 
 
@@ -765,19 +774,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * Results are handled in handleNewEvents()
      */
     public void requestEvents(){
-        if(!requestingEvents && eventsMapByDate.size() == 0) {
-            requestingEvents = true;
-            Calendar c = Calendar.getInstance();
-            int year = c.get(Calendar.YEAR);
-            int month = c.get(Calendar.MONTH) + 1;
-            int day = c.get(Calendar.DAY_OF_MONTH) - 1;
-            String monthString = String.format("%02d", month);
-            String dayString = String.format("%02d", day);
-            String startTime = monthString + "/" + dayString + "/" + year;
+        if(!requestingEvents){
+            if(eventsMapByDate == null || eventsMapByDate.size() == 0) {
+                requestingEvents = true;
+                Calendar c = Calendar.getInstance();
+                int year = c.get(Calendar.YEAR);
+                int month = c.get(Calendar.MONTH) + 1;
+                int day = c.get(Calendar.DAY_OF_MONTH) - 1;
+                String monthString = String.format("%02d", month);
+                String dayString = String.format("%02d", day);
+                String startTime = monthString + "/" + dayString + "/" + year;
 
-            mVolleyRequester.requestEvents(startTime, 1000, this);
+                mVolleyRequester.requestEvents(startTime, 1000, this);
+            }
         }
-    }
+        }
+
 
 
 
@@ -792,38 +804,45 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         String dateByDay;
         eventsMapByDate.clear();
 
-
-        EventContent[] eventContents = events.getContent();
-        for (int i = 0; i < eventContents.length; i++) {
-
-            // Add new date values to hashmap if not already there
-            completeDate = eventContents[i].getStartTime();
-            completeDateArray = completeDate.split("T");
-            dateByDay = completeDateArray[0];
+        if(events == null){
+            if(curFragment instanceof EventsFragment){
+                curFragment.handleNewEvents(null);
+            }
+        }else {
 
 
-            // If key already there, add + update new values
-            if (!eventsMapByDate.containsKey(dateByDay)) {
-                tempEventContentLst.clear();
-                tempEventContentLst.add(eventContents[i]);
-                ArrayList<EventContent> eventContents1 = new ArrayList<>();
-                for (int k = 0; k < tempEventContentLst.size(); k++) {
-                    eventContents1.add(tempEventContentLst.get(k));
+            EventContent[] eventContents = events.getContent();
+            for (int i = 0; i < eventContents.length; i++) {
+
+                // Add new date values to hashmap if not already there
+                completeDate = eventContents[i].getStartTime();
+                completeDateArray = completeDate.split("T");
+                dateByDay = completeDateArray[0];
+
+
+                // If key already there, add + update new values
+                if (!eventsMapByDate.containsKey(dateByDay)) {
+                    tempEventContentLst.clear();
+                    tempEventContentLst.add(eventContents[i]);
+                    ArrayList<EventContent> eventContents1 = new ArrayList<>();
+                    for (int k = 0; k < tempEventContentLst.size(); k++) {
+                        eventContents1.add(tempEventContentLst.get(k));
+                    }
+                    eventsMapByDate.put(dateByDay, eventContents1);
+                } else {
+                    tempEventContentLst.add(eventContents[i]);
+                    ArrayList<EventContent> eventContents1 = new ArrayList<>();
+                    for (int k = 0; k < tempEventContentLst.size(); k++) {
+                        eventContents1.add(tempEventContentLst.get(k));
+                    }
+                    eventsMapByDate.put(dateByDay, eventContents1);
                 }
-                eventsMapByDate.put(dateByDay, eventContents1);
-            } else {
-                tempEventContentLst.add(eventContents[i]);
-                ArrayList<EventContent> eventContents1 = new ArrayList<>();
-                for (int k = 0; k < tempEventContentLst.size(); k++) {
-                    eventContents1.add(tempEventContentLst.get(k));
-                }
-                eventsMapByDate.put(dateByDay, eventContents1);
+
             }
 
-        }
-
-        if(curFragment instanceof EventsFragment){
-            curFragment.handleNewEvents(eventsMapByDate);
+            if (curFragment instanceof EventsFragment) {
+                curFragment.handleNewEvents(eventsMapByDate);
+            }
         }
     }
 

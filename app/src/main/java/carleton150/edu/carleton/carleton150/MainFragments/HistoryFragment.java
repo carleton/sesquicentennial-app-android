@@ -400,7 +400,14 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
      */
     @Override
     public void addNewGeofenceInfo(HashMap<String, GeofenceInfoContent[]> geofenceToAdd) {
-        addMarker(geofenceToAdd);
+        if(geofenceToAdd == null){
+            showUnableToRetrieveGeofences();
+        }else if(geofenceToAdd.size() == 0){
+            showUnableToRetrieveGeofences();
+        }else {
+            addMarker(geofenceToAdd);
+            hideUnableToRetrieveGeofences();
+        }
     }
 
     /**
@@ -411,5 +418,20 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
         if(mainActivity.getAllGeofenceInfo() != null) {
             addMarker(mainActivity.getAllGeofenceInfo());
         }
+    }
+
+    public void showUnableToRetrieveGeofences(){
+        final TextView txtRequestGeofences = (TextView) view.findViewById(txt_try_getting_geofences);
+        final Button btnRequestGeofences = (Button) view.findViewById(R.id.btn_request_geofences);
+        txtRequestGeofences.setText(getResources().getString(R.string.no_geofences_retrieved));
+        txtRequestGeofences.setVisibility(View.VISIBLE);
+        btnRequestGeofences.setVisibility(View.VISIBLE);
+    }
+
+    private void hideUnableToRetrieveGeofences(){
+        final TextView txtRequestGeofences = (TextView) view.findViewById(txt_try_getting_geofences);
+        final Button btnRequestGeofences = (Button) view.findViewById(R.id.btn_request_geofences);
+        txtRequestGeofences.setVisibility(View.GONE);
+        btnRequestGeofences.setVisibility(View.GONE);
     }
 }
