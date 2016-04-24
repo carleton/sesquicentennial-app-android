@@ -12,4 +12,5 @@ public class LogMessages {
     public String LOCATION = "Location";
     public String MEMORY_MONITORING = "MemoryMonitoring";
     public String IMAGE_HANDLING = "ImageHandling";
+    public String NEW_GEOPOINTS_DEBUGGING = "newGeofenceDebugging";
 }

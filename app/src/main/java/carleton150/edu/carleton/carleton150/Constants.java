@@ -45,6 +45,7 @@ public class Constants {
     public static final String QUESTS_ENDPOINT = "https://carl150.carleton.edu/quest";
     public static final String MEMORIES_ENDPOINT = "https://carl150.carleton.edu/memories_fetch";
     public static final String ADD_MEMORY_ENDPOINT = "https://carl150.carleton.edu/memories_add";
+    public static final String NEW_GEOFENCES_ENDPOINT = "https://carl150.carleton.edu/new_history";
 
     //Prefixes and suffixes for the Camera class to use when the user uploads images
     public static final String JPEG_FILE_PREFIX = "IMG_";

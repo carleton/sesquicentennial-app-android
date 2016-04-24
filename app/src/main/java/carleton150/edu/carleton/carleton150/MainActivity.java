@@ -47,6 +47,7 @@ import carleton150.edu.carleton.carleton150.POJO.EventObject.Events;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoObject;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectContent;
+import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.AllGeofences;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 
 /**
@@ -97,6 +98,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private GeofenceObjectContent[] allGeofences = null;
     private boolean requestingGeofences = false;
     private HashMap<String, GeofenceObjectContent> allGeofencesMap = new HashMap<>();
+
+
+    //TODO: this should be gone by final version because we should only have one method
+    //method to determine whether we are using old geofence retrieval method or new one
+    public boolean NEW_VERSION = false;
+    private AllGeofences allGeofencesNew = null;
+    private boolean requestingAllGeofencesNew = false;
 
 
     /**
@@ -178,6 +186,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             }
         });
+
+        if(NEW_VERSION) {
+            requestGeofencesNew();
+        }
     }
 
     @Override
@@ -219,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             isConnectedToNetwork();
             if (mRequestingLocationUpdates) {
                 if(checkIfGPSEnabled()) {
-                    startLocationUpdates();
+                   startLocationUpdates();
                 }
             }
         } else {
@@ -253,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         //starts periodic location updates
         if (mRequestingLocationUpdates) {
             if(checkIfGPSEnabled()) {
-                startLocationUpdates();
+               startLocationUpdates();
             }
         }
 
@@ -325,7 +337,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Assign the new location
         mLastLocation = location;
         tellFragmentLocationChanged();
-        requestAllGeofences();
+        if(!NEW_VERSION) {
+            requestAllGeofences();
+        }
     }
 
     /**
@@ -854,5 +868,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public LinkedHashMap<String, ArrayList<EventContent>> getEventsMapByDate(){
         return this.eventsMapByDate;
     }
+
+    public void handleGeofencesNewMethod(AllGeofences geofences){
+        requestingAllGeofencesNew = false;
+        if(curFragment instanceof HistoryFragment){
+            ((HistoryFragment) curFragment).addNewGeofenceInfoNew(geofences);
+        }
+        this.allGeofencesNew = geofences;
+    }
+
+    public AllGeofences getAllGeofencesNew(){
+        return this.allGeofencesNew;
+    }
+
+    public void requestGeofencesNew(){
+        if(!requestingAllGeofencesNew && allGeofencesNew == null) {
+            mVolleyRequester.requestGeopointsNew(this);
+            requestingAllGeofencesNew = true;
+        }
+    }
+
+    //TODO: now that we no longer need a location sent in to request geofences, call that request
+    //TODO: earlier, before getting location updates, then we only need to get location updates
+    //TODO: for the quest in progress screen
 
 }

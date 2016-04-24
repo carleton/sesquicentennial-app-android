@@ -5,15 +5,20 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 import carleton150.edu.carleton.carleton150.Constants;
+import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.Models.BitmapWorkerTask;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
+import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Event;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;
 import carleton150.edu.carleton.carleton150.R;
 
@@ -22,7 +27,15 @@ import carleton150.edu.carleton.carleton150.R;
  */
 public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
+    //TODO: old version
     private GeofenceInfoContent[] historyList = null;
+
+    //TODO:  new version
+    private Event[] historyListNew = null;
+
+    private LogMessages logMessages = new LogMessages();
+
+
     private Waypoint[] waypointList = null;
     public int screenWidth;
     public int screenHeight;
@@ -33,6 +46,18 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     public HistoryAdapter(Context context, GeofenceInfoContent[] historyList, Waypoint[] waypoints, int screenWidth, int screenHeight, boolean isMemories, boolean isQuestProgress) {
         this.historyList = historyList;
+        this.screenHeight = screenHeight;
+        this.historyListNew = null;
+        this.screenWidth = screenWidth;
+        this.isMemories = isMemories;
+        this.waypointList = waypoints;
+        this.isQuestProgress = isQuestProgress;
+        this.context = context;
+    }
+
+    public HistoryAdapter(Context context, Event[] historyListNew, Waypoint[] waypoints, int screenWidth, int screenHeight, boolean isMemories, boolean isQuestProgress) {
+        this.historyListNew = historyListNew;
+        this.historyList = null;
         this.screenHeight = screenHeight;
         this.screenWidth = screenWidth;
         this.isMemories = isMemories;
@@ -59,6 +84,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }if(isQuestProgress){
             return 2;
         }
+        if(historyListNew != null){
+            if(historyListNew[position].getText() != null){
+                return 1;
+            }else{
+                return 0;
+            }
+        }
         if(historyList[position].getType().equals(historyList[position].TYPE_IMAGE)){
             return 0;
         } if(historyList[position].getType().equals(historyList[position].TYPE_TEXT)){
@@ -83,6 +115,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
      */
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onCreateViewHolder : viewType : " + viewType);
         if(isMemories){
             View view = LayoutInflater.
                     from(parent.getContext()).
@@ -119,47 +152,101 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         //Sets fields of a HistoryViewHolderText and sets an OnClickListener to expand the view
         if(holder instanceof HistoryViewHolderText){
-            final GeofenceInfoContent geofenceInfoContent = historyList[position];
-            ((HistoryViewHolderText) holder).setTxtSummary(geofenceInfoContent.getSummary());
-            ((HistoryViewHolderText) holder).setTxtDescription(geofenceInfoContent.getData());
-            ((HistoryViewHolderText) holder).setTxtDate(geofenceInfoContent.getYear());
-            ((HistoryViewHolderText) holder).setExpanded(geofenceInfoContent.isExpanded());
-            ImageView imgExpanded = ((HistoryViewHolderText) holder).getIconExpand();
+            if(historyList != null) {
+                Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder :textHolder: historyList NOT null ");
 
-            ((HistoryViewHolderText) holder).setExpanded(geofenceInfoContent.isExpanded());
-            ((HistoryViewHolderText) holder).setIconExpand(context);
+                final GeofenceInfoContent geofenceInfoContent = historyList[position];
+                ((HistoryViewHolderText) holder).setTxtSummary(geofenceInfoContent.getSummary());
+                ((HistoryViewHolderText) holder).setTxtDescription(geofenceInfoContent.getData());
+                ((HistoryViewHolderText) holder).setTxtDate(geofenceInfoContent.getYear());
+                ((HistoryViewHolderText) holder).setExpanded(geofenceInfoContent.isExpanded());
+                ImageView imgExpanded = ((HistoryViewHolderText) holder).getIconExpand();
 
-            imgExpanded.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    geofenceInfoContent.setExpanded(!geofenceInfoContent.isExpanded());
-                    ((HistoryViewHolderText) holder).setExpanded(geofenceInfoContent.isExpanded());
-                    ((HistoryViewHolderText) holder).setIconExpand(context);
-                }
-            });
+                ((HistoryViewHolderText) holder).setExpanded(geofenceInfoContent.isExpanded());
+                ((HistoryViewHolderText) holder).setIconExpand(context);
 
-
-        }else if(holder instanceof HistoryViewHolderImage){
-            //Sets fields of a HistoryViewHolderImage and sets an OnClickListener to expand the view
-            final GeofenceInfoContent geofenceInfoContent = historyList[position];
-            if(!isMemories && !isQuestProgress) {
-                ((HistoryViewHolderImage) holder).setImage(position, geofenceInfoContent.getData(), screenWidth, screenHeight);
-                ((HistoryViewHolderImage) holder).setTxtDate(geofenceInfoContent.getYear());
-                ((HistoryViewHolderImage) holder).setTxtCaption(geofenceInfoContent.getCaption());
-                ((HistoryViewHolderImage) holder).setTxtDescription(geofenceInfoContent.getDesc());
-                ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
-                ImageView imgExpanded = ((HistoryViewHolderImage) holder).getIconExpand();
-                ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
-                ((HistoryViewHolderImage) holder).setIconExpand(context);
                 imgExpanded.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         geofenceInfoContent.setExpanded(!geofenceInfoContent.isExpanded());
-                        ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
-                        ((HistoryViewHolderImage) holder).setIconExpand(context);
+                        ((HistoryViewHolderText) holder).setExpanded(geofenceInfoContent.isExpanded());
+                        ((HistoryViewHolderText) holder).setIconExpand(context);
                     }
                 });
+            }else if(historyListNew != null){
+                Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: textHolder: historyListNew not null");
+
+                final Event geofenceInfoContent = historyListNew[position];
+                ((HistoryViewHolderText) holder).setTxtSummary(geofenceInfoContent.getText().getHeadline());
+                ((HistoryViewHolderText) holder).setTxtDescription(geofenceInfoContent.getText().getText());
+                ((HistoryViewHolderText) holder).setTxtDate(geofenceInfoContent.getStartDate().getYear());
+                ((HistoryViewHolderText) holder).setExpanded(geofenceInfoContent.isExpanded());
+                ImageView imgExpanded = ((HistoryViewHolderText) holder).getIconExpand();
+
+                ((HistoryViewHolderText) holder).setExpanded(geofenceInfoContent.isExpanded());
+                ((HistoryViewHolderText) holder).setIconExpand(context);
+
+                imgExpanded.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        geofenceInfoContent.setIsExpanded(!geofenceInfoContent.isExpanded());
+                        ((HistoryViewHolderText) holder).setExpanded(geofenceInfoContent.isExpanded());
+                        ((HistoryViewHolderText) holder).setIconExpand(context);
+                    }
+                });
+            }
+
+
+        }else if(holder instanceof HistoryViewHolderImage){
+            //Sets fields of a HistoryViewHolderImage and sets an OnClickListener to expand the view
+            if(!isMemories && !isQuestProgress) {
+                if(historyList != null) {
+                    final GeofenceInfoContent geofenceInfoContent = historyList[position];
+                    Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: imageHolder: historyList NOT null");
+
+                    ((HistoryViewHolderImage) holder).setImage(position, geofenceInfoContent.getData(), screenWidth, screenHeight);
+                    ((HistoryViewHolderImage) holder).setTxtDate(geofenceInfoContent.getYear());
+                    ((HistoryViewHolderImage) holder).setTxtCaption(geofenceInfoContent.getCaption());
+                    ((HistoryViewHolderImage) holder).setTxtDescription(geofenceInfoContent.getDesc());
+                    ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
+                    ImageView imgExpanded = ((HistoryViewHolderImage) holder).getIconExpand();
+                    ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
+                    ((HistoryViewHolderImage) holder).setIconExpand(context);
+                    imgExpanded.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            geofenceInfoContent.setExpanded(!geofenceInfoContent.isExpanded());
+                            ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
+                            ((HistoryViewHolderImage) holder).setIconExpand(context);
+                        }
+                    });
+                }else if(historyListNew != null){
+
+                    Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: imageHolder: historyListNew not null");
+
+
+                    //TODO: Items can have both text and media...
+                    final Event geofenceInfoContent = historyListNew[position];
+                    ((HistoryViewHolderImage) holder).setImageNew(position, geofenceInfoContent.getMedia().getUrl(), screenWidth, screenHeight);
+                    ((HistoryViewHolderImage) holder).setTxtDate(geofenceInfoContent.getStartDate().getYear());
+                    ((HistoryViewHolderImage) holder).setTxtCaption(geofenceInfoContent.getMedia().getCaption());
+                    ((HistoryViewHolderImage) holder).setTxtDescription(geofenceInfoContent.getMedia().getCredit());
+                    ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
+                    ImageView imgExpanded = ((HistoryViewHolderImage) holder).getIconExpand();
+                    ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
+                    ((HistoryViewHolderImage) holder).setIconExpand(context);
+                    imgExpanded.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            geofenceInfoContent.setIsExpanded(!geofenceInfoContent.isExpanded());
+                            ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
+                            ((HistoryViewHolderImage) holder).setIconExpand(context);
+                        }
+                    });
+                }
             }else if (isMemories){
+                final GeofenceInfoContent geofenceInfoContent = historyList[position];
+
                 //Sets fields of a HistoryViewHolderImage and sets an OnClickListener to expand the view
                 //not that the memories use the HistoryViewHolderImage, but just fills in different fields
                 ((HistoryViewHolderImage) holder).setImage(position, geofenceInfoContent.getImage(), screenWidth, screenHeight);
@@ -220,6 +307,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public int getItemCount() {
         if (historyList != null) {
             return historyList.length;
+        } else if(historyListNew != null) {
+            return historyListNew.length;
         } else if (waypointList != null){
             return waypointList.length;
         }else{
@@ -299,6 +388,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
          * @param screenWidth width of phone screen
          * @param screenHeight height of phone screen
          */
+        //TODO: old version
         public void setImage(int resId, String encodedImage, int screenWidth, int screenHeight) {
             System.gc();
             int w = constants.PLACEHOLDER_IMAGE_DIMENSIONS, h = constants.PLACEHOLDER_IMAGE_DIMENSIONS;
@@ -314,6 +404,30 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 task.execute(resId);
             }
         }
+
+
+        /**
+         * Sets the image by downsizing and decoding the image string, then putting the image
+         * into the recyclerView at the specified position
+         *
+         * @param resId position of image in RecyclerView
+         * @param encodedImage 64-bit encoded image
+         * @param screenWidth width of phone screen
+         * @param screenHeight height of phone screen
+         */
+        //TODO: new version
+        public void setImageNew(int resId, String ImageURL, int screenWidth, int screenHeight) {
+            System.gc();
+
+            int w = constants.PLACEHOLDER_IMAGE_DIMENSIONS, h = constants.PLACEHOLDER_IMAGE_DIMENSIONS;
+            Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
+            Bitmap mPlaceHolderBitmap = Bitmap.createBitmap(w, h, conf); // this creates a MUTABLE bitmap
+
+            imgMedia.setImageBitmap(mPlaceHolderBitmap);
+
+            //TODO: fill this in using picasso library
+        }
+
 
         /**
          * Cancels the previous task if a view is recycled so it can use the correct image

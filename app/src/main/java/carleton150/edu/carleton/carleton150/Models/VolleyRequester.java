@@ -35,6 +35,7 @@ import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectCo
 import carleton150.edu.carleton.carleton150.POJO.GeofenceRequestObject.Geofence;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceRequestObject.GeofenceRequestObject;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceRequestObject.Location;
+import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.AllGeofences;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 
 /**
@@ -435,4 +436,60 @@ public class VolleyRequester {
             e.printStackTrace();
         }
     }
+
+
+    /**
+     * Requests Geofence information for all geofences from server
+     * @param callerActivity the activity that is to be notified on the result
+     */
+    public void requestGeopointsNew(final MainActivity callerActivity){
+        final Gson gson = new Gson();
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, constants.NEW_GEOFENCES_ENDPOINT,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        String responseString = response.toString();
+                        ArrayList<Quest> quests = new ArrayList<>();
+                        try {
+                            JSONObject responseObject = response.getJSONObject("content");
+                            AllGeofences allGeofences = gson.fromJson(responseObject.toString(), AllGeofences.class);
+                            callerActivity.handleGeofencesNewMethod(allGeofences);
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            callerActivity.handleGeofencesNewMethod(null);
+                        }
+
+                        Log.i(logMessages.VOLLEY, "requestQuests : response string = : " + responseString);
+                        Log.i(logMessages.VOLLEY, "requestQuests : length of quests is: " + quests.size());
+                    }
+                },
+
+                new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.i(logMessages.VOLLEY, "requestQuests : error : " + error.toString());
+                        if(callerActivity!=null) {
+                            callerActivity.handleGeofencesNewMethod(null);
+                        }
+                    }
+                }
+        );
+
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                60000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+
+        MyApplication.getInstance().getRequestQueue().add(request);
+    }
+
+
+
+
 }

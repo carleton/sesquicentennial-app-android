@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,14 +17,18 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 import carleton150.edu.carleton.carleton150.Adapters.HistoryAdapter;
 import carleton150.edu.carleton.carleton150.Adapters.MyScaleInAnimationAdapter;
 import carleton150.edu.carleton.carleton150.Constants;
+import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.MainFragments.HistoryFragment;
 import carleton150.edu.carleton.carleton150.Models.VolleyRequester;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.MemoriesContent;
+import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Event;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;
 import carleton150.edu.carleton.carleton150.R;
@@ -47,11 +52,19 @@ public class RecyclerViewPopoverFragment extends Fragment{
     private Constants constants = new Constants();
     private static HistoryFragment parentFragment;
     private static boolean isQuestInProgress = false;
+    private static boolean isNewHistory = false;
     private static String geofenceName;
 
+    //TODO: old version
     private static GeofenceInfoContent[] geofenceInfoObject;
+
+    //TODO: new version
+    private static ArrayList<Event> geofenceInfoObjectNew;
+
     private static Quest quest;
     private static int progressThroughQuest;
+
+    LogMessages logMessages = new LogMessages();
 
     public RecyclerViewPopoverFragment()
     {
@@ -70,6 +83,16 @@ public class RecyclerViewPopoverFragment extends Fragment{
         geofenceInfoObject = object;
         geofenceName = name;
         isMemories = false;
+        isQuestInProgress = false;
+        return f;
+    }
+
+    public static RecyclerViewPopoverFragment newInstance(ArrayList<Event> object, String name) {
+        RecyclerViewPopoverFragment f = new RecyclerViewPopoverFragment();
+        geofenceInfoObjectNew = object;
+        geofenceName = name;
+        isMemories = false;
+        isNewHistory = true;
         isQuestInProgress = false;
         return f;
     }
@@ -213,7 +236,11 @@ public class RecyclerViewPopoverFragment extends Fragment{
             screenHeight = metrics.heightPixels;
 
             if(!isMemories && !isQuestInProgress) {
-                buildHistoryRecyclerView();
+                if(!isNewHistory) {
+                    buildHistoryRecyclerView();
+                }else{
+                    buildNewHistoryRecyclerView();
+                }
             }else if (isMemories){
                buildMemoriesRecyclerView();
             }else if (isQuestInProgress){
@@ -233,6 +260,29 @@ public class RecyclerViewPopoverFragment extends Fragment{
         scaleInAnimationAdapter.setFirstOnly(false);
         scaleInAnimationAdapter.setInterpolator(new OvershootInterpolator());
         historyInfoObjects.setAdapter(scaleInAnimationAdapter);
+    }
+
+    /**
+     * Builds a RecyclerView when the RecyclerViewPopoverFragment is being used to display
+     * history info
+     */
+    private void buildNewHistoryRecyclerView(){
+
+        Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "RecyclerViewPopoverFragment: buildNewHistoryRecyclerView");
+        Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "RecyclerViewPopoverFragment: buildNewHistoryRecyclerView : length of geofenceInfoObjectNew is: " + geofenceInfoObjectNew.size());
+
+        Event[] events = new Event[geofenceInfoObjectNew.size()];
+        for(int i = 0 ; i<geofenceInfoObjectNew.size(); i++){
+            events[i] = geofenceInfoObjectNew.get(i);
+        }
+        historyAdapter = new HistoryAdapter(getActivity(), events, null, screenWidth,
+                screenHeight, isMemories, isQuestInProgress);
+        //RecyclerView animation
+        MyScaleInAnimationAdapter scaleInAnimationAdapter = new MyScaleInAnimationAdapter(historyAdapter);
+        scaleInAnimationAdapter.setFirstOnly(false);
+        scaleInAnimationAdapter.setInterpolator(new OvershootInterpolator());
+        historyInfoObjects.setAdapter(scaleInAnimationAdapter);
+        historyAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -273,7 +323,7 @@ public class RecyclerViewPopoverFragment extends Fragment{
         for(int i = 0; i<progressThroughQuest; i++){
             completedWaypoints[i] = waypoints[i];
         }
-        historyAdapter = new HistoryAdapter(getActivity(), null, completedWaypoints, screenWidth, screenHeight, false, true);
+        historyAdapter = new HistoryAdapter(getActivity(), (GeofenceInfoContent[]) null, completedWaypoints, screenWidth, screenHeight, false, true);
         MyScaleInAnimationAdapter scaleInAnimationAdapter = new MyScaleInAnimationAdapter(historyAdapter);
         scaleInAnimationAdapter.setFirstOnly(false);
         scaleInAnimationAdapter.setInterpolator(new OvershootInterpolator());

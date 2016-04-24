@@ -30,10 +30,11 @@ import java.util.Map;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.AddMemoryFragment;
 import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
-import carleton150.edu.carleton.carleton150.Interfaces.OffCampusViewListener;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectContent;
+import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.AllGeofences;
+import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Event;
 import carleton150.edu.carleton.carleton150.R;
 
 import static carleton150.edu.carleton.carleton150.R.id.txt_try_getting_geofences;
@@ -44,17 +45,24 @@ import static carleton150.edu.carleton.carleton150.R.id.txt_try_getting_geofence
  * Displays a map with markers indicating nearby points of interest. When a marker is clicked,
  * creates a RecyclerViewPopoverFragment to display the info for that point
  */
-public class HistoryFragment extends MapMainFragment implements OffCampusViewListener{
+public class HistoryFragment extends MapMainFragment{
 
     private View view;
     //The Markers for geofences that are currently being displayed
     ArrayList<Marker> currentGeofenceMarkers = new ArrayList<Marker>();
 
-    //A Map of the info retrieved from the surver for geofences the user is currently in
+    //A Map of the info retrieved from the server for geofences the user is currently in
+    //TODO: for old version
     HashMap<String, GeofenceInfoContent[]> currentGeofencesInfoMap = new HashMap<>();
+
+    //A Map of the info retrieved from the server where the string is the latitude
+    //and longitude of the location where the events occur
+    //TODO: for new version
+    HashMap<String, ArrayList<Event>> newCurrentGeofencesInfoMap = new HashMap<>();
 
     //A Map of geofences the user is in that are currently being queried for using VolleyRequester
     HashMap<String, Integer> geofenceNamesBeingQueriedForInfo = new HashMap<>();
+
 
     public HistoryFragment() {
         // Required empty public constructor
@@ -186,7 +194,12 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
             mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker) {
-                    showPopup(getContentFromMarker(marker), marker.getTitle());
+                    MainActivity mainActivity = (MainActivity) getActivity();
+                    if(mainActivity.NEW_VERSION){
+                        showPopupNew(getContentFromMarkerNew(marker), marker.getTitle());
+                    }else {
+                        showPopup(getContentFromMarker(marker), marker.getTitle());
+                    }
                     return true;
                 }
             });
@@ -258,6 +271,33 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
         }
     }
 
+    /**
+     * Adds a marker to the map for each item in geofenceToAdd
+     *
+     * @param geofencesToAdd
+     */
+    private void addMarkerNew(HashMap<String, ArrayList<Event>> geofencesToAdd){
+        System.gc();
+        Log.i("HistoryFragment", "addMarkerNew");
+
+        for(Map.Entry<String, ArrayList<Event>> e : geofencesToAdd.entrySet()){
+                String curGeofenceName = e.getKey();
+                ArrayList<Event> geofence = e.getValue();
+                Bitmap markerIcon = BitmapFactory.decodeResource(getResources(), R.drawable.basic_map_marker);
+                double lat = geofence.get(0).getGeo().getLat();
+                double lon = geofence.get(0).getGeo().getLon();
+                LatLng position = new LatLng(lat, lon);
+                BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(markerIcon);
+                Log.i("HistoryFragment", "addMarker : adding a marker!");
+                MarkerOptions geofenceMarkerOptions = new MarkerOptions()
+                        .position(position)
+                        .title(curGeofenceName)
+                        .icon(icon);
+                Marker curGeofenceMarker = mMap.addMarker(geofenceMarkerOptions);
+                currentGeofenceMarkers.add(curGeofenceMarker);
+            }
+    }
+
 
     /**
      * Updates map view to reflect user's new location
@@ -283,6 +323,15 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
     }
 
     /**
+     * Returns the GeofenceInfoContent[] of info that each marker represents
+     * @param marker
+     * @return
+     */
+    private ArrayList<Event> getContentFromMarkerNew(Marker marker){
+        return newCurrentGeofencesInfoMap.get(marker.getTitle());
+    }
+
+    /**
      * Shows the history popover for a given marker on the map
      *
      * @param geofenceInfoObject
@@ -300,6 +349,52 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
         fragmentTransaction.add(R.id.fragment_container, recyclerViewPopoverFragment, "RecyclerViewPopoverFragment");
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
+    }
+
+    public void showPopupNew(ArrayList<Event> events, String name){
+        Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "showPopupNew: events size is: " + events.size());
+        RelativeLayout relLayoutTutorial = (RelativeLayout) view.findViewById(R.id.tutorial);
+        relLayoutTutorial.setVisibility(View.GONE);
+        ArrayList<Event> sortedEvents = sortByDateNew(events);
+        Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "showPopupNew: sortedEvents size is: " + sortedEvents.size());
+
+
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        RecyclerViewPopoverFragment recyclerViewPopoverFragment = RecyclerViewPopoverFragment.newInstance(sortedEvents, name);
+        // Transaction start
+        FragmentTransaction fragmentTransaction = fm.beginTransaction();
+        fragmentTransaction.setCustomAnimations(R.anim.abc_slide_in_bottom, R.anim.abc_slide_out_bottom,
+                R.anim.abc_slide_in_bottom, R.anim.abc_slide_out_bottom);
+        fragmentTransaction.add(R.id.fragment_container, recyclerViewPopoverFragment, "RecyclerViewPopoverFragment");
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+
+    /**
+     * Uses bubble sort to sort geofenceInfoContents by date
+     *
+     * @param geofenceInfoContents
+     * @return
+     */
+    private ArrayList<Event> sortByDateNew(ArrayList<Event> geofenceInfoContents){
+        Event infoContent = null;
+        for(int j = 0; j < geofenceInfoContents.size(); j++) {
+            for (int i = 0; i < geofenceInfoContents.size(); i++) {
+                infoContent = geofenceInfoContents.get(i);
+                if (i < geofenceInfoContents.size() - 1) {
+                    String year1 = infoContent.getStartDate().getYear();
+                    String year2 = geofenceInfoContents.get(i+1).getStartDate().getYear();
+                    int year1Int = Integer.parseInt(year1);
+                    int year2Int = Integer.parseInt(year2);
+                    if (year1Int < year2Int) {
+                        geofenceInfoContents.set(i, geofenceInfoContents.get(i+1));
+                        geofenceInfoContents.set(i+1, infoContent);
+                    }
+                }
+            }
+        }
+        return geofenceInfoContents;
     }
 
     /**
@@ -334,7 +429,11 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
      */
     public void updateGeofences() {
         MainActivity mainActivity = (MainActivity) getActivity();
-        mainActivity.requestAllGeofences();
+        if(!mainActivity.NEW_VERSION) {
+            mainActivity.requestAllGeofences();
+        }else{
+            mainActivity.requestGeofencesNew();
+        }
     }
 
     /**
@@ -388,11 +487,11 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
      * Shows a popup containing information about the goefences that was clicked
      * @param infoForGeofenceClicked
      * @param geofenceName
-     */
+     *//*
     @Override
     public void geofenceClicked(GeofenceInfoContent[] infoForGeofenceClicked, String geofenceName) {
         showPopup(infoForGeofenceClicked, geofenceName);
-    }
+    }*/
 
     /**
      * Adds a new marker to the map for each new geofences in the HashMap
@@ -410,13 +509,61 @@ public class HistoryFragment extends MapMainFragment implements OffCampusViewLis
         }
     }
 
+    public void addNewGeofenceInfoNew(AllGeofences allGeofences){
+        if(allGeofences == null){
+            showUnableToRetrieveGeofences();
+            Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences null");
+        }else if(allGeofences.getEvents() == null){
+            Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences.getEvents() null");
+
+            if(allGeofences.getTitle() == null){
+                Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences.getTitle() null");
+            }else if(allGeofences.getTitle().getText() == null){
+                Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences.getTitle().getText() null");
+
+            }
+
+            showUnableToRetrieveGeofences();
+        }else if(allGeofences.getEvents().length == 0){
+            Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences events length is 0");
+            showUnableToRetrieveGeofences();
+        }else {
+            Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences events length is: " + allGeofences.getEvents().length);
+            hideUnableToRetrieveGeofences();
+            for (int i = 0; i < allGeofences.getEvents().length; i++) {
+                Event event = allGeofences.getEvents()[i];
+                if(event.getGeo() != null) {
+                    Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " geo is not null");
+
+                    String latLonString = String.valueOf(event.getGeo().getLat()) + String.valueOf(event.getGeo().getLon());
+                    ArrayList<Event> eventsAtPoint = new ArrayList<>();
+                    if (newCurrentGeofencesInfoMap.containsKey(latLonString)) {
+                        eventsAtPoint = newCurrentGeofencesInfoMap.get(latLonString);
+                    }
+                    eventsAtPoint.add(event);
+                    newCurrentGeofencesInfoMap.put(latLonString, eventsAtPoint);
+                }else {
+                    Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " geo IS null");
+
+                }
+            }
+            addMarkerNew(newCurrentGeofencesInfoMap);
+        }
+    }
+
     /**
      * Draws geofence markers for every goefence
      */
     private void drawAllGeofenceMarkers(){
         MainActivity mainActivity = (MainActivity) getActivity();
-        if(mainActivity.getAllGeofenceInfo() != null) {
-            addMarker(mainActivity.getAllGeofenceInfo());
+        if(!mainActivity.NEW_VERSION) {
+            if (mainActivity.getAllGeofenceInfo() != null) {
+                addMarker(mainActivity.getAllGeofenceInfo());
+            }
+        }else{
+            if(mainActivity.getAllGeofencesNew() != null) {
+                addNewGeofenceInfoNew(mainActivity.getAllGeofencesNew());
+            }
         }
     }
 
