@@ -18,30 +18,11 @@ public class EventContent
 
 
     public String getStartTime () {
-        // DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS");
-        // DateFormat dateFormat2 = new SimpleDateFormat("yyyy-MM-dd");
+
         Log.d(startTime.toString(), " = StartTime");
-        //String[] dates = startTime.split("(-)|(T)|(:)");
-        /*int year = Integer.parseInt(dates[0]);
-        int month = Integer.parseInt(dates[1]);
-        int day = Integer.parseInt(dates[2]);
-        int hour = Integer.parseInt(dates[3]);
-        int minute = Integer.parseInt(dates[4]);
-        int second = Integer.parseInt(dates[5]);*/
-
-        /*for (int i = 0; i < dates.length; i++) {
-            Log.d(dates[i], " Date");
-        }*/
-
-
-        //return newStartTime;
 
         return startTime;
 
-        //SimpleDateFormat oldTimeFormat = new SimpleDateFormat("yyyy-MM-dd");
-        //Date parsedStartTime = oldTimeFormat.parse(startTime);
-        //String newTimeFormat = new SimpleDateFormat("MM/dd/yyyy").format(oldTimeFormat);
-        //return newTimeFormat;
     }
 
     public void setStartTime (String startTime)

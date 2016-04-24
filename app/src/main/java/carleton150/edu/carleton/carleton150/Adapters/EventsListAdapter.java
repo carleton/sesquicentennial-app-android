@@ -25,11 +25,13 @@ package carleton150.edu.carleton.carleton150.Adapters;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.text.DateFormat;
@@ -37,119 +39,19 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import carleton150.edu.carleton.carleton150.POJO.Event;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
 import carleton150.edu.carleton.carleton150.R;
 
 // Adapter for the events list view
-public class EventsListAdapter extends BaseExpandableListAdapter {
+public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private List<EventContent> events;
     private Activity context;
 
-    static class ViewHolder{
-        TextView txtTitle;
-        TextView txtLocation;
-        TextView txtDate;
-        View view;
-    }
-
-    static class ChildViewHolder {
-        TextView txtDescription;
-        View view;
-    }
-
     public EventsListAdapter(Activity context, List<EventContent> events){
         this.events = events;
         this.context = context;
-    }
-
-    // Added child
-    public String getChild(int groupPosition, int childPosition) {
-        return events.get(groupPosition).getDescription();
-    }
-
-    public long getChildId(int groupPosition, int childPosition) {
-        return childPosition;
-    }
-
-
-    public View getChildView(final int groupPosition, final int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-        final String event = (String) getChild(groupPosition, childPosition);
-        LayoutInflater inflater = context.getLayoutInflater();
-
-        if (convertView == null) {
-            convertView = inflater.inflate(R.layout.child_item, null);
-        }
-
-        final ChildViewHolder holder;
-
-        if (convertView == null) {
-            holder = new ChildViewHolder();
-            convertView = inflater.inflate(R.layout.child_item, null);
-        }
-
-        else {
-            holder = (ChildViewHolder) convertView.getTag();
-        }
-
-        TextView item = (TextView) convertView.findViewById(R.id.txt_description);
-
-        item.setText(event);
-        return convertView;
-    }
-
-    public int getChildrenCount(int groupPosition) {
-        return 1;
-    }
-
-    public Object getGroup(int groupPosition) {
-        return events.get(groupPosition);
-    }
-
-    public int getGroupCount() {
-        return events.size();
-    }
-
-    public long getGroupId(int groupPosition) {
-        return groupPosition;
-    }
-
-    public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
-        //EventContent eventName = (EventContent) getGroup(groupPosition);
-
-        final ViewHolder holder;
-
-        if (convertView == null) {
-            holder = new ViewHolder();
-            LayoutInflater groupinflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = groupinflater.inflate(R.layout.group_item, null);
-        } else {
-            holder = (ViewHolder) convertView.getTag();
-        }
-
-        holder.txtTitle = (TextView) convertView.findViewById(R.id.txt_title);
-        holder.txtLocation = (TextView) convertView.findViewById(R.id.txt_location);
-        holder.txtDate = (TextView) convertView.findViewById(R.id.txt_date);
-        holder.view = convertView;
-        convertView.setTag(holder);
-
-        final EventContent event = events.get(groupPosition);
-
-        if(event != null){
-            holder.txtTitle.setText(event.getTitle());
-            holder.txtLocation.setText(event.getLocation());
-
-            // Format date string to display Days of Week
-            String formattedStartTime = formatStartTime(event);
-            holder.txtDate.setText(formattedStartTime);
-        }
-
-        if (event.isExpanded()) {
-            event.setIsExpanded(true);
-        } else {
-            event.setIsExpanded(false);
-        }
-        return convertView;
     }
 
     // Format date tabs to display day of the week
@@ -188,12 +90,133 @@ public class EventsListAdapter extends BaseExpandableListAdapter {
         return formattedStartTime;
     }
 
-    public boolean hasStableIds() {
-        return true;
+    public void setEvents(List<EventContent> events){
+        this.events = events;
+        notifyDataSetChanged();
     }
 
-    public boolean isChildSelectable(int groupPosition, int childPosition) {
-        return true;
+    @Override
+    public EventViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View itemView = LayoutInflater.
+                from(parent.getContext()).
+                inflate(R.layout.event_card, parent, false);
+        return new EventViewHolder(itemView, context);
     }
+
+    @Override
+    public int getItemCount() {
+        if(events != null) {
+            return events.size();
+        }else{
+            return 0;
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+        final EventViewHolder myHolder = (EventViewHolder) holder;
+        myHolder.setDate(formatStartTime(events.get(position)));
+        myHolder.setDescription(events.get(position).getDescription());
+        myHolder.setTitle(events.get(position).getTitle());
+        myHolder.setLocation(events.get(position).getLocation());
+        myHolder.setExpanded(events.get(position).isExpanded());
+
+        View view = myHolder.getItemView();
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myHolder.swapExpanded();
+                events.get(position).setIsExpanded(!events.get(position).isExpanded());
+                myHolder.setIconExpand(context);
+            }
+        });
+
+    }
+
+    public static class EventViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        private boolean expanded = false;
+        private ImageView iconExpand;
+        TextView txtDescription;
+        TextView dateTitle;
+        TextView txtTitle;
+        TextView txtLocation;
+        private Context context;
+
+
+        public EventViewHolder(View itemView, Context context) {
+            super(itemView);
+            itemView.setOnClickListener(this);
+            dateTitle = (TextView) itemView.findViewById(R.id.txt_event_date);
+            txtTitle = (TextView) itemView.findViewById(R.id.txt_event_title);
+            txtLocation = (TextView) itemView.findViewById(R.id.txt_event_location);
+            txtDescription = (TextView) itemView.findViewById(R.id.txt_event_description);
+            iconExpand = (ImageView) itemView.findViewById(R.id.img_icon_expand);
+            this.context = context;
+        }
+
+        private View getItemView(){
+            return this.itemView;
+        }
+
+        /**
+         * @param width
+         */
+        public void setWidth(int width) {
+            itemView.setLayoutParams(new RecyclerView.LayoutParams(width, RecyclerView.LayoutParams.MATCH_PARENT));
+        }
+
+        @Override
+        public void onClick(View v) {
+
+           swapExpanded();
+            setIconExpand(context);
+
+        }
+
+        // Set date in event calendar date tabs
+        public void setDate(String dateInfo) {
+            dateTitle.setText(dateInfo);
+        }
+
+        public void setTitle(String title) {
+            txtTitle.setText(title);
+        }
+
+        public void setLocation(String location) {
+            txtLocation.setText(location);
+        }
+
+        public void setDescription(String description) {
+            txtDescription.setText(description);
+        }
+
+        /**
+         * If the item should be expanded, sets the icon to the expand less icon and shows the description
+         * If it should be shrunk, sets the icon to the expand more icon and hides the description
+         * @param context
+         */
+        public void setIconExpand(Context context){
+            if(expanded){
+                txtDescription.setVisibility(View.VISIBLE);
+                iconExpand.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_navigation_expand_less));
+            }else{
+                iconExpand.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_navigation_expand_more));
+                txtDescription.setVisibility(View.GONE);
+            }
+        }
+
+        public void setExpanded(boolean expanded){
+            this.expanded = expanded;
+        }
+
+        public void swapExpanded(){
+            this.expanded = !expanded;
+        }
+
+
+    }
+
+
 
 }

@@ -24,12 +24,13 @@
                 android:layout_weight="11" />
 
             <!-- Event list items -->
-            <ExpandableListView
+            <android.support.v7.widget.RecyclerView
+                android:paddingTop="5dp"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="89"
                 android:id="@+id/lst_events">
-            </ExpandableListView>
+            </android.support.v7.widget.RecyclerView>
 
         </LinearLayout>
 

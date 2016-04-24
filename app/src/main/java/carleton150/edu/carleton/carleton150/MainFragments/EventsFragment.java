@@ -40,7 +40,8 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
     ArrayList<String> dateInfo = new ArrayList<>();
 
     private EventsListAdapter eventsListAdapter;
-    ExpandableListView eventsListView;
+    RecyclerView eventsListView;
+    private LinearLayoutManager eventsLayoutManager;
 
     // RecyclerView Pager
     private static View v;
@@ -69,10 +70,6 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
         eventsMapByDate = mainActivity.getEventsMapByDate();
 
 
-        eventsListView = (ExpandableListView) v.findViewById(R.id.lst_events);
-        eventsListAdapter = new EventsListAdapter(getActivity(), eventsList);
-        eventsListView.setAdapter(eventsListAdapter);
-
         /*If no events were retrieved, displays this button so the user can click
         to try again once the network is connected
          */
@@ -88,6 +85,7 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
 
         // Build RecyclerViews to display date tabs
         buildRecyclerViews();
+        buildEventRecyclerView();
 
         if(eventsMapByDate == null){
             mainActivity.requestEvents();
@@ -101,7 +99,7 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
     }
 
     /**
-     * Builds the views for the quests
+     * Builds the views for the dates
      */
     private void buildRecyclerViews(){
         DisplayMetrics metrics = new DisplayMetrics();
@@ -116,6 +114,16 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
         eventDateCardAdapter = new EventDateCardAdapter(dateInfo, this, screenWidth);
         dates.setAdapter(eventDateCardAdapter);
         eventDateCardAdapter.notifyDataSetChanged();
+    }
+
+    private void buildEventRecyclerView(){
+        eventsListView = (RecyclerView) v.findViewById(R.id.lst_events);
+        eventsLayoutManager = new LinearLayoutManager(getActivity());
+        eventsLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        eventsListView.setLayoutManager(eventsLayoutManager);
+        eventsListAdapter = new EventsListAdapter(getActivity(), eventsList);
+        eventsListView.setAdapter(eventsListAdapter);
+        eventsListAdapter.notifyDataSetChanged();
     }
 
 
