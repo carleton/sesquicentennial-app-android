@@ -40,8 +40,9 @@
     <string name="please_add_memory_desc">Please add a description for the memory you are uploading</string>
     <string name="unable_to_get_location">Unable to get your location. Please try again soon.</string>
     <string name="view_image_clue">VIEW IMAGE CLUE</string>
+    <string name="view_image_hint">VIEW IMAGE HINT</string>
     <string name="hint">HINT</string>
-    <string name="found_it">Found it!</string>
+    <string name="found_it">Am I There?</string>
     <string name="progress_through_quest_title">Progress Through Quest</string>
     <string name ="no_info_retrieved">Unable to retrieve info about geofences. Please check your internet connection and try again.</string>
     <string name="retrieving_info">Retrieving info about current geofences...</string>
@@ -69,5 +70,7 @@
     <string name = "yes">Yes</string>
     <string name="no">No</string>
     <string name="pref_previously_started">false</string>
+    <string name="walk_to_location">"Walk to the correct location and click "Am I There?""</string>
+    <string name="feature_unuseable_off_campus">This feature is intended to be used on the Carleton College campus.</string>
 
 </resources>

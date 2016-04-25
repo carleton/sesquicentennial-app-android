@@ -1,9 +1,11 @@
 package carleton150.edu.carleton.carleton150.MainFragments;
 
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -100,8 +102,14 @@ public class HistoryFragment extends MapMainFragment{
         btnGetNearbyMemories.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Shows a popover displaying nearby memories
-                showMemoriesPopover();
+
+                //TODO: open webview with user stories -- need URL
+
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
+                startActivity(browserIntent);
+
+                //Shows a popover displaying nearby memories, disabled because we are no longer using this feature
+                //showMemoriesPopover();
             }
         });
 

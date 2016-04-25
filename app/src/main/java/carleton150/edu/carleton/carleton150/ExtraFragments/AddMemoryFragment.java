@@ -41,7 +41,9 @@ import carleton150.edu.carleton.carleton150.R;
 
 /**
  * Fragment to add a new memory, allows user to either take a picture
- * or choose one from their documents to upload
+ * or choose one from their documents to upload. The Memories functionality
+ * has been disabled, so this will never be used. It will remain in the project
+ * in case that feature is ever added back in
  */
 public class AddMemoryFragment extends Fragment {
 

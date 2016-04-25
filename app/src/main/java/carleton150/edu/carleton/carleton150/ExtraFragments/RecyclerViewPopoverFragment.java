@@ -35,7 +35,8 @@ import carleton150.edu.carleton.carleton150.R;
 
 /**
  * Class to manage a RecyclerViewPopoverFragment. This is used to show the popover for memories,
- * history, and quest progress
+ * history, and quest progress. Memories has been disabled, so this will never be used to display
+ * memories, but that functionality is being left in so it can possibly be used in the future
  */
 public class RecyclerViewPopoverFragment extends Fragment{
 

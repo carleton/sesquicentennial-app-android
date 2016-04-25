@@ -22,15 +22,48 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
 
-        <TextView
-            android:id="@+id/txt_hint"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:text="Hint here"
-            android:padding="10dp"
-            android:gravity="center"
-            android:textSize="@dimen/abc_text_size_medium_material"
-            android:textColor="@color/windowBackground"
-            android:layout_height="wrap_content" />
+            android:orientation="vertical"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:text="HINT:"
+                android:paddingLeft="10dp"
+                android:paddingTop="10dp"
+                android:textStyle="bold"
+                android:textSize="@dimen/abc_text_size_medium_material"
+                android:textColor="@color/colorAccent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/txt_hint"
+                android:layout_width="match_parent"
+                android:text="Clue here"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="10dp"
+                android:gravity="center"
+                android:textSize="@dimen/abc_text_size_medium_material"
+                android:textColor="@color/windowBackground"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/txt_instructions"
+                android:layout_width="match_parent"
+                android:gravity="center_horizontal"
+                android:layout_centerHorizontal="true"
+                android:padding="10dp"
+                android:text="@string/walk_to_location"
+                android:textSize="@dimen/abc_text_size_small_material"
+                android:textColor="@color/colorAccent"
+                android:paddingBottom="70dp"
+                android:layout_alignParentBottom="true"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
 
     </ScrollView>
 
@@ -106,11 +139,13 @@ android:layout_height="wrap_content">
         android:layout_height="wrap_content" />
 
     <TextView
-        android:text="@string/view_image_clue"
+        android:text="@string/view_image_hint"
         android:textColor="@color/colorAccent"
         android:layout_width="match_parent"
         android:gravity="center_horizontal"
         android:layout_height="wrap_content" />
+
+
 
 </LinearLayout>
 

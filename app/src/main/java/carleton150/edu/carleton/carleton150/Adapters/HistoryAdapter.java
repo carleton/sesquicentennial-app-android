@@ -24,6 +24,8 @@ import carleton150.edu.carleton.carleton150.R;
 
 /**
  * Adapter for the RecyclerView in the HistoryInfoPopup
+ *
+ * This is also used for displaying memories, but that functionality is no longer in use
  */
 public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 

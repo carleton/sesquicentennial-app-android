@@ -1,5 +1,7 @@
 package carleton150.edu.carleton.carleton150.MainFragments;
 
+import android.app.AlertDialog;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.DisplayMetrics;
@@ -17,6 +19,7 @@ import com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager;
 import java.util.ArrayList;
 
 import carleton150.edu.carleton.carleton150.Adapters.QuestAdapter;
+import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.Interfaces.FragmentChangeListener;
 import carleton150.edu.carleton.carleton150.Interfaces.RecyclerViewClickListener;
 import carleton150.edu.carleton.carleton150.MainActivity;
@@ -93,6 +96,12 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
         }
         else{
             handleNewQuests(questInfo);
+        }
+
+        if(!onCampus()){
+
+            mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.feature_unuseable_off_campus),
+                    new AlertDialog.Builder(mainActivity).create());
         }
 
         return view;
@@ -231,5 +240,29 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
         final Button btnRequestGeofences = (Button) view.findViewById(R.id.btn_try_getting_quests);
         txtRequestGeofences.setVisibility(View.GONE);
         btnRequestGeofences.setVisibility(View.GONE);
+    }
+
+    /**
+     * checks whether the user's location is on campus
+     * @return true if the user is on campus, false otherwise
+     */
+    private boolean onCampus(){
+        MainActivity mainActivity = (MainActivity) getActivity();
+        Constants constants = new Constants();
+        Location location = mainActivity.getLastLocation();
+
+        if(location == null){
+            return false;
+        }
+
+        if(location.getLatitude() > constants.MIN_LATITUDE
+                && location.getLatitude() < constants.MAX_LATITUDE
+                && location.getLongitude() > constants.MIN_LONGITUDE
+                && location.getLongitude() < constants.MAX_LONGITUDE){
+            return true;
+        }
+
+        return false;
+
     }
 }
