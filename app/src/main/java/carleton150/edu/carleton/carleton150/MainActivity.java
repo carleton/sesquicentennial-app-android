@@ -42,6 +42,7 @@ import net.fortuna.ical4j.model.ValidationException;
 import net.fortuna.ical4j.model.property.DtStart;
 import net.fortuna.ical4j.util.CompatibilityHints;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -62,6 +63,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.FragmentChangeListener;
@@ -214,9 +216,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
-        requestGeofencesNewer();
-        requestEvents();
-        requestQuests();
+        if(isConnectedToNetwork()) {
+            requestGeofencesNewer();
+            requestEvents();
+            requestQuests();
+        }
 
     }
 
@@ -633,15 +637,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     }
 
-    /**
-     * uses the volleyRequester to retrieve all quests from the server. Results are handled
-     * in handleNewQuests()
-     */
-    public void requestQuests(){
-        if(questInfo == null && !requestingQuests)
-            mVolleyRequester.requestQuests(this);
-        requestingQuests = true;
-    }
+
 
     /**
      * @return an ArrayList of Quests
@@ -667,8 +663,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * Saves the geofences.
      * @param geofences
      */
-    public void handleGeofencesNewMethod(AllGeofences geofences){
+    public void handleGeofencesNewMethod(AllGeofences geofences, boolean isNewInfo){
         requestingAllGeofencesNew = false;
+
+        if(geofences != null && isNewInfo) {
+            lastGeofenceUpdate = Calendar.getInstance().getTime();
+        }
+
         if(curFragment instanceof HistoryFragment){
             ((HistoryFragment) curFragment).addNewGeofenceInfoNew(geofences);
         }
@@ -684,9 +685,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     public void requestGeofencesNewer(){
-        if(!requestingAllGeofencesNew && allGeofencesNew == null) {
-            downloadFileFromURLGeofences.execute(constants.NEW_GEOFENCES_ENDPOINT);
-            requestingAllGeofencesNew = true;
+
+        if(isConnectedToNetwork()) {
+            if (!requestingAllGeofencesNew && lastGeofenceUpdate == null) {
+                downloadFileFromURLGeofences.execute(constants.NEW_GEOFENCES_ENDPOINT);
+                requestingAllGeofencesNew = true;
+            } else if (!requestingAllGeofencesNew && lastGeofenceUpdate != null) {
+                Calendar currentTime = Calendar.getInstance();
+                java.util.Date currentDate = currentTime.getTime();
+                long time = currentDate.getTime();
+                long lastUpdateTime = lastGeofenceUpdate.getTime();
+                long hoursSinceUpdate = (time - lastUpdateTime) / (1000 * 60 * 60);
+                if (hoursSinceUpdate > 5) {
+                    downloadFileFromURLGeofences.execute(constants.NEW_GEOFENCES_ENDPOINT);
+                    requestingAllGeofencesNew = true;
+                }
+            }
+        }else if(fileExists(constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)){
+            parseGeofences(constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, false);
+        }else{
+            if(curFragment instanceof HistoryFragment) {
+                ((HistoryFragment) curFragment).addNewGeofenceInfoNew(null);
+            }
         }
     }
 
@@ -694,17 +714,48 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * Gets ical feed from Constatns.ICAL_FEED_URL
      */
     public void requestEvents(){
-        if(!requestingEvents && eventsMapByDate.size() == 0) {
-            String url = constants.ICAL_FEED_URL;
-            Calendar c = Calendar.getInstance();
-            java.util.Date currentDate = c.getTime();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String formattedDate = dateFormat.format(currentDate);
-            url = url+constants.ICAL_FEED_DATE_REQUEST + formattedDate + constants.ICAL_FEED_FORMAT_REQUEST;
-            Log.i("EVENTS", "MainActivity: requestEvents: url is: " + url);
-            DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.ICAL_FILE_NAME_WITH_EXTENSION);
-            downloadFileFromURL.execute(url);
-            requestingEvents = true;
+        if(isConnectedToNetwork()) {
+            if (!requestingEvents && eventsMapByDate.size() == 0) {
+                String url = constants.ICAL_FEED_URL;
+                Calendar c = Calendar.getInstance();
+                java.util.Date currentDate = c.getTime();
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                String formattedDate = dateFormat.format(currentDate);
+                url = url + constants.ICAL_FEED_DATE_REQUEST + formattedDate + constants.ICAL_FEED_FORMAT_REQUEST;
+                Log.i("EVENTS", "MainActivity: requestEvents: url is: " + url);
+                DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.ICAL_FILE_NAME_WITH_EXTENSION);
+                downloadFileFromURL.execute(url);
+                requestingEvents = true;
+            }
+        }else{
+            if(fileExists(constants.ICAL_FILE_NAME_WITH_EXTENSION)){
+                parseIcalFeed(constants.ICAL_FILE_NAME_WITH_EXTENSION, false);
+            }else{
+                if(curFragment instanceof EventsFragment) {
+                    curFragment.handleNewEvents(null);
+                }
+            }
+        }
+    }
+
+    /**
+     * uses the volleyRequester to retrieve all quests from the server. Results are handled
+     * in handleNewQuests()
+     */
+    public void requestQuests(){
+        if(isConnectedToNetwork()) {
+            if (questInfo == null && !requestingQuests) {
+                mVolleyRequester.requestQuests(this);
+                requestingQuests = true;
+            }
+        }else{
+            if(fileExists(constants.QUESTS_FILE_NAME_WITH_EXTENSION)){
+                parseQuests(constants.QUESTS_FILE_NAME_WITH_EXTENSION, false);
+            }else{
+                if(curFragment instanceof QuestFragment){
+                    curFragment.handleNewQuests(null);
+                }
+            }
         }
     }
 
@@ -723,7 +774,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * it to create a Calendar object. Once that is completed, calls buildEventContent() to use
      * that Calendar object to build and ArrayList of EventContent
      */
-    private void parseIcalFeed(String fileNameWithExtension){
+    private void parseIcalFeed(String fileNameWithExtension, boolean newInfo){
+
+        if(newInfo){
+            lastEventsUpdate = Calendar.getInstance().getTime();
+        }
         File file = new File(Environment.getExternalStorageDirectory().toString() + "/" + fileNameWithExtension);
         FileInputStream fin = null;
         try {
@@ -749,7 +804,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     }
 
-    private void parseGeofences(String fileNameWithExtension){
+    private void parseGeofences(String fileNameWithExtension, boolean isNewInfo){
 
         String jsonString = readFromFile(fileNameWithExtension);
 
@@ -758,8 +813,41 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         allGeofencesNew = gson.fromJson(jsonString, AllGeofences.class);
 
-        handleGeofencesNewMethod(allGeofencesNew);
+        handleGeofencesNewMethod(allGeofencesNew, isNewInfo);
 
+    }
+
+    private void parseQuests(String fileNameWithExtension, boolean isNewInfo){
+
+        if(isNewInfo){
+            lastQuestUpdate = Calendar.getInstance().getTime();
+        }
+
+        String jsonString = readFromFile(fileNameWithExtension);
+
+        Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : " + jsonString);
+        final Gson gson = new Gson();
+        try {
+            JSONObject questsObject = new JSONObject(jsonString);
+            JSONArray responseArr = questsObject.getJSONArray("content");
+
+            for (int i = 0; i < responseArr.length(); i++) {
+                try {
+                    Quest responseQuest = gson.fromJson(responseArr.getString(i), Quest.class);
+                    Log.i(logMessages.VOLLEY, "requestQuests : quest response string = : " + responseArr.getString(i));
+                    questInfo.add(responseQuest);
+                }
+                catch (Exception e) {
+                    Log.i(logMessages.VOLLEY, "requestQuests : quest response string = : " + responseArr.getString(i));
+                    Log.i(logMessages.VOLLEY, "requestQuests : unable to parse result");
+                    e.getMessage();
+                    e.printStackTrace();
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        handleNewQuests(questInfo);
     }
 
     private String readFromFile(String fileNameWithExtension) {
@@ -916,9 +1004,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void retrievedFile(boolean retrievalSucceeded, String fileNameWithExtension) {
         if(retrievalSucceeded){
             if(fileNameWithExtension.equals(constants.ICAL_FILE_NAME_WITH_EXTENSION)) {
-                parseIcalFeed(fileNameWithExtension);
+                parseIcalFeed(fileNameWithExtension, true);
             }if(fileNameWithExtension.equals(constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)){
-                parseGeofences(fileNameWithExtension);
+                parseGeofences(fileNameWithExtension, true);
             }
         }else{
             Log.i("EVENTS", "unable to retrieve events");

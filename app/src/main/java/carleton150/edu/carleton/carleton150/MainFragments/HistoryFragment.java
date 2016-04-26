@@ -26,6 +26,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.apache.commons.lang.ObjectUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,17 +55,10 @@ public class HistoryFragment extends MapMainFragment{
     //The Markers for geofences that are currently being displayed
     ArrayList<Marker> currentGeofenceMarkers = new ArrayList<Marker>();
 
-    //A Map of the info retrieved from the server for geofences the user is currently in
-    //TODO: for old version
-    HashMap<String, GeofenceInfoContent[]> currentGeofencesInfoMap = new HashMap<>();
-
     //A Map of the info retrieved from the server where the string is the latitude
     //and longitude of the location where the events occur
-    //TODO: for new version
     HashMap<String, ArrayList<Event>> newCurrentGeofencesInfoMap = new HashMap<>();
 
-    //A Map of geofences the user is in that are currently being queried for using VolleyRequester
-    HashMap<String, Integer> geofenceNamesBeingQueriedForInfo = new HashMap<>();
 
 
     public HistoryFragment() {
@@ -149,9 +144,8 @@ public class HistoryFragment extends MapMainFragment{
         });
 
 
-        if(mainActivity.isConnectedToNetwork()) {
-            setUpMapIfNeeded(); // For setting up the MapFragment
-        }
+
+        setUpMapIfNeeded(); // For setting up the MapFragment
 
         // Toggle tutorial if first time using app
         if (checkFirstHistoryRun()) {
@@ -247,35 +241,7 @@ public class HistoryFragment extends MapMainFragment{
     }
 
     /**
-     * Adds a marker to the map for each item in geofenceToAdd
-     *
-     * @param geofenceToAdd
-     */
-    private void addMarker(HashMap<String, GeofenceInfoContent[]> geofenceToAdd){
-        System.gc();
-        MainActivity mainActivity = (MainActivity) getActivity();
-        Log.i("HistoryFragment", "addMarker");
 
-        for(Map.Entry<String, GeofenceInfoContent[]> e : geofenceToAdd.entrySet()){
-
-            if(!currentGeofencesInfoMap.containsKey(e.getKey())) {
-                currentGeofencesInfoMap.put(e.getKey(), e.getValue());
-                geofenceNamesBeingQueriedForInfo.remove(e.getKey());
-                String curGeofenceName = e.getKey();
-                GeofenceObjectContent geofence = mainActivity.getAllGeofencesMap().get(curGeofenceName);
-                Bitmap markerIcon = BitmapFactory.decodeResource(getResources(), R.drawable.basic_map_marker);
-                LatLng position = new LatLng(geofence.getGeofence().getLocation().getLat(), geofence.getGeofence().getLocation().getLng());
-                BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(markerIcon);
-                Log.i("HistoryFragment", "addMarker : adding a marker!");
-                MarkerOptions geofenceMarkerOptions = new MarkerOptions()
-                        .position(position)
-                        .title(curGeofenceName)
-                        .icon(icon);
-                Marker curGeofenceMarker = mMap.addMarker(geofenceMarkerOptions);
-                currentGeofenceMarkers.add(curGeofenceMarker);
-            }
-        }
-    }
 
     /**
      * Adds a marker to the map for each item in geofenceToAdd
@@ -460,21 +426,7 @@ public class HistoryFragment extends MapMainFragment{
     }
 
 
-    /**
-     * Adds a new marker to the map for each new geofences in the HashMap
-     * @param geofenceToAdd
-     */
-    @Override
-    public void addNewGeofenceInfo(HashMap<String, GeofenceInfoContent[]> geofenceToAdd) {
-        if(geofenceToAdd == null){
-            showUnableToRetrieveGeofences();
-        }else if(geofenceToAdd.size() == 0){
-            showUnableToRetrieveGeofences();
-        }else {
-            addMarker(geofenceToAdd);
-            hideUnableToRetrieveGeofences();
-        }
-    }
+
 
     public void addNewGeofenceInfoNew(AllGeofences allGeofences){
         if(allGeofences == null){
@@ -526,21 +478,31 @@ public class HistoryFragment extends MapMainFragment{
 
             if(mainActivity.getAllGeofencesNew() != null) {
                 addNewGeofenceInfoNew(mainActivity.getAllGeofencesNew());
-        }
+        }else{
+                mainActivity.requestGeofencesNewer();
+            }
     }
 
     public void showUnableToRetrieveGeofences(){
-        final TextView txtRequestGeofences = (TextView) view.findViewById(txt_try_getting_geofences);
-        final Button btnRequestGeofences = (Button) view.findViewById(R.id.btn_request_geofences);
-        txtRequestGeofences.setText(getResources().getString(R.string.no_geofences_retrieved));
-        txtRequestGeofences.setVisibility(View.VISIBLE);
-        btnRequestGeofences.setVisibility(View.VISIBLE);
+        try {
+            final TextView txtRequestGeofences = (TextView) view.findViewById(txt_try_getting_geofences);
+            final Button btnRequestGeofences = (Button) view.findViewById(R.id.btn_request_geofences);
+            txtRequestGeofences.setText(getResources().getString(R.string.no_geofences_retrieved));
+            txtRequestGeofences.setVisibility(View.VISIBLE);
+            btnRequestGeofences.setVisibility(View.VISIBLE);
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
     }
 
     private void hideUnableToRetrieveGeofences(){
-        final TextView txtRequestGeofences = (TextView) view.findViewById(txt_try_getting_geofences);
-        final Button btnRequestGeofences = (Button) view.findViewById(R.id.btn_request_geofences);
-        txtRequestGeofences.setVisibility(View.GONE);
-        btnRequestGeofences.setVisibility(View.GONE);
+        try {
+            final TextView txtRequestGeofences = (TextView) view.findViewById(txt_try_getting_geofences);
+            final Button btnRequestGeofences = (Button) view.findViewById(R.id.btn_request_geofences);
+            txtRequestGeofences.setVisibility(View.GONE);
+            btnRequestGeofences.setVisibility(View.GONE);
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
     }
 }
