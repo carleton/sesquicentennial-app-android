@@ -50,6 +50,7 @@ public class Constants {
 
     public static final String ICAL_FILE_NAME_WITH_EXTENSION = "carleton150Events.ics";
     public static final String GEOFENCES_FILE_NAME_WITH_EXTENSION = "carleton150Geofences.txt";
+    public static final String QUESTS_FILE_NAME_WITH_EXTENSION = "carleton150Quests.txt";
 
     //Prefixes and suffixes for the Camera class to use when the user uploads images
     public static final String JPEG_FILE_PREFIX = "IMG_";
