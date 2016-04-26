@@ -119,15 +119,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private boolean requestingQuests = false;
     private ArrayList<Quest> questInfo = null;
+    private java.util.Date lastQuestUpdate;
 
     private LinkedHashMap<String, ArrayList<EventContent>> eventsMapByDate = new LinkedHashMap<String, ArrayList<EventContent>>();
     private ArrayList<EventContent> tempEventContentLst = new ArrayList<EventContent>();
     private boolean requestingEvents = false;
+    private java.util.Date lastEventsUpdate;
 
     private HashMap<String, GeofenceObjectContent> allGeofencesMap = new HashMap<>();
 
     private AllGeofences allGeofencesNew = null;
     private boolean requestingAllGeofencesNew = false;
+    private java.util.Date lastGeofenceUpdate;
     DownloadFileFromURL downloadFileFromURLGeofences = new DownloadFileFromURL(this, constants.GEOFENCES_FILE_NAME_WITH_EXTENSION);
 
 
@@ -705,6 +708,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    private boolean fileExists(String fileNameWithExtension){
+        File file = new File(Environment.getExternalStorageDirectory().toString()+"/"+fileNameWithExtension);
+        if(file.exists()){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
 
     /**
      * Accesses the Ical feed that was saved into a file by DownloadFileFromURL, then uses
@@ -807,7 +819,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 addComponent = true;
                 DtStart start = (DtStart) propertyList.getProperty(Property.DTSTART);
                 Date startDate = start.getDate();
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss", Locale.US);
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
                 String date = df.format(startDate);
                 eventContent.setStartTime(date);
             }else {

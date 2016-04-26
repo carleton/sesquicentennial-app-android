@@ -36,8 +36,10 @@ import android.widget.TextView;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import carleton150.edu.carleton.carleton150.POJO.Event;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
@@ -59,35 +61,26 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
         String startTime = event.getStartTime();
         String[] dateArray = startTime.split("(-)|(T)|(:)");
 
-        try {
-            Log.d(dateArray[0], " year");
-            Log.d(dateArray[1], " month");
-            Log.d(dateArray[2], " day");
-            Log.d(dateArray[3], " hour");
-            Log.d(dateArray[4], " minute");
-            Log.d(dateArray[5], " second");
-        } catch (IndexOutOfBoundsException e) {
-            Log.i(e.getMessage(), "All-day long event");
-        }
 
         // Check if hours/minutes/seconds included
-        DateFormat df;
-        Date newStartTime;
+        SimpleDateFormat df;
+        Calendar newStartTime;
         if (dateArray.length >= 6) {
-            df = new SimpleDateFormat("MMM dd hh:mm a");
-            newStartTime = new Date(Integer.parseInt(dateArray[0]),
-                    Integer.parseInt(dateArray[1])-1, Integer.parseInt(dateArray[2]),
+            df = new SimpleDateFormat("MMM dd hh:mm a", Locale.US);
+
+            newStartTime = Calendar.getInstance();
+            newStartTime.set(Integer.parseInt(dateArray[0]),
+                    Integer.parseInt(dateArray[1]) - 1, Integer.parseInt(dateArray[2]),
                     Integer.parseInt(dateArray[3]), Integer.parseInt(dateArray[4]),
                     Integer.parseInt(dateArray[5]));
         } else {
-            df = new SimpleDateFormat("MMM dd");
-            newStartTime = new Date(Integer.parseInt(dateArray[0]),
+            df = new SimpleDateFormat("MMM dd", Locale.US);
+            newStartTime = Calendar.getInstance();
+            newStartTime.set(Integer.parseInt(dateArray[0]),
                     Integer.parseInt(dateArray[1])-1, Integer.parseInt(dateArray[2]));
         }
-
         // Set display to new formatted startTime
-        String formattedStartTime = df.format(newStartTime);
-        return formattedStartTime;
+        return df.format(newStartTime.getTime());
     }
 
     public void setEvents(List<EventContent> events){
