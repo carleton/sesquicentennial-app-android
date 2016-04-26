@@ -203,11 +203,9 @@ public class HistoryFragment extends MapMainFragment{
                 @Override
                 public boolean onMarkerClick(Marker marker) {
                     MainActivity mainActivity = (MainActivity) getActivity();
-                    if(mainActivity.NEW_VERSION){
-                        showPopupNew(getContentFromMarkerNew(marker), marker.getTitle());
-                    }else {
-                        showPopup(getContentFromMarker(marker), marker.getTitle());
-                    }
+
+                    showPopupNew(getContentFromMarkerNew(marker), marker.getTitle());
+
                     return true;
                 }
             });
@@ -321,14 +319,6 @@ public class HistoryFragment extends MapMainFragment{
         }
     }
 
-    /**
-     * Returns the GeofenceInfoContent[] of info that each marker represents
-     * @param marker
-     * @return
-     */
-    private GeofenceInfoContent[] getContentFromMarker(Marker marker){
-        return currentGeofencesInfoMap.get(marker.getTitle());
-    }
 
     /**
      * Returns the GeofenceInfoContent[] of info that each marker represents
@@ -337,26 +327,6 @@ public class HistoryFragment extends MapMainFragment{
      */
     private ArrayList<Event> getContentFromMarkerNew(Marker marker){
         return newCurrentGeofencesInfoMap.get(marker.getTitle());
-    }
-
-    /**
-     * Shows the history popover for a given marker on the map
-     *
-     * @param geofenceInfoObject
-     */
-    public void showPopup(GeofenceInfoContent[] geofenceInfoObject, String name){
-        RelativeLayout relLayoutTutorial = (RelativeLayout) view.findViewById(R.id.tutorial);
-        relLayoutTutorial.setVisibility(View.GONE);
-        GeofenceInfoContent[] sortedContent = sortByDate(geofenceInfoObject);
-        FragmentManager fm = getActivity().getSupportFragmentManager();
-        RecyclerViewPopoverFragment recyclerViewPopoverFragment = RecyclerViewPopoverFragment.newInstance(sortedContent, name);
-        // Transaction start
-        FragmentTransaction fragmentTransaction = fm.beginTransaction();
-        fragmentTransaction.setCustomAnimations(R.anim.abc_slide_in_bottom, R.anim.abc_slide_out_bottom,
-                R.anim.abc_slide_in_bottom, R.anim.abc_slide_out_bottom);
-        fragmentTransaction.add(R.id.fragment_container, recyclerViewPopoverFragment, "RecyclerViewPopoverFragment");
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
     }
 
     public void showPopupNew(ArrayList<Event> events, String name){
@@ -437,14 +407,7 @@ public class HistoryFragment extends MapMainFragment{
      */
     public void updateGeofences() {
         MainActivity mainActivity = (MainActivity) getActivity();
-        if(!mainActivity.NEW_VERSION) {
-            mainActivity.requestAllGeofences();
-        }else{
-
-            //TODO: switch to newest version
-            //mainActivity.requestGeofencesNewer();
-            mainActivity.requestGeofencesNew();
-        }
+        mainActivity.requestGeofencesNewer();
     }
 
     /**
@@ -496,15 +459,6 @@ public class HistoryFragment extends MapMainFragment{
 
     }
 
-    /**
-     * Shows a popup containing information about the goefences that was clicked
-     * @param infoForGeofenceClicked
-     * @param geofenceName
-     *//*
-    @Override
-    public void geofenceClicked(GeofenceInfoContent[] infoForGeofenceClicked, String geofenceName) {
-        showPopup(infoForGeofenceClicked, geofenceName);
-    }*/
 
     /**
      * Adds a new marker to the map for each new geofences in the HashMap
@@ -569,14 +523,9 @@ public class HistoryFragment extends MapMainFragment{
      */
     private void drawAllGeofenceMarkers(){
         MainActivity mainActivity = (MainActivity) getActivity();
-        if(!mainActivity.NEW_VERSION) {
-            if (mainActivity.getAllGeofenceInfo() != null) {
-                addMarker(mainActivity.getAllGeofenceInfo());
-            }
-        }else{
+
             if(mainActivity.getAllGeofencesNew() != null) {
                 addNewGeofenceInfoNew(mainActivity.getAllGeofencesNew());
-            }
         }
     }
 

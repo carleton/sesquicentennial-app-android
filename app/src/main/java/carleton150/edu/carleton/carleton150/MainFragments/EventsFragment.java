@@ -48,7 +48,6 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
     private static View v;
     private RecyclerView dates;
     private LinkedHashMap<String, ArrayList<EventContent>> eventsMapByDate = new LinkedHashMap<String, ArrayList<EventContent>>();
-    private ArrayList<EventContent> tempEventContentLst = new ArrayList<EventContent>();
     private int screenWidth;
     private LinearLayoutManager dateLayoutManager;
     private EventDateCardAdapter eventDateCardAdapter;
@@ -80,7 +79,7 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
                 txtTryAgain.setText(getString(R.string.requesting_events));
                 btnTryAgain.setVisibility(View.GONE);
                 MainActivity mainActivity = (MainActivity) getActivity();
-                mainActivity.getEvents();
+                mainActivity.requestEvents();
             }
         });
 
@@ -88,10 +87,11 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
         buildRecyclerViews();
         buildEventRecyclerView();
 
+        //TODO: can have zero events
         if(eventsMapByDate == null){
-            mainActivity.getEvents();
+            mainActivity.requestEvents();
         }else if(eventsMapByDate.size() == 0){
-            mainActivity.getEvents();
+            mainActivity.requestEvents();
         }else{
             handleNewEvents(eventsMapByDate);
         }

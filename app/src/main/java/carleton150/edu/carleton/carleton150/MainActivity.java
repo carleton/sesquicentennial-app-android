@@ -53,6 +53,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -120,17 +121,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ArrayList<EventContent> tempEventContentLst = new ArrayList<EventContent>();
     private boolean requestingEvents = false;
 
-
-    private boolean geofenceRetrievalSuccessful = false;
-    private GeofenceInfoObject allGeofenceInfo = null;
-    private GeofenceObjectContent[] allGeofences = null;
-    private boolean requestingGeofences = false;
     private HashMap<String, GeofenceObjectContent> allGeofencesMap = new HashMap<>();
 
-
-    //TODO: this should be gone by final version because we should only have one method
-    //method to determine whether we are using old geofence retrieval method or new one
-    public boolean NEW_VERSION = true;
     private AllGeofences allGeofencesNew = null;
     private boolean requestingAllGeofencesNew = false;
     DownloadFileFromURL downloadFileFromURLGeofences = new DownloadFileFromURL(this, constants.GEOFENCES_FILE_NAME_WITH_EXTENSION);
@@ -216,11 +208,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
-        if(NEW_VERSION) {
-            //TODO: switch to newest version
-            requestGeofencesNew();
-            //requestGeofencesNewer();
-        }
+        requestGeofencesNewer();
+        requestEvents();
+        requestQuests();
+
     }
 
     @Override
@@ -353,6 +344,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
+    //TODO: only need to listen to location for QuestInProgress fragment.
     /**
      * Method called by the google location client when the user's
      * location changes. Records the location and passes the new
@@ -368,9 +360,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Assign the new location
         mLastLocation = location;
         tellFragmentLocationChanged();
-        if(!NEW_VERSION) {
-            requestAllGeofences();
-        }
     }
 
     /**
@@ -616,167 +605,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         alert.show();
     }
 
-
-
-    /**
-     * Using the information retrieved from the requestAllGeofences() method,
-     * requests information about each geofence. Results are handled in handleGeofenceInfo()
-     *
-     * @param geofences
-     */
-    public void requestAllGeofenceInfo(GeofenceObjectContent[] geofences){
-        Log.i("GEOFENCE MONITORING", "requestAllGeofenceInfo ");
-
-        if(allGeofenceInfo == null){
-            Log.i("GEOFENCE MONITORING", "requestAllGeofenceInfo : allGeofenceInfo is null ");
-        }
-        if(geofences != null){
-            Log.i("GEOFENCE MONITORING", "requestAllGeofenceInfo : geofences not null ");
-
-        }
-
-        if(allGeofenceInfo == null && geofences != null) {
-            Log.i("GEOFENCE MONITORING", "requestingAllGeofenceInfo: in if loop: ");
-
-            GeofenceObjectContent[] singleGeofence = new GeofenceObjectContent[1];
-            for(int i = 0; i<geofences.length; i++){
-                Log.i("GEOFENCE MONITORING", "requestAllGeofenceInfo: in for loop");
-
-                singleGeofence[0] = geofences[i];
-                mVolleyRequester.request(this, singleGeofence);
-
-            }
-        }
-    }
-
-    /**
-     * Method called from the VolleyRequester when it recieves info about a geofence
-     * @param geofenceInfoObject
-     */
-    public void handleGeofenceInfo(GeofenceInfoObject geofenceInfoObject){
-        Log.i("GEOFENCE MONITORING", "handleGeofenceInfo");
-        requestingGeofences = false;
-
-        if(allGeofenceInfo == null){
-            Log.i("GEOFENCE MONITORING", "allGeofenceInfo was null");
-            if(curFragment instanceof HistoryFragment){
-                ((HistoryFragment) curFragment).showUnableToRetrieveGeofences();
-            }
-            allGeofenceInfo = geofenceInfoObject;
-            geofenceRetrievalSuccessful = false;
-        }else {
-            geofenceRetrievalSuccessful = true;
-            Log.i("GEOFENCE MONITORING", "allGeofenceInfo was not null");
-
-            if (geofenceInfoObject != null) {
-                Log.i("GEOFENCE MONITORING", "geofenceInfoObject was not null");
-
-                HashMap<String, GeofenceInfoContent[]> newGeofence = new HashMap<>();
-                for (HashMap.Entry<String, GeofenceInfoContent[]> e : geofenceInfoObject.getContent().entrySet()) {
-                    Log.i("GEOFENCE MONITORING", "handleGeofenceInfo: in for loop");
-
-                    this.allGeofenceInfo.getContent().put(e.getKey(), e.getValue());
-                    newGeofence.clear();
-                    newGeofence.put(e.getKey(), e.getValue());
-                    curFragment.addNewGeofenceInfo(newGeofence);
-                }
-            }
-        }
-
-        if(eventsMapByDate.size() == 0){
-
-            //TODO: switch to new version
-            getEvents();
-        }if(questInfo == null){
-            requestQuests();
-        }
-    }
-
-    /**
-     * Getter method for getting information about geofences
-     *
-     * @return all the information about geofences as a HashMap where the key is the name
-     * of the geofence and the value is a GeofenceInfoContent[] with info about that geofence
-     */
-    public HashMap<String, GeofenceInfoContent[]> getAllGeofenceInfo(){
-        if(allGeofenceInfo != null) {
-            return this.allGeofenceInfo.getContent();
-        }else{
-            return null;
-        }
-    }
-
-
-    /**
-     * Does checks to make sure requesting geofences is necessary, then calls a method to request
-     * geofences and stores a boolean indicating that a geofence request is in progress
-     */
-    public void requestAllGeofences(){
-        if(allGeofences == null && !requestingGeofences){
-            Log.i("GEOFENCE MONITORING", "requestiongAllGeofences. about to request them ");
-
-            requestingGeofences = true;
-            if(geofenceRetrievalSuccessful != true) {
-                Log.i("GEOFENCE MONITORING", "requestAllGeofences: geofenceRetrieval successful is not true ");
-                requestingGeofences = getNewGeofences();
-            }else{
-                Log.i("GEOFENCE MONITORING", "requestAllGeofences: geofenceRetrieval successful is true ");
-            }
-        }
-    }
-
-
-    /**
-     * Method called from VolleyRequester when new geofences are retrieved
-     * from server. Calls a function on whatever fragment is currently in view to
-     * handle the new geofences
-     *
-     * @param content
-     */
-    public void handleNewGeofences(GeofenceObjectContent[] content) {
-        Log.i("GEOFENCE MONITORING", "handleNewGeofences ");
-
-        if(content == null){
-            geofenceRetrievalSuccessful = false;
-            requestingGeofences = false;
-            if(curFragment instanceof HistoryFragment){
-                ((HistoryFragment) curFragment).showUnableToRetrieveGeofences();
-            }
-            Log.i("GEOFENCE MONITORING", "handleNewGeofences: content is null ");
-        }else{
-            geofenceRetrievalSuccessful = true;
-            requestAllGeofenceInfo(content);
-            for(int i = 0; i<content.length; i++){
-                allGeofencesMap.put(content[i].getName(), content[i]);
-            }
-            allGeofences = content;
-        }
-    }
-
-
-    /**
-     * Requests all geofences from server using VolleyRequester. Results are handled in handleNewGeofences()
-     */
-    public boolean getNewGeofences(){
-        if(mLastLocation == null){
-            Log.i("GEOFENCE MONITORING", "getNewGeofences: mLastLocation is null ");
-        }else {
-            try {
-                this.mVolleyRequester.requestGeofences(mLastLocation.getLatitude(),
-                        mLastLocation.getLongitude(), this);
-                return true;
-            } catch (Exception e) {
-                Log.i("GEOFENCE MONITORING", "getNewGeofences: error is :   " + e.getMessage());
-
-                e.printStackTrace();
-                return false;
-            }
-        }
-        return false;
-    }
-
-
-
     /**
      * Called by VolleyRequester, handles new quests from the server
      * @param newQuests
@@ -849,26 +677,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return this.allGeofencesNew;
     }
 
-    /**
-     * Requests all geofences with the new request and response format
-     */
-    public void requestGeofencesNew(){
+    public void requestGeofencesNewer(){
         if(!requestingAllGeofencesNew && allGeofencesNew == null) {
-            mVolleyRequester.requestGeopointsNew(this);
+            downloadFileFromURLGeofences.execute(constants.NEW_GEOFENCES_ENDPOINT);
             requestingAllGeofencesNew = true;
         }
-    }
-
-    public void requestGeofencesNewer(){
-        downloadFileFromURLGeofences.execute(constants.NEW_GEOFENCES_ENDPOINT);
     }
 
     /**
      * Gets ical feed from Constatns.ICAL_FEED_URL
      */
-    public void getEvents(){
-        DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.ICAL_FILE_NAME_WITH_EXTENSION);
-        downloadFileFromURL.execute(constants.ICAL_FEED_URL);
+    public void requestEvents(){
+        if(!requestingEvents && eventsMapByDate.size() == 0) {
+            DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.ICAL_FILE_NAME_WITH_EXTENSION);
+            downloadFileFromURL.execute(constants.ICAL_FEED_URL);
+            requestingEvents = true;
+        }
     }
 
 
@@ -909,9 +733,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : " + jsonString);
         final Gson gson = new Gson();
 
-        AllGeofences allGeofences = gson.fromJson(jsonString, AllGeofences.class);
+        allGeofencesNew = gson.fromJson(jsonString, AllGeofences.class);
 
-        handleGeofencesNewMethod(allGeofences);
+        handleGeofencesNewMethod(allGeofencesNew);
 
     }
 
@@ -948,54 +772,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     /**
-     * Saves the calendar to an ical file in externalStorage for later use.
-     * The filepath is <External Storage Directory>fileNameWithExtension.
-     * @param fileNameWithExtension
-     * @param calendar
-     * @return
-     */
-    public boolean saveIcalToFile(String fileNameWithExtension, net.fortuna.ical4j.model.Calendar calendar) {
-
-        for(int i = 0; i<calendar.getProperties().size(); i++){
-            Log.i("EVENTS", "MainActivity: generateICAL : property :  " + calendar.getProperties().get(i).toString());
-        }
-
-        if(calendar.getProperties().size() == 0){
-            Log.i("EVENTS", "MainActivity: generateICAL : property :  length of properties is 0");
-
-        }
-
-        FileOutputStream fout = null;
-        try {
-            fout = new FileOutputStream(Environment.getExternalStorageDirectory().toString() + "/" + fileNameWithExtension);
-        } catch (FileNotFoundException e1) {
-            e1.printStackTrace();
-            Log.i("EVENTS", "MainActivity: generateICAL : couldn't get FileOutputStream : path is:  " + Environment.getExternalStorageDirectory().toString() + fileNameWithExtension);
-
-        }
-        CalendarOutputter outputter;
-        try {
-            outputter = new CalendarOutputter();
-            outputter.setValidating(false);
-            outputter.output(calendar, fout);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        } catch (ValidationException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
      * Builds an ArrayList of EventContents and passes them to the handleNewEvents method.
      * Note that this method does not add events to EventContents unless they have a start time.
      * @param calendar
      */
     private void buildEventContent(net.fortuna.ical4j.model.Calendar calendar){
-        ArrayList<EventContent> eventContents = new ArrayList<>();
         ComponentList componentList = calendar.getComponents();
+        ArrayList<EventContent> eventContents = new ArrayList<>();
         boolean addComponent = true;
         for(int i = 0; i<componentList.size(); i++){
             Component component = (Component) componentList.get(i);
