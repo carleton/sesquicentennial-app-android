@@ -13,6 +13,16 @@ public class Geo_ {
     @Expose
     private Double lon;
 
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     /**
      *
      * @return

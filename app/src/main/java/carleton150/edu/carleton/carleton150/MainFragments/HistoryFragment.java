@@ -440,12 +440,16 @@ public class HistoryFragment extends MapMainFragment{
         if(!mainActivity.NEW_VERSION) {
             mainActivity.requestAllGeofences();
         }else{
+
+            //TODO: switch to newest version
+            //mainActivity.requestGeofencesNewer();
             mainActivity.requestGeofencesNew();
         }
     }
 
     /**
      * Shows a popover to display nearby memories
+     * This will no longer be used because the memories feature was removed
      */
     private void showMemoriesPopover(){
 
@@ -467,6 +471,7 @@ public class HistoryFragment extends MapMainFragment{
 
     /**
      * shows a popover for user to add a memory
+     * This method will not be used because the memories functionality was removed
      */
     public void showAddMemoriesPopover(){
         Log.i(logMessages.MEMORY_MONITORING, "HistoryFragment : showAddMemoriesPopover called");
@@ -543,13 +548,13 @@ public class HistoryFragment extends MapMainFragment{
                 if(event.getGeo() != null) {
                     Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " geo is not null");
 
-                    String latLonString = String.valueOf(event.getGeo().getLat()) + String.valueOf(event.getGeo().getLon());
+                    String name = event.getGeo().getName();
                     ArrayList<Event> eventsAtPoint = new ArrayList<>();
-                    if (newCurrentGeofencesInfoMap.containsKey(latLonString)) {
-                        eventsAtPoint = newCurrentGeofencesInfoMap.get(latLonString);
+                    if (newCurrentGeofencesInfoMap.containsKey(name)) {
+                        eventsAtPoint = newCurrentGeofencesInfoMap.get(name);
                     }
                     eventsAtPoint.add(event);
-                    newCurrentGeofencesInfoMap.put(latLonString, eventsAtPoint);
+                    newCurrentGeofencesInfoMap.put(name, eventsAtPoint);
                 }else {
                     Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " geo IS null");
 

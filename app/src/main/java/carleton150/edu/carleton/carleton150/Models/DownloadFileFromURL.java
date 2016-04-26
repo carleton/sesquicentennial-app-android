@@ -16,17 +16,19 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import carleton150.edu.carleton.carleton150.Constants;
-import carleton150.edu.carleton.carleton150.Interfaces.RetrievedEventsListener;
+import carleton150.edu.carleton.carleton150.Interfaces.RetrievedFileListener;
 
 /**
  * Background Async Task to download file
  * */
 public class DownloadFileFromURL extends AsyncTask<String, String, String> {
 
-    RetrievedEventsListener retrievedEventsListener;
+    RetrievedFileListener retrievedFileListener;
+    String fileNameWithExtension;
 
-    public DownloadFileFromURL(RetrievedEventsListener retrievedEventsListener){
-        this.retrievedEventsListener = retrievedEventsListener;
+    public DownloadFileFromURL(RetrievedFileListener retrievedFileListener, String fileNameWithExtension){
+        this.retrievedFileListener = retrievedFileListener;
+        this.fileNameWithExtension = fileNameWithExtension;
     }
 
     /**
@@ -46,7 +48,7 @@ public class DownloadFileFromURL extends AsyncTask<String, String, String> {
             // Output stream
             OutputStream output = new FileOutputStream(Environment
                     .getExternalStorageDirectory().toString()
-                    + "/" +constants.ICAL_FILE_NAME_WITH_EXTENSION);
+                    + "/" +fileNameWithExtension);
 
             byte data[] = new byte[1024];
 
@@ -74,16 +76,16 @@ public class DownloadFileFromURL extends AsyncTask<String, String, String> {
     @Override
     protected void onPostExecute(String s) {
         Log.i("EVENTS", "DownloadFileFromURL: onPostExecute : String is : " + s);
-        if(retrievedEventsListener != null){
-            retrievedEventsListener.retrievedEvents(true);
+        if(retrievedFileListener != null){
+            retrievedFileListener.retrievedFile(true, fileNameWithExtension);
         }
         super.onPostExecute(s);
     }
 
     @Override
     protected void onCancelled(String s) {
-        if(retrievedEventsListener != null){
-            retrievedEventsListener.retrievedEvents(false);
+        if(retrievedFileListener != null){
+            retrievedFileListener.retrievedFile(false, fileNameWithExtension);
         }
         super.onCancelled(s);
     }

@@ -44,10 +44,13 @@ public class Constants {
     public static final String QUESTS_ENDPOINT = "https://carl150.carleton.edu/quest";
     public static final String MEMORIES_ENDPOINT = "https://carl150.carleton.edu/memories_fetch";
     public static final String ADD_MEMORY_ENDPOINT = "https://carl150.carleton.edu/memories_add";
+
+    //TODO: this should be :  https://go.carleton.edu/apphistory for final version
     public static final String NEW_GEOFENCES_ENDPOINT = "https://carl150.carleton.edu/new_history";
     public static final String ICAL_FEED_URL = "https://go.carleton.edu/appevents";
 
     public static final String ICAL_FILE_NAME_WITH_EXTENSION = "carleton150Events.ics";
+    public static final String GEOFENCES_FILE_NAME_WITH_EXTENSION = "carleton150Geofences.txt";
 
     //Prefixes and suffixes for the Camera class to use when the user uploads images
     public static final String JPEG_FILE_PREFIX = "IMG_";

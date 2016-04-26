@@ -400,7 +400,6 @@ public class VolleyRequester {
                     @Override
                     public void onResponse(JSONObject response) {
                         String responseString = response.toString();
-                        ArrayList<Quest> quests = new ArrayList<>();
                         try {
                             JSONObject responseObject = response.getJSONObject("content");
                             AllGeofences allGeofences = gson.fromJson(responseObject.toString(), AllGeofences.class);
@@ -413,7 +412,6 @@ public class VolleyRequester {
                         }
 
                         Log.i(logMessages.VOLLEY, "requestQuests : response string = : " + responseString);
-                        Log.i(logMessages.VOLLEY, "requestQuests : length of quests is: " + quests.size());
                     }
                 },
 

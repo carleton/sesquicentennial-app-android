@@ -28,6 +28,7 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.gson.Gson;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.CalendarOutputter;
@@ -38,24 +39,29 @@ import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.ValidationException;
-import net.fortuna.ical4j.model.property.DtStamp;
 import net.fortuna.ical4j.model.property.DtStart;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.FragmentChangeListener;
-import carleton150.edu.carleton.carleton150.Interfaces.RetrievedEventsListener;
+import carleton150.edu.carleton.carleton150.Interfaces.RetrievedFileListener;
 import carleton150.edu.carleton.carleton150.MainFragments.EventsFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.HistoryFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.MainFragment;
@@ -64,9 +70,7 @@ import carleton150.edu.carleton.carleton150.MainFragments.QuestInProgressFragmen
 import carleton150.edu.carleton.carleton150.Models.DownloadFileFromURL;
 import carleton150.edu.carleton.carleton150.Models.GeofenceErrorMessages;
 import carleton150.edu.carleton.carleton150.Models.VolleyRequester;
-import carleton150.edu.carleton.carleton150.POJO.Event;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
-import carleton150.edu.carleton.carleton150.POJO.EventObject.Events;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoObject;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectContent;
@@ -80,7 +84,7 @@ import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
  */
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener, ResultCallback<Status>, FragmentChangeListener,
-        RetrievedEventsListener {
+        RetrievedFileListener {
 
     //things for location
 
@@ -126,9 +130,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     //TODO: this should be gone by final version because we should only have one method
     //method to determine whether we are using old geofence retrieval method or new one
-    public boolean NEW_VERSION = false;
+    public boolean NEW_VERSION = true;
     private AllGeofences allGeofencesNew = null;
     private boolean requestingAllGeofencesNew = false;
+    DownloadFileFromURL downloadFileFromURLGeofences = new DownloadFileFromURL(this, constants.GEOFENCES_FILE_NAME_WITH_EXTENSION);
+
 
 
     /**
@@ -211,7 +217,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
 
         if(NEW_VERSION) {
+            //TODO: switch to newest version
             requestGeofencesNew();
+            //requestGeofencesNewer();
         }
     }
 
@@ -851,11 +859,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    public void requestGeofencesNewer(){
+        downloadFileFromURLGeofences.execute(constants.NEW_GEOFENCES_ENDPOINT);
+    }
+
     /**
      * Gets ical feed from Constatns.ICAL_FEED_URL
      */
     public void getEvents(){
-        DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this);
+        DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.ICAL_FILE_NAME_WITH_EXTENSION);
         downloadFileFromURL.execute(constants.ICAL_FEED_URL);
     }
 
@@ -865,8 +877,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * it to create a Calendar object. Once that is completed, calls buildEventContent() to use
      * that Calendar object to build and ArrayList of EventContent
      */
-    private void parseIcalFeed(){
-        File file = new File(Environment.getExternalStorageDirectory().toString() + "/" + constants.ICAL_FILE_NAME_WITH_EXTENSION);
+    private void parseIcalFeed(String fileNameWithExtension){
+        File file = new File(Environment.getExternalStorageDirectory().toString() + "/" + fileNameWithExtension);
         FileInputStream fin = null;
         try {
             fin = new FileInputStream(file);
@@ -888,6 +900,51 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             buildEventContent(calendar);
         }
 
+    }
+
+    private void parseGeofences(String fileNameWithExtension){
+
+        String jsonString = readFromFile(fileNameWithExtension);
+
+        Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : " + jsonString);
+        final Gson gson = new Gson();
+
+        AllGeofences allGeofences = gson.fromJson(jsonString, AllGeofences.class);
+
+        handleGeofencesNewMethod(allGeofences);
+
+    }
+
+    private String readFromFile(String fileNameWithExtension) {
+
+        String ret = "";
+
+        File file = new File(Environment.getExternalStorageDirectory().toString() + "/" + fileNameWithExtension);
+
+        try {
+            InputStream inputStream = new FileInputStream(file);
+
+            if ( inputStream != null ) {
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String receiveString = "";
+                StringBuilder stringBuilder = new StringBuilder();
+
+                while ( (receiveString = bufferedReader.readLine()) != null ) {
+                    stringBuilder.append(receiveString);
+                }
+
+                inputStream.close();
+                ret = stringBuilder.toString();
+            }
+        }
+        catch (FileNotFoundException e) {
+            Log.i("NEWGEOFENCES", "readFromFile: File not found: " + e.toString());
+        } catch (IOException e) {
+            Log.e("NEWGEOFENCES", "readFromFile: " + e.toString());
+        }
+
+        return ret;
     }
 
     /**
@@ -1042,9 +1099,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * @param retrievalSucceeded
      */
     @Override
-    public void retrievedEvents(boolean retrievalSucceeded) {
+    public void retrievedFile(boolean retrievalSucceeded, String fileNameWithExtension) {
         if(retrievalSucceeded){
-            parseIcalFeed();
+            if(fileNameWithExtension.equals(constants.ICAL_FILE_NAME_WITH_EXTENSION)) {
+                parseIcalFeed(fileNameWithExtension);
+            }if(fileNameWithExtension.equals(constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)){
+                parseGeofences(fileNameWithExtension);
+            }
         }else{
             Log.i("EVENTS", "unable to retrieve events");
         }

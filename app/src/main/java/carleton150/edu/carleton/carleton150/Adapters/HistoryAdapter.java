@@ -3,6 +3,7 @@ package carleton150.edu.carleton.carleton150.Adapters;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -11,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -229,7 +232,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
                     //TODO: Items can have both text and media...
                     final Event geofenceInfoContent = historyListNew[position];
-                    ((HistoryViewHolderImage) holder).setImageNew(position, geofenceInfoContent.getMedia().getUrl(), screenWidth, screenHeight);
+                    //((HistoryViewHolderImage) holder).setImageNew(position, geofenceInfoContent.getMedia().getUrl(), screenWidth, screenHeight);
+                    Uri uri = Uri.parse(geofenceInfoContent.getMedia().getUrl());
+                    Context imgContext = ((HistoryViewHolderImage) holder).getImgMedia().getContext();
+                    Picasso.with(imgContext).load(uri).into(((HistoryViewHolderImage) holder).getImgMedia());
                     ((HistoryViewHolderImage) holder).setTxtDate(geofenceInfoContent.getStartDate().getYear());
                     ((HistoryViewHolderImage) holder).setTxtCaption(geofenceInfoContent.getMedia().getCaption());
                     ((HistoryViewHolderImage) holder).setTxtDescription(geofenceInfoContent.getMedia().getCredit());
@@ -408,28 +414,9 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
 
 
-        /**
-         * Sets the image by downsizing and decoding the image string, then putting the image
-         * into the recyclerView at the specified position
-         *
-         * @param resId position of image in RecyclerView
-         * @param encodedImage 64-bit encoded image
-         * @param screenWidth width of phone screen
-         * @param screenHeight height of phone screen
-         */
-        //TODO: new version
-        public void setImageNew(int resId, String ImageURL, int screenWidth, int screenHeight) {
-            System.gc();
-
-            int w = constants.PLACEHOLDER_IMAGE_DIMENSIONS, h = constants.PLACEHOLDER_IMAGE_DIMENSIONS;
-            Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
-            Bitmap mPlaceHolderBitmap = Bitmap.createBitmap(w, h, conf); // this creates a MUTABLE bitmap
-
-            imgMedia.setImageBitmap(mPlaceHolderBitmap);
-
-            //TODO: fill this in using picasso library
+        public ImageView getImgMedia(){
+            return this.imgMedia;
         }
-
 
         /**
          * Cancels the previous task if a view is recycled so it can use the correct image
