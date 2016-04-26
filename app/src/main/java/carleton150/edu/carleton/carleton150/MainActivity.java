@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -850,7 +851,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }else {
 
             Calendar c = Calendar.getInstance();
-            java.util.Date currentDate = c.getTime();
 
             for (int i = 0; i < events.size(); i++) {
 
@@ -859,25 +859,33 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 completeDateArray = completeDate.split("T");
                 dateByDay = completeDateArray[0];
 
+                String[] dateArray = dateByDay.split("-");
 
-                // If key already there, add + update new values
-                if (!eventsMapByDate.containsKey(dateByDay)) {
-                    tempEventContentLst.clear();
-                    tempEventContentLst.add(events.get(i));
-                    ArrayList<EventContent> eventContents1 = new ArrayList<>();
-                    for (int k = 0; k < tempEventContentLst.size(); k++) {
-                        eventContents1.add(tempEventContentLst.get(k));
+                java.util.Calendar eventCalendar = java.util.Calendar.getInstance();
+                eventCalendar.set(Integer.parseInt(dateArray[0]), Integer.parseInt(dateArray[1]) - 1, Integer.parseInt(dateArray[2]), 23, 59, 59);
+
+                if (eventCalendar.getTimeInMillis() >= c.getTimeInMillis()) {
+
+
+                    // If key already there, add + update new values
+                    if (!eventsMapByDate.containsKey(dateByDay)) {
+                        tempEventContentLst.clear();
+                        tempEventContentLst.add(events.get(i));
+                        ArrayList<EventContent> eventContents1 = new ArrayList<>();
+                        for (int k = 0; k < tempEventContentLst.size(); k++) {
+                            eventContents1.add(tempEventContentLst.get(k));
+                        }
+                        eventsMapByDate.put(dateByDay, eventContents1);
+                    } else {
+                        tempEventContentLst.add(events.get(i));
+                        ArrayList<EventContent> eventContents1 = new ArrayList<>();
+                        for (int k = 0; k < tempEventContentLst.size(); k++) {
+                            eventContents1.add(tempEventContentLst.get(k));
+                        }
+                        eventsMapByDate.put(dateByDay, eventContents1);
                     }
-                    eventsMapByDate.put(dateByDay, eventContents1);
-                } else {
-                    tempEventContentLst.add(events.get(i));
-                    ArrayList<EventContent> eventContents1 = new ArrayList<>();
-                    for (int k = 0; k < tempEventContentLst.size(); k++) {
-                        eventContents1.add(tempEventContentLst.get(k));
-                    }
-                    eventsMapByDate.put(dateByDay, eventContents1);
+
                 }
-
             }
 
             if (curFragment instanceof EventsFragment) {
