@@ -10,11 +10,16 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.gson.Gson;
 
+import net.fortuna.ical4j.data.CalendarOutputter;
+import net.fortuna.ical4j.model.ValidationException;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,7 +74,7 @@ public class VolleyRequester {
                         ArrayList<Quest> quests = new ArrayList<>();
                         try {
                             JSONArray responseArr = response.getJSONArray("content");
-                            createFile("questResponseFile", responseArr.toString());
+                            createFile(constants.QUESTS_FILE_NAME_WITH_EXTENSION, responseArr.toString());
                             Log.i(logMessages.VOLLEY, "requestQuests : length of responseArr is: " + responseArr.length());
                             for (int i = 0; i < responseArr.length(); i++) {
                                 try {
@@ -233,32 +238,43 @@ public class VolleyRequester {
         MyApplication.getInstance().getRequestQueue().add(request);
     }
 
-    public void createFile(String sFileName, String sBody){
-        try
-        {
-            File root = new File(Environment.getExternalStorageDirectory(), "Notes");
-            Log.i(logMessages.MEMORY_MONITORING, "createFile: path : " + Environment.getExternalStorageDirectory().getPath());
-            if (!root.exists()) {
-                root.mkdirs();
+    public void createFile(String fileNameWithExtension, String sBody){
+        FileOutputStream fop = null;
+        File file;
+
+        try {
+
+            file = new File(Environment.getExternalStorageDirectory().toString() + "/" + fileNameWithExtension);
+            fop = new FileOutputStream(file);
+
+            // if file doesnt exists, then create it
+            if (!file.exists()) {
+                file.createNewFile();
             }
-            File gpxfile = new File(root, sFileName);
-            FileWriter writer = new FileWriter(gpxfile);
-            writer.append(sBody);
-            writer.flush();
-            writer.close();
-        }
-        catch(IOException e)
-        {
+
+            // get the content in bytes
+            byte[] contentInBytes = sBody.getBytes();
+
+            fop.write(contentInBytes);
+            fop.flush();
+            fop.close();
+
+            System.out.println("Done");
+
+        } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (fop != null) {
+                    fop.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-
-
-
-
-
-    }
+}
 
 
 

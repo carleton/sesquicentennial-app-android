@@ -1,15 +1,19 @@
 package carleton150.edu.carleton.carleton150.Adapters;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import net.fortuna.ical4j.model.Calendar;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 
 import carleton150.edu.carleton.carleton150.Interfaces.RecyclerViewDatesClickListener;
 import carleton150.edu.carleton.carleton150.R;
@@ -87,17 +91,17 @@ public class EventDateCardAdapter extends RecyclerView.Adapter<EventDateCardAdap
         // Set date in event calendar date tabs
         public void setDate(String dateInfo) {
             TextView dateTitle = (TextView) itemView.findViewById(R.id.event_date_title);
-            DateFormat df = new SimpleDateFormat("MMM dd");
-            DateFormat dfCorrectDayOfWeek = new SimpleDateFormat("EEE'\r\n'");
+
+            DateFormat dfCorrect = new SimpleDateFormat("EEE'\r\n'MMM dd',' yyyy", Locale.US);
+
             String[] dateArray = dateInfo.split("-");
-            Date dateCalendar = new Date(Integer.parseInt(dateArray[0]), Integer.parseInt(dateArray[1]) - 1, Integer.parseInt(dateArray[2]));
-            Date dateCalendarCorrectDayOfWeek = new Date(Integer.parseInt(dateArray[0]), Integer.parseInt(dateArray[1]) - 1, Integer.parseInt(dateArray[2]) - 1);
 
-            String cleanDateInfoMonthAndDay = df.format(dateCalendar);
-            String cleanDateInfoDayOfWeek = dfCorrectDayOfWeek.format(dateCalendarCorrectDayOfWeek);
-            String cleanDateInfo = cleanDateInfoDayOfWeek + cleanDateInfoMonthAndDay;
+            java.util.Calendar calendar = java.util.Calendar.getInstance();
+            calendar.set(Integer.parseInt(dateArray[0]), Integer.parseInt(dateArray[1]) - 1, Integer.parseInt(dateArray[2]));
+            Date curDate = calendar.getTime();
 
-            dateTitle.setText(cleanDateInfo);
+
+            dateTitle.setText(dfCorrect.format(curDate));
             dateTitle.setTag(dateInfo);
         }
 

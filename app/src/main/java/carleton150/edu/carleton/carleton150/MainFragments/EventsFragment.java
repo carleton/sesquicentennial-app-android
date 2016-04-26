@@ -148,6 +148,8 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
                 dateInfo.add(entry.getKey());
             }
 
+            sortDateInfo();
+
             eventDateCardAdapter.notifyDataSetChanged();
 
             String key = eventsMapByDate.keySet().iterator().next();
@@ -159,6 +161,10 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
             hideUnableToRetrieveEvents();
         }
         eventsListAdapter.notifyDataSetChanged();
+    }
+
+    private void sortDateInfo(){
+
     }
 
 

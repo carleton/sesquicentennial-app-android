@@ -46,7 +46,11 @@ public class Constants {
     public static final String ADD_MEMORY_ENDPOINT = "https://carl150.carleton.edu/memories_add";
 
     public static final String NEW_GEOFENCES_ENDPOINT = "https://go.carleton.edu/apphistory";
-    public static final String ICAL_FEED_URL = "https://go.carleton.edu/appevents";
+
+    //TODO: final URL should be : https://go.carleton.edu/appevents
+    public static final String ICAL_FEED_URL = "https://apps.carleton.edu/calendar";
+    public static final String ICAL_FEED_DATE_REQUEST = "/?start_date=";
+    public static final String ICAL_FEED_FORMAT_REQUEST = "/&format=ical";
 
     public static final String ICAL_FILE_NAME_WITH_EXTENSION = "carleton150Events.ics";
     public static final String GEOFENCES_FILE_NAME_WITH_EXTENSION = "carleton150Geofences.txt";

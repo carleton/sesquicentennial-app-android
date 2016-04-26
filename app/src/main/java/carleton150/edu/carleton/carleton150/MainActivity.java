@@ -40,6 +40,7 @@ import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.ValidationException;
 import net.fortuna.ical4j.model.property.DtStart;
+import net.fortuna.ical4j.util.CompatibilityHints;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,6 +57,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -689,8 +691,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     public void requestEvents(){
         if(!requestingEvents && eventsMapByDate.size() == 0) {
+            String url = constants.ICAL_FEED_URL;
+            Calendar c = Calendar.getInstance();
+            java.util.Date currentDate = c.getTime();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String formattedDate = dateFormat.format(currentDate);
+            url = url+constants.ICAL_FEED_DATE_REQUEST + formattedDate + constants.ICAL_FEED_FORMAT_REQUEST;
+            Log.i("EVENTS", "MainActivity: requestEvents: url is: " + url);
             DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.ICAL_FILE_NAME_WITH_EXTENSION);
-            downloadFileFromURL.execute(constants.ICAL_FEED_URL);
+            downloadFileFromURL.execute(url);
             requestingEvents = true;
         }
     }
@@ -711,6 +720,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         CalendarBuilder builder = new CalendarBuilder();
         net.fortuna.ical4j.model.Calendar calendar = null;
+        CompatibilityHints.setHintEnabled(CompatibilityHints.KEY_RELAXED_PARSING, true);
         try {
             calendar = builder.build(fin);
         } catch (IOException e) {
@@ -839,7 +849,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }else {
 
-
+            Calendar c = Calendar.getInstance();
+            java.util.Date currentDate = c.getTime();
 
             for (int i = 0; i < events.size(); i++) {
 
