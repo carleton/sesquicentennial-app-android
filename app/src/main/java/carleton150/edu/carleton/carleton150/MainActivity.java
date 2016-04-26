@@ -11,6 +11,7 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +29,23 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import net.fortuna.ical4j.data.CalendarBuilder;
+import net.fortuna.ical4j.data.CalendarOutputter;
+import net.fortuna.ical4j.data.ParserException;
+import net.fortuna.ical4j.model.Component;
+import net.fortuna.ical4j.model.ComponentList;
+import net.fortuna.ical4j.model.Date;
+import net.fortuna.ical4j.model.PropertyList;
+import net.fortuna.ical4j.model.ValidationException;
+import net.fortuna.ical4j.model.property.DtStamp;
+import net.fortuna.ical4j.model.property.DtStart;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -35,13 +53,16 @@ import java.util.LinkedHashMap;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.FragmentChangeListener;
+import carleton150.edu.carleton.carleton150.Interfaces.RetrievedEventsListener;
 import carleton150.edu.carleton.carleton150.MainFragments.EventsFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.HistoryFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.MainFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestInProgressFragment;
+import carleton150.edu.carleton.carleton150.Models.DownloadFileFromURL;
 import carleton150.edu.carleton.carleton150.Models.GeofenceErrorMessages;
 import carleton150.edu.carleton.carleton150.Models.VolleyRequester;
+import carleton150.edu.carleton.carleton150.POJO.Event;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.Events;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
@@ -56,7 +77,8 @@ import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
  * and quests using VolleyRequester and stores them for the fragments.
  */
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, LocationListener, ResultCallback<Status>, FragmentChangeListener {
+        GoogleApiClient.OnConnectionFailedListener, LocationListener, ResultCallback<Status>, FragmentChangeListener,
+        RetrievedEventsListener {
 
     //things for location
 
@@ -653,7 +675,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         if(eventsMapByDate.size() == 0){
-            requestEvents();
+
+            //TODO: switch to new version
+            getEvents();
         }if(questInfo == null){
             requestQuests();
         }
@@ -885,6 +909,189 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if(!requestingAllGeofencesNew && allGeofencesNew == null) {
             mVolleyRequester.requestGeopointsNew(this);
             requestingAllGeofencesNew = true;
+        }
+    }
+
+    public void getEvents(){
+        DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this);
+        String url = "https://go.carleton.edu/appevents";
+        downloadFileFromURL.execute(url);
+    }
+
+
+    private void parseIcalFeed(){
+        File file = new File(Environment.getExternalStorageDirectory().toString() + "/carleton150Events.ics");
+        FileInputStream fin = null;
+        try {
+            fin = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        CalendarBuilder builder = new CalendarBuilder();
+        net.fortuna.ical4j.model.Calendar calendar = null;
+        try {
+            calendar = builder.build(fin);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParserException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        if (calendar != null) {
+            Log.i("EVENTS", "MainActivity: parseIcalFeed : calendar not null : properties are: " + calendar.getProperties());
+            PropertyList plist = calendar.getProperties();
+            generateICAL("/carleton150Events.ics", calendar);
+
+            for (Object object : plist.toArray()) {
+                System.out.println("oj :"+object);
+            }
+        }
+
+    }
+
+    public boolean generateICAL(String fileNameWithExtension, net.fortuna.ical4j.model.Calendar calendar) {
+        outputIcalFeed(calendar);
+
+        for(int i = 0; i<calendar.getProperties().size(); i++){
+            Log.i("EVENTS", "MainActivity: generateICAL : property :  " + calendar.getProperties().get(i).toString());
+        }
+
+        if(calendar.getProperties().size() == 0){
+            Log.i("EVENTS", "MainActivity: generateICAL : property :  length of properties is 0");
+
+        }
+
+        FileOutputStream fout = null;
+        try {
+            fout = new FileOutputStream(Environment.getExternalStorageDirectory().toString() + fileNameWithExtension);
+        } catch (FileNotFoundException e1) {
+            e1.printStackTrace();
+            Log.i("EVENTS", "MainActivity: generateICAL : couldn't get FileOutputStream : path is:  " + Environment.getExternalStorageDirectory().toString() + fileNameWithExtension);
+
+        }
+        CalendarOutputter outputter;
+        try {
+            outputter = new CalendarOutputter();
+            outputter.setValidating(false);
+            outputter.output(calendar, fout);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } catch (ValidationException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private void outputIcalFeed(net.fortuna.ical4j.model.Calendar calendar){
+        Log.i("EVENTS", "MainActivity: outputIcalFeed");
+
+        ArrayList<EventContent> eventContents = new ArrayList<>();
+        ComponentList componentList = calendar.getComponents();
+        for(int i = 0; i<componentList.size(); i++){
+            Component component = (Component) componentList.get(i);
+            PropertyList propertyList = component.getProperties();
+            EventContent eventContent = new EventContent();
+            if(propertyList.getProperty("LOCATION") != null) {
+                Log.i("EVENTS", "MainActivity: outputIcalFeed : event" + i + " : Location: " + propertyList.getProperty("LOCATION").getValue());
+                eventContent.setLocation(propertyList.getProperty("LOCATION").getValue());
+            }else {
+                eventContent.setLocation("No Location");
+            }if(propertyList.getProperty("SUMMARY") != null) {
+                    eventContent.setTitle(propertyList.getProperty("SUMMARY").getValue());
+            }else{
+                eventContent.setTitle("No Title");
+            }if(propertyList.getProperty("DTSTART") != null) {
+                DtStart start = (DtStart) propertyList.getProperty("DTSTART");
+                Date startDate = start.getDate();
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+                String date = df.format(startDate);
+                Log.i("EVENTS", "MainActivity: outputIcalFeed : event" + i + " : Start Time : " + date);
+
+                eventContent.setStartTime(date);
+            }else{
+                eventContent.setStartTime("No Start Time");
+            }if(propertyList.getProperty("DESCRIPTION") != null) {
+                eventContent.setDescription(propertyList.getProperty("DESCRIPTION").getValue());
+            }else{
+                eventContent.setDescription("No Description");
+            }if(propertyList.getProperty("DURATION") != null) {
+                eventContent.setDuration(propertyList.getProperty("DURATION").getValue());
+            }else{
+                eventContent.setDuration("No Duration");
+            }
+            eventContents.add(eventContent);
+
+
+        }
+
+       handleNewEventsNew(eventContents);
+    }
+
+
+    /**
+     * Called from VolleyRequester. Handles new events from server
+     * @param events
+     */
+    public void handleNewEventsNew(ArrayList<EventContent> events) {
+        requestingEvents = false;
+        String completeDate;
+        String[] completeDateArray;
+        String dateByDay;
+        eventsMapByDate.clear();
+
+        if(events == null){
+            if(curFragment instanceof EventsFragment){
+                curFragment.handleNewEvents(null);
+            }
+        }else {
+
+
+
+            for (int i = 0; i < events.size(); i++) {
+
+                // Add new date values to hashmap if not already there
+                completeDate = events.get(i).getStartTime();
+                completeDateArray = completeDate.split("T");
+                dateByDay = completeDateArray[0];
+
+
+                // If key already there, add + update new values
+                if (!eventsMapByDate.containsKey(dateByDay)) {
+                    tempEventContentLst.clear();
+                    tempEventContentLst.add(events.get(i));
+                    ArrayList<EventContent> eventContents1 = new ArrayList<>();
+                    for (int k = 0; k < tempEventContentLst.size(); k++) {
+                        eventContents1.add(tempEventContentLst.get(k));
+                    }
+                    eventsMapByDate.put(dateByDay, eventContents1);
+                } else {
+                    tempEventContentLst.add(events.get(i));
+                    ArrayList<EventContent> eventContents1 = new ArrayList<>();
+                    for (int k = 0; k < tempEventContentLst.size(); k++) {
+                        eventContents1.add(tempEventContentLst.get(k));
+                    }
+                    eventsMapByDate.put(dateByDay, eventContents1);
+                }
+
+            }
+
+            if (curFragment instanceof EventsFragment) {
+                curFragment.handleNewEvents(eventsMapByDate);
+            }
+        }
+    }
+
+
+    @Override
+    public void retrievedEvents(boolean retrievalSucceeded) {
+        if(retrievalSucceeded){
+            parseIcalFeed();
+        }else{
+            Log.i("EVENTS", "unable to retrieve events");
         }
     }
 

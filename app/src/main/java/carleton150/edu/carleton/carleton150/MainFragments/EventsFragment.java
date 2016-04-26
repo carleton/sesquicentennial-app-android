@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,7 +80,7 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
                 txtTryAgain.setText(getString(R.string.requesting_events));
                 btnTryAgain.setVisibility(View.GONE);
                 MainActivity mainActivity = (MainActivity) getActivity();
-                mainActivity.requestEvents();
+                mainActivity.getEvents();
             }
         });
 
@@ -88,12 +89,13 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
         buildEventRecyclerView();
 
         if(eventsMapByDate == null){
-            mainActivity.requestEvents();
+            mainActivity.getEvents();
         }else if(eventsMapByDate.size() == 0){
-            mainActivity.requestEvents();
+            mainActivity.getEvents();
         }else{
             handleNewEvents(eventsMapByDate);
         }
+
 
         return v;
     }
@@ -153,6 +155,7 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
             eventsList.clear();
             for (int i = 0; i < newEvents.size(); i++) {
                 eventsList.add(newEvents.get(i));
+                Log.i("EVENTS", "EventsFragment: handleNewEvents : start time is: " + newEvents.get(i).getStartTime());
             }
             hideUnableToRetrieveEvents();
         }
