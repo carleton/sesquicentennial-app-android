@@ -155,7 +155,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         //managing fragments and UI
-        // fragmentManager = getSupportFragmentManager();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -807,82 +806,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return this.questInfo;
     }
 
-    /**
-     * Requests events from server using the volleyRequester.
-     * Results are handled in handleNewEvents()
-     */
-    public void requestEvents(){
-        if(!requestingEvents){
-            if(eventsMapByDate == null || eventsMapByDate.size() == 0) {
-                requestingEvents = true;
-                Calendar c = Calendar.getInstance();
-                int year = c.get(Calendar.YEAR);
-                int month = c.get(Calendar.MONTH) + 1;
-                int day = c.get(Calendar.DAY_OF_MONTH) - 1;
-                String monthString = String.format("%02d", month);
-                String dayString = String.format("%02d", day);
-                String startTime = monthString + "/" + dayString + "/" + year;
-
-                mVolleyRequester.requestEvents(startTime, 1000, this);
-            }
-        }
-        }
-
-
-
-
-    /**
-     * Called from VolleyRequester. Handles new events from server
-     * @param events
-     */
-    public void handleNewEvents(Events events) {
-        requestingEvents = false;
-        String completeDate;
-        String[] completeDateArray;
-        String dateByDay;
-        eventsMapByDate.clear();
-
-        if(events == null){
-            if(curFragment instanceof EventsFragment){
-                curFragment.handleNewEvents(null);
-            }
-        }else {
-
-
-            EventContent[] eventContents = events.getContent();
-            for (int i = 0; i < eventContents.length; i++) {
-
-                // Add new date values to hashmap if not already there
-                completeDate = eventContents[i].getStartTime();
-                completeDateArray = completeDate.split("T");
-                dateByDay = completeDateArray[0];
-
-
-                // If key already there, add + update new values
-                if (!eventsMapByDate.containsKey(dateByDay)) {
-                    tempEventContentLst.clear();
-                    tempEventContentLst.add(eventContents[i]);
-                    ArrayList<EventContent> eventContents1 = new ArrayList<>();
-                    for (int k = 0; k < tempEventContentLst.size(); k++) {
-                        eventContents1.add(tempEventContentLst.get(k));
-                    }
-                    eventsMapByDate.put(dateByDay, eventContents1);
-                } else {
-                    tempEventContentLst.add(eventContents[i]);
-                    ArrayList<EventContent> eventContents1 = new ArrayList<>();
-                    for (int k = 0; k < tempEventContentLst.size(); k++) {
-                        eventContents1.add(tempEventContentLst.get(k));
-                    }
-                    eventsMapByDate.put(dateByDay, eventContents1);
-                }
-
-            }
-
-            if (curFragment instanceof EventsFragment) {
-                curFragment.handleNewEvents(eventsMapByDate);
-            }
-        }
-    }
 
     /**
      *
@@ -942,7 +865,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (calendar != null) {
             Log.i("EVENTS", "MainActivity: parseIcalFeed : calendar not null : properties are: " + calendar.getProperties());
             PropertyList plist = calendar.getProperties();
-            generateICAL("/carleton150Events.ics", calendar);
+            buildEventContent(calendar);
 
             for (Object object : plist.toArray()) {
                 System.out.println("oj :"+object);
@@ -951,8 +874,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     }
 
-    public boolean generateICAL(String fileNameWithExtension, net.fortuna.ical4j.model.Calendar calendar) {
-        outputIcalFeed(calendar);
+    public boolean saveIcalToFile(String fileNameWithExtension, net.fortuna.ical4j.model.Calendar calendar) {
 
         for(int i = 0; i<calendar.getProperties().size(); i++){
             Log.i("EVENTS", "MainActivity: generateICAL : property :  " + calendar.getProperties().get(i).toString());
@@ -986,7 +908,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    private void outputIcalFeed(net.fortuna.ical4j.model.Calendar calendar){
+    private void buildEventContent(net.fortuna.ical4j.model.Calendar calendar){
         Log.i("EVENTS", "MainActivity: outputIcalFeed");
 
         ArrayList<EventContent> eventContents = new ArrayList<>();
@@ -1028,15 +950,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         }
 
-       handleNewEventsNew(eventContents);
+       handleNewEvents(eventContents);
     }
 
 
     /**
-     * Called from VolleyRequester. Handles new events from server
+     * Called from BuildEventContent, adds events to a hashmap where the key is the date
+     * and the value is an ArrayList of EventContent for events happening that day.
+     * Notifies the fragment of the new events if the fragment in view is the EventsFragment
      * @param events
      */
-    public void handleNewEventsNew(ArrayList<EventContent> events) {
+    public void handleNewEvents(ArrayList<EventContent> events) {
         requestingEvents = false;
         String completeDate;
         String[] completeDateArray;

@@ -187,57 +187,6 @@ public class VolleyRequester {
     }
 
     /**
-     * requests events from server
-     * @param startTime time to start getting events from
-     * @param limit max number of events to retrieve
-     * @param mainActivity the activity that called the function and should be notified of results
-     */
-    public void requestEvents(String startTime, int limit, final MainActivity mainActivity){
-
-        final Gson gson = new Gson();
-        //Creates request object
-        JSONObject eventRequest = new JSONObject();
-        try {
-            eventRequest.put("startTime", startTime);
-            eventRequest.put("limit", limit);
-            // eventRequest.put("endTime", endTime);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-
-        JsonObjectRequest request = new JsonObjectRequest(constants.EVENTS_ENDPOINT, eventRequest,
-                new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        String responseString = response.toString();
-                        Log.i(logMessages.VOLLEY, "requestEvents : response string = : " + responseString);
-                        try {
-                            Events responseObject = gson.fromJson(responseString, Events.class);
-                            mainActivity.handleNewEvents(responseObject);
-                        }catch (Exception e){
-                            Log.i(logMessages.VOLLEY, "requestEvents : unable to parse result");
-                        }
-                    }
-                },
-
-                new Response.ErrorListener() {
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.i(logMessages.VOLLEY, "requestEvents : error : " + error.toString());
-                        if(mainActivity!=null) {
-                            mainActivity.handleNewEvents(null);
-                        }
-                    }
-                }
-        );
-        MyApplication.getInstance().getRequestQueue().add(request);
-
-    }
-
-    /**
      * Requests Quests from server
      * @param callerActivity the activity that is to be notified on the result
      */
