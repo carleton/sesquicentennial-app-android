@@ -155,12 +155,10 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
             eventsList.clear();
             for (int i = 0; i < newEvents.size(); i++) {
                 eventsList.add(newEvents.get(i));
-                Log.i("EVENTS", "EventsFragment: handleNewEvents : start time is: " + newEvents.get(i).getStartTime());
             }
             hideUnableToRetrieveEvents();
         }
         eventsListAdapter.notifyDataSetChanged();
-
     }
 
 

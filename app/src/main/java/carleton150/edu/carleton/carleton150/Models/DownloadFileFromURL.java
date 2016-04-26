@@ -15,6 +15,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
+import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.Interfaces.RetrievedEventsListener;
 
 /**
@@ -35,52 +36,30 @@ public class DownloadFileFromURL extends AsyncTask<String, String, String> {
     public String doInBackground(String... f_url) {
         int count;
         try {
-            Log.i("EVENTS", "DownloadFileFromURL : doInBackground : beginning of try block");
             URL url = new URL(f_url[0]);
-            Log.i("EVENTS", "DownloadFileFromURL : doInBackground : 1");
-
             URLConnection connection = url.openConnection();
-            Log.i("EVENTS", "DownloadFileFromURL : doInBackground : 2");
-
             connection.connect();
-
-            Log.i("EVENTS", "DownloadFileFromURL : doInBackground : 3");
 
             // download the file
             InputStream input = new BufferedInputStream(connection.getInputStream());
-            Log.i("EVENTS", "DownloadFileFromURL : doInBackground : 5");
-
-
+            Constants constants = new Constants();
             // Output stream
             OutputStream output = new FileOutputStream(Environment
                     .getExternalStorageDirectory().toString()
-                    + "/carleton150Events.ics");
-            Log.i("EVENTS", "DownloadFileFromURL : doInBackground : 6");
-
+                    + "/" +constants.ICAL_FILE_NAME_WITH_EXTENSION);
 
             byte data[] = new byte[1024];
-            Log.i("EVENTS", "DownloadFileFromURL : doInBackground : 7");
-
-
-            Log.i("EVENTS", "DownloadFileFromURL : doInBackground : 8");
-
 
             while ((count = input.read(data)) != -1) {
                 // writing data to file
                 output.write(data, 0, count);
             }
-            Log.i("EVENTS", "DownloadFileFromURL : doInBackground : beginning of try block");
-
 
             // flushing output
             output.flush();
-
             // closing streams
             output.close();
-            Log.i("EVENTS", "DownloadFileFromURL : doInBackground : beginning of try block");
-
             input.close();
-            Log.i("EVENTS", "DownloadFileFromURL : doInBackground : end of try block");
 
 
         } catch (Exception e) {

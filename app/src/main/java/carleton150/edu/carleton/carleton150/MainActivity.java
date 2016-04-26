@@ -35,6 +35,7 @@ import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.Date;
+import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.ValidationException;
 import net.fortuna.ical4j.model.property.DtStamp;
@@ -50,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.FragmentChangeListener;
@@ -816,6 +818,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return this.eventsMapByDate;
     }
 
+    /**
+     * Method called when new geofences are successfully retrieved.
+     * If the current fragment is a HistoryFragment, notifies the
+     * fragment of the new geofences.
+     * Saves the geofences.
+     * @param geofences
+     */
     public void handleGeofencesNewMethod(AllGeofences geofences){
         requestingAllGeofencesNew = false;
         if(curFragment instanceof HistoryFragment){
@@ -824,10 +833,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         this.allGeofencesNew = geofences;
     }
 
+    /**
+     *
+     * @return all geofences
+     */
     public AllGeofences getAllGeofencesNew(){
         return this.allGeofencesNew;
     }
 
+    /**
+     * Requests all geofences with the new request and response format
+     */
     public void requestGeofencesNew(){
         if(!requestingAllGeofencesNew && allGeofencesNew == null) {
             mVolleyRequester.requestGeopointsNew(this);
@@ -835,20 +851,26 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    /**
+     * Gets ical feed from Constatns.ICAL_FEED_URL
+     */
     public void getEvents(){
         DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this);
-        String url = "https://go.carleton.edu/appevents";
-        downloadFileFromURL.execute(url);
+        downloadFileFromURL.execute(constants.ICAL_FEED_URL);
     }
 
 
+    /**
+     * Accesses the Ical feed that was saved into a file by DownloadFileFromURL, then uses
+     * it to create a Calendar object. Once that is completed, calls buildEventContent() to use
+     * that Calendar object to build and ArrayList of EventContent
+     */
     private void parseIcalFeed(){
-        File file = new File(Environment.getExternalStorageDirectory().toString() + "/carleton150Events.ics");
+        File file = new File(Environment.getExternalStorageDirectory().toString() + "/" + constants.ICAL_FILE_NAME_WITH_EXTENSION);
         FileInputStream fin = null;
         try {
             fin = new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         CalendarBuilder builder = new CalendarBuilder();
@@ -856,24 +878,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         try {
             calendar = builder.build(fin);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (ParserException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         if (calendar != null) {
-            Log.i("EVENTS", "MainActivity: parseIcalFeed : calendar not null : properties are: " + calendar.getProperties());
+            Log.i("EVENTS", "MainActivity: parseIcalFeed : calendar not null ");
             PropertyList plist = calendar.getProperties();
             buildEventContent(calendar);
-
-            for (Object object : plist.toArray()) {
-                System.out.println("oj :"+object);
-            }
         }
 
     }
 
+    /**
+     * Saves the calendar to an ical file in externalStorage for later use.
+     * The filepath is <External Storage Directory>fileNameWithExtension.
+     * @param fileNameWithExtension
+     * @param calendar
+     * @return
+     */
     public boolean saveIcalToFile(String fileNameWithExtension, net.fortuna.ical4j.model.Calendar calendar) {
 
         for(int i = 0; i<calendar.getProperties().size(); i++){
@@ -887,7 +910,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         FileOutputStream fout = null;
         try {
-            fout = new FileOutputStream(Environment.getExternalStorageDirectory().toString() + fileNameWithExtension);
+            fout = new FileOutputStream(Environment.getExternalStorageDirectory().toString() + "/" + fileNameWithExtension);
         } catch (FileNotFoundException e1) {
             e1.printStackTrace();
             Log.i("EVENTS", "MainActivity: generateICAL : couldn't get FileOutputStream : path is:  " + Environment.getExternalStorageDirectory().toString() + fileNameWithExtension);
@@ -908,44 +931,47 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    /**
+     * Builds an ArrayList of EventContents and passes them to the handleNewEvents method.
+     * Note that this method does not add events to EventContents unless they have a start time.
+     * @param calendar
+     */
     private void buildEventContent(net.fortuna.ical4j.model.Calendar calendar){
-        Log.i("EVENTS", "MainActivity: outputIcalFeed");
-
         ArrayList<EventContent> eventContents = new ArrayList<>();
         ComponentList componentList = calendar.getComponents();
+        boolean addComponent = true;
         for(int i = 0; i<componentList.size(); i++){
             Component component = (Component) componentList.get(i);
             PropertyList propertyList = component.getProperties();
             EventContent eventContent = new EventContent();
-            if(propertyList.getProperty("LOCATION") != null) {
-                Log.i("EVENTS", "MainActivity: outputIcalFeed : event" + i + " : Location: " + propertyList.getProperty("LOCATION").getValue());
-                eventContent.setLocation(propertyList.getProperty("LOCATION").getValue());
+            if(propertyList.getProperty(Property.LOCATION) != null) {
+                eventContent.setLocation(propertyList.getProperty(Property.LOCATION).getValue());
             }else {
-                eventContent.setLocation("No Location");
-            }if(propertyList.getProperty("SUMMARY") != null) {
-                    eventContent.setTitle(propertyList.getProperty("SUMMARY").getValue());
+                eventContent.setLocation(getResources().getString(R.string.no_location));
+            }if(propertyList.getProperty(Property.SUMMARY) != null) {
+                    eventContent.setTitle(propertyList.getProperty(Property.SUMMARY).getValue());
             }else{
-                eventContent.setTitle("No Title");
-            }if(propertyList.getProperty("DTSTART") != null) {
-                DtStart start = (DtStart) propertyList.getProperty("DTSTART");
+                eventContent.setTitle(getResources().getString(R.string.no_title));
+            }if(propertyList.getProperty(Property.DTSTART) != null) {
+                addComponent = true;
+                DtStart start = (DtStart) propertyList.getProperty(Property.DTSTART);
                 Date startDate = start.getDate();
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss", Locale.US);
                 String date = df.format(startDate);
-                Log.i("EVENTS", "MainActivity: outputIcalFeed : event" + i + " : Start Time : " + date);
-
                 eventContent.setStartTime(date);
+            }else {
+                addComponent = false;
+            }if(propertyList.getProperty(Property.DESCRIPTION) != null) {
+                    eventContent.setDescription(propertyList.getProperty(Property.DESCRIPTION).getValue());
             }else{
-                eventContent.setStartTime("No Start Time");
-            }if(propertyList.getProperty("DESCRIPTION") != null) {
-                eventContent.setDescription(propertyList.getProperty("DESCRIPTION").getValue());
-            }else{
-                eventContent.setDescription("No Description");
-            }if(propertyList.getProperty("DURATION") != null) {
-                eventContent.setDuration(propertyList.getProperty("DURATION").getValue());
-            }else{
-                eventContent.setDuration("No Duration");
+                    eventContent.setDescription(getResources().getString(R.string.no_description));
             }
-            eventContents.add(eventContent);
+            if(propertyList.getProperty(Property.DURATION) != null) {
+                eventContent.setDuration(propertyList.getProperty(Property.DURATION).getValue());
+            }
+            if(addComponent) {
+                eventContents.add(eventContent);
+            }
 
 
         }
@@ -1009,7 +1035,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-
+    /**
+     * Called by DownloadFileFromURL when the events are retrieved. If the
+     * retrieval was successful, calls a function to parse the ical feed that
+     * was retrieved into a calendar
+     * @param retrievalSucceeded
+     */
     @Override
     public void retrievedEvents(boolean retrievalSucceeded) {
         if(retrievalSucceeded){

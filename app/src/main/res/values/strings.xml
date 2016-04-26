@@ -72,5 +72,9 @@
     <string name="pref_previously_started">false</string>
     <string name="walk_to_location">"Walk to the correct location and click "Am I There?""</string>
     <string name="feature_unuseable_off_campus">This feature is intended to be used on the Carleton College campus.</string>
+    <string name="no_location">No Location</string>
+    <string name="no_title">No Title</string>
+    <string name="no_description">No Description</string>
+
 
 </resources>
