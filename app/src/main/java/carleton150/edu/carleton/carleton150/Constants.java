@@ -39,8 +39,6 @@ public class Constants {
     public static final float DEFAULT_SCALE_FROM = .5f;
 
     //Endpoints for server requests
-    public static final String INFO_ENDPOINT = "https://carl150.carleton.edu/info";
-    public static final String GEOFENCES_ENDPOINT = "https://carl150.carleton.edu/geofences";
     public static final String QUESTS_ENDPOINT = "https://carl150.carleton.edu/quest";
     public static final String MEMORIES_ENDPOINT = "https://carl150.carleton.edu/memories_fetch";
     public static final String ADD_MEMORY_ENDPOINT = "https://carl150.carleton.edu/memories_add";
@@ -59,6 +57,8 @@ public class Constants {
     //Prefixes and suffixes for the Camera class to use when the user uploads images
     public static final String JPEG_FILE_PREFIX = "IMG_";
     public static final String JPEG_FILE_SUFFIX = ".jpg";
+
+    public static final String STORIES_URL = "https://go.carleton.edu/appstories";
 
     //Tag for the broadcastReciever
     public static final String TAG = "GeofenceTransitionsIS";

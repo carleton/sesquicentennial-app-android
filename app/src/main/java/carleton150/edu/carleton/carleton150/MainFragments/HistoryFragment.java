@@ -97,10 +97,7 @@ public class HistoryFragment extends MapMainFragment{
         btnGetNearbyMemories.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                //TODO: open webview with user stories -- need URL
-
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(constants.STORIES_URL));
                 startActivity(browserIntent);
 
                 //Shows a popover displaying nearby memories, disabled because we are no longer using this feature

@@ -74,7 +74,7 @@ public class VolleyRequester {
                         ArrayList<Quest> quests = new ArrayList<>();
                         try {
                             JSONArray responseArr = response.getJSONArray("content");
-                            createFile(constants.QUESTS_FILE_NAME_WITH_EXTENSION, responseArr.toString());
+                            createFile(constants.QUESTS_FILE_NAME_WITH_EXTENSION, response.toString());
                             Log.i(logMessages.VOLLEY, "requestQuests : length of responseArr is: " + responseArr.length());
                             for (int i = 0; i < responseArr.length(); i++) {
                                 try {

@@ -750,8 +750,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }else{
             if(fileExists(constants.QUESTS_FILE_NAME_WITH_EXTENSION)){
+                Log.i("NEWQUESTS", "MainActivity: requestQuests : file does exist");
+
                 parseQuests(constants.QUESTS_FILE_NAME_WITH_EXTENSION, false);
             }else{
+                Log.i("NEWQUESTS", "MainActivity: requestQuests : file does not exist");
                 if(curFragment instanceof QuestFragment){
                     curFragment.handleNewQuests(null);
                 }

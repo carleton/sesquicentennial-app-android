@@ -95,7 +95,7 @@
                 android:elevation="10dp"
                 android:textColor="@color/colorAccent"
                 android:padding="10dp"
-                android:text="View Historical Stories"
+                android:text="@string/read_stories"
                 android:layout_alignParentBottom="true"
                 android:layout_height="wrap_content" />
 
