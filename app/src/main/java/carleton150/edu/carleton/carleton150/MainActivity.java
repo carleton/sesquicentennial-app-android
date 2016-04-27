@@ -745,7 +745,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void requestQuests(){
         if(isConnectedToNetwork()) {
             if (questInfo == null && !requestingQuests) {
-                mVolleyRequester.requestQuests(this);
+                DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.QUESTS_FILE_NAME_WITH_EXTENSION);
+                downloadFileFromURL.execute(constants.QUESTS_FEED_URL);
                 requestingQuests = true;
             }
         }else{
@@ -822,6 +823,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private void parseQuests(String fileNameWithExtension, boolean isNewInfo){
 
+        questInfo = new ArrayList<>();
+
         if(isNewInfo){
             lastQuestUpdate = Calendar.getInstance().getTime();
         }
@@ -835,19 +838,26 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             JSONArray responseArr = questsObject.getJSONArray("content");
 
             for (int i = 0; i < responseArr.length(); i++) {
+                Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : i = " + i);
+
                 try {
+                    Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : in inner try block ");
+
                     Quest responseQuest = gson.fromJson(responseArr.getString(i), Quest.class);
                     Log.i(logMessages.VOLLEY, "requestQuests : quest response string = : " + responseArr.getString(i));
                     questInfo.add(responseQuest);
                 }
                 catch (Exception e) {
-                    Log.i(logMessages.VOLLEY, "requestQuests : quest response string = : " + responseArr.getString(i));
-                    Log.i(logMessages.VOLLEY, "requestQuests : unable to parse result");
+                    Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : unable to parse: " + responseArr.getString(i));
+                    Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : unable to parse: error message: " + e.getMessage());
+
                     e.getMessage();
                     e.printStackTrace();
                 }
             }
         } catch (JSONException e) {
+            Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : outer catch block : error : " + e.getMessage());
+            handleNewQuests(null);
             e.printStackTrace();
         }
         handleNewQuests(questInfo);
@@ -1010,9 +1020,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 parseIcalFeed(fileNameWithExtension, true);
             }if(fileNameWithExtension.equals(constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)){
                 parseGeofences(fileNameWithExtension, true);
+            }if(fileNameWithExtension.equals(constants.QUESTS_FILE_NAME_WITH_EXTENSION)){
+                parseQuests(fileNameWithExtension, true);
             }
         }else{
-            Log.i("EVENTS", "unable to retrieve events");
+            if(fileNameWithExtension.equals(constants.ICAL_FILE_NAME_WITH_EXTENSION)) {
+                handleNewEvents(null);
+                requestingEvents = false;
+            }if(fileNameWithExtension.equals(constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)){
+                handleGeofencesNewMethod(null, false);
+                requestingAllGeofencesNew = false;
+            }if(fileNameWithExtension.equals(constants.QUESTS_FILE_NAME_WITH_EXTENSION)){
+                handleNewQuests(null);
+                requestingQuests = false;
+            }
         }
     }
 

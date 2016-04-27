@@ -5,9 +5,9 @@ package carleton150.edu.carleton.carleton150.POJO.Quests;
  */
 public class Waypoint {
 
-    private double lat;
-    private double lng;
-    private double rad;
+    private String lat;
+    private String lng;
+    private String rad;
 
 
     private Clue clue;
@@ -47,27 +47,27 @@ public class Waypoint {
         this.completion = completion;
     }
 
-    public double getLat() {
+    public String getLat() {
         return lat;
     }
 
-    public void setLat(double lat) {
+    public void setLat(String lat) {
         this.lat = lat;
     }
 
-    public double getLng() {
+    public String getLng() {
         return lng;
     }
 
-    public void setLng(double lng) {
+    public void setLng(String lng) {
         this.lng = lng;
     }
 
-    public double getRad() {
+    public String getRad() {
         return rad;
     }
 
-    public void setRad(double rad) {
+    public void setRad(String rad) {
         this.rad = rad;
     }
 

@@ -39,11 +39,11 @@ public class Constants {
     public static final float DEFAULT_SCALE_FROM = .5f;
 
     //Endpoints for server requests
-    public static final String QUESTS_ENDPOINT = "https://carl150.carleton.edu/quest";
     public static final String MEMORIES_ENDPOINT = "https://carl150.carleton.edu/memories_fetch";
     public static final String ADD_MEMORY_ENDPOINT = "https://carl150.carleton.edu/memories_add";
 
     public static final String NEW_GEOFENCES_ENDPOINT = "https://go.carleton.edu/apphistory";
+    public static final String QUESTS_FEED_URL = "https://go.carleton.edu/appquests";
 
     //TODO: final URL should be : https://go.carleton.edu/appevents
     public static final String ICAL_FEED_URL = "https://apps.carleton.edu/calendar";

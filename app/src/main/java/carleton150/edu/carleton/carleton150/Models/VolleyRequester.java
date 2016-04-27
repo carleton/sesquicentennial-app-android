@@ -57,70 +57,6 @@ public class VolleyRequester {
     }
 
 
-
-    /**
-     * Requests Quests from server
-     * @param callerActivity the activity that is to be notified on the result
-     */
-    public void requestQuests(final MainActivity callerActivity){
-        final Gson gson = new Gson();
-        JSONObject emptyRequest = new JSONObject();
-        JsonObjectRequest request = new JsonObjectRequest(constants.QUESTS_ENDPOINT, emptyRequest,
-                new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        String responseString = response.toString();
-                        ArrayList<Quest> quests = new ArrayList<>();
-                        try {
-                            JSONArray responseArr = response.getJSONArray("content");
-                            createFile(constants.QUESTS_FILE_NAME_WITH_EXTENSION, response.toString());
-                            Log.i(logMessages.VOLLEY, "requestQuests : length of responseArr is: " + responseArr.length());
-                            for (int i = 0; i < responseArr.length(); i++) {
-                                try {
-                                    Quest responseQuest = gson.fromJson(responseArr.getString(i), Quest.class);
-                                    Log.i(logMessages.VOLLEY, "requestQuests : quest response string = : " + responseArr.getString(i));
-                                    quests.add(responseQuest);
-                                }
-                                catch (Exception e) {
-                                    Log.i(logMessages.VOLLEY, "requestQuests : quest response string = : " + responseArr.getString(i));
-                                    Log.i(logMessages.VOLLEY, "requestQuests : unable to parse result");
-                                    e.getMessage();
-                                    e.printStackTrace();
-                                }
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
-                        Log.i(logMessages.VOLLEY, "requestQuests : response string = : " + responseString);
-                        Log.i(logMessages.VOLLEY, "requestQuests : length of quests is: " + quests.size());
-                        callerActivity.handleNewQuests(quests);
-                    }
-                },
-
-                new Response.ErrorListener() {
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.i(logMessages.VOLLEY, "requestQuests : error : " + error.toString());
-                        if(callerActivity!=null) {
-                            callerActivity.handleNewQuests(null);
-                        }
-                    }
-                }
-        );
-
-        request.setRetryPolicy(new DefaultRetryPolicy(
-                60000,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-
-        MyApplication.getInstance().getRequestQueue().add(request);
-    }
-
-
     /**
      * Method to request new geofences to monitor. When it receives the new geofences,
      * calls a method in the mainActivity to handle the new geofences
@@ -135,9 +71,6 @@ public class VolleyRequester {
         JSONObject memoriesRequest = new JSONObject();
 
         try {
-//            memoriesRequest.put("lat", 44.461319);
-//            memoriesRequest.put("lng", -93.156094);
-//            memoriesRequest.put("rad", 0.1);
             memoriesRequest.put("lat", latitude);
             memoriesRequest.put("lng", longitude);
             memoriesRequest.put("rad", radius);

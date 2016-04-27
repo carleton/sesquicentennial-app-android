@@ -347,9 +347,9 @@ public class QuestInProgressFragment extends MapMainFragment {
             Location curLocation = mainActivity.mLastLocation;
             if (curLocation != null) {
                 Waypoint curWaypoint = quest.getWaypoints()[numClue];
-                double lat = curWaypoint.getLat();
-                double lon = curWaypoint.getLng();
-                double rad = curWaypoint.getRad();
+                double lat = Double.parseDouble(curWaypoint.getLat());
+                double lon = Double.parseDouble(curWaypoint.getLng());
+                double rad = Double.parseDouble(curWaypoint.getRad());
                 float[] results = new float[1];
 
                 Location.distanceBetween(curLocation.getLatitude(), curLocation.getLongitude(),

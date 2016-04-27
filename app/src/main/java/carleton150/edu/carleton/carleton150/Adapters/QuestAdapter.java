@@ -1,10 +1,12 @@
 package carleton150.edu.carleton.carleton150.Adapters;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +15,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -75,7 +79,11 @@ public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.QuestViewHol
         holder.setDifficulty(qi.getDifficulty(), resources);
         holder.setCreator(qi.getCreator());
         holder.setTargetAudience(qi.getAudience(), resources);
-        holder.setImage(position, qi.getImage(), screenWidth, screenHeight);
+
+        Uri uri = Uri.parse(qi.getImage());
+        Context imgContext = holder.getImageView().getContext();
+        Picasso.with(imgContext).load(uri).into(holder.getImageView());
+
         double cluesCompleted = sharedPreferences.getInt(qi.getName(), 0);
         double percentCompleted = 0;
         if(cluesCompleted != 0){
@@ -132,6 +140,10 @@ public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.QuestViewHol
             creator = (TextView) itemView.findViewById(R.id.txt_creator);
             intendedAudience = (TextView) itemView.findViewById(R.id.txt_intended_audience);
             btnBeginQuest.setOnClickListener(this);
+        }
+
+        public ImageView getImageView(){
+            return this.image;
         }
 
 
