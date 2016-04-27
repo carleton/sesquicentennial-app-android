@@ -31,14 +31,12 @@ import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
-import net.fortuna.ical4j.data.CalendarOutputter;
 import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
-import net.fortuna.ical4j.model.ValidationException;
 import net.fortuna.ical4j.model.property.DtStart;
 import net.fortuna.ical4j.util.CompatibilityHints;
 
@@ -50,20 +48,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.FragmentChangeListener;
@@ -115,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     };
 
-    public VolleyRequester mVolleyRequester = new VolleyRequester();
     AlertDialog networkAlertDialog;
     AlertDialog playServicesConnectivityAlertDialog;
 
@@ -619,13 +611,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * Called by VolleyRequester, handles new quests from the server
      * @param newQuests
      */
-    public void handleNewQuests(ArrayList<Quest> newQuests) {
+    public void handleNewQuests(ArrayList<Quest> newQuests, boolean newInfo) {
         /*This is a call from the VolleyRequester, so this check prevents the app from
         crashing if the user leaves the tab while the app is trying
         to get quests from the server
          */
 
         requestingQuests = false;
+
+        if(newQuests != null && newInfo) {
+            lastQuestUpdate = Calendar.getInstance().getTime();
+        }
 
         if(newQuests != null) {
             questInfo = newQuests;
@@ -685,17 +681,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     public void requestGeofencesNewer(){
-
         if(isConnectedToNetwork()) {
             if (!requestingAllGeofencesNew && lastGeofenceUpdate == null) {
                 downloadFileFromURLGeofences.execute(constants.NEW_GEOFENCES_ENDPOINT);
                 requestingAllGeofencesNew = true;
             } else if (!requestingAllGeofencesNew && lastGeofenceUpdate != null) {
-                Calendar currentTime = Calendar.getInstance();
-                java.util.Date currentDate = currentTime.getTime();
-                long time = currentDate.getTime();
-                long lastUpdateTime = lastGeofenceUpdate.getTime();
-                long hoursSinceUpdate = (time - lastUpdateTime) / (1000 * 60 * 60);
+                long hoursSinceUpdate = checkElapsedTime(lastGeofenceUpdate.getTime());
                 if (hoursSinceUpdate > 5) {
                     downloadFileFromURLGeofences.execute(constants.NEW_GEOFENCES_ENDPOINT);
                     requestingAllGeofencesNew = true;
@@ -711,21 +702,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     /**
-     * Gets ical feed from Constatns.ICAL_FEED_URL
+     * Gets ical feed from Constants.ICAL_FEED_URL
      */
     public void requestEvents(){
         if(isConnectedToNetwork()) {
-            if (!requestingEvents && eventsMapByDate.size() == 0) {
-                String url = constants.ICAL_FEED_URL;
-                Calendar c = Calendar.getInstance();
-                java.util.Date currentDate = c.getTime();
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                String formattedDate = dateFormat.format(currentDate);
-                url = url + constants.ICAL_FEED_DATE_REQUEST + formattedDate + constants.ICAL_FEED_FORMAT_REQUEST;
+            if (!requestingEvents && lastEventsUpdate == null) {
+                String url = buildEventsRequestURL();
                 Log.i("EVENTS", "MainActivity: requestEvents: url is: " + url);
                 DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.ICAL_FILE_NAME_WITH_EXTENSION);
                 downloadFileFromURL.execute(url);
                 requestingEvents = true;
+            }else if(!requestingEvents && lastEventsUpdate !=null){
+                long hoursSinceUpdate = checkElapsedTime(lastEventsUpdate.getTime());
+                if (hoursSinceUpdate > 5) {
+                    String url = buildEventsRequestURL();
+                    DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.ICAL_FILE_NAME_WITH_EXTENSION);
+                    downloadFileFromURL.execute(url);
+                    requestingEvents = true;
+                }
             }
         }else{
             if(fileExists(constants.ICAL_FILE_NAME_WITH_EXTENSION)){
@@ -739,20 +733,49 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     /**
+     *
+     * @param previousTime
+     * @return elapsed time between previousTime and current time in hours
+     */
+    private long checkElapsedTime(long previousTime){
+        Calendar currentTime = Calendar.getInstance();
+        java.util.Date currentDate = currentTime.getTime();
+        long time = currentDate.getTime();
+        long hoursSinceUpdate = (time - previousTime) / (1000 * 60 * 60);
+        return hoursSinceUpdate;
+    }
+
+    private String buildEventsRequestURL(){
+        String url = constants.ICAL_FEED_URL;
+        Calendar c = Calendar.getInstance();
+        java.util.Date currentDate = c.getTime();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String formattedDate = dateFormat.format(currentDate);
+        url = url + constants.ICAL_FEED_DATE_REQUEST + formattedDate + constants.ICAL_FEED_FORMAT_REQUEST;
+        return url;
+    }
+
+    /**
      * uses the volleyRequester to retrieve all quests from the server. Results are handled
      * in handleNewQuests()
      */
     public void requestQuests(){
         if(isConnectedToNetwork()) {
-            if (questInfo == null && !requestingQuests) {
+            if (lastQuestUpdate == null && !requestingQuests) {
                 DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.QUESTS_FILE_NAME_WITH_EXTENSION);
                 downloadFileFromURL.execute(constants.QUESTS_FEED_URL);
                 requestingQuests = true;
+            }else if(!requestingQuests && lastQuestUpdate != null){
+                long hoursSinceLastUpdate = checkElapsedTime(lastQuestUpdate.getTime());
+                if(hoursSinceLastUpdate > 5){
+                    DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.QUESTS_FILE_NAME_WITH_EXTENSION);
+                    downloadFileFromURL.execute(constants.QUESTS_FEED_URL);
+                    requestingQuests = true;
+                }
             }
         }else{
             if(fileExists(constants.QUESTS_FILE_NAME_WITH_EXTENSION)){
                 Log.i("NEWQUESTS", "MainActivity: requestQuests : file does exist");
-
                 parseQuests(constants.QUESTS_FILE_NAME_WITH_EXTENSION, false);
             }else{
                 Log.i("NEWQUESTS", "MainActivity: requestQuests : file does not exist");
@@ -803,7 +826,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (calendar != null) {
             Log.i("EVENTS", "MainActivity: parseIcalFeed : calendar not null ");
             PropertyList plist = calendar.getProperties();
-            buildEventContent(calendar);
+            buildEventContent(calendar, newInfo);
         }
 
     }
@@ -857,10 +880,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         } catch (JSONException e) {
             Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : outer catch block : error : " + e.getMessage());
-            handleNewQuests(null);
+            handleNewQuests(null,false);
             e.printStackTrace();
         }
-        handleNewQuests(questInfo);
+        handleNewQuests(questInfo, isNewInfo);
     }
 
     private String readFromFile(String fileNameWithExtension) {
@@ -900,7 +923,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * Note that this method does not add events to EventContents unless they have a start time.
      * @param calendar
      */
-    private void buildEventContent(net.fortuna.ical4j.model.Calendar calendar){
+    private void buildEventContent(net.fortuna.ical4j.model.Calendar calendar, boolean isNewInfo){
         ComponentList componentList = calendar.getComponents();
         ArrayList<EventContent> eventContents = new ArrayList<>();
         boolean addComponent = true;
@@ -940,7 +963,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         }
 
-       handleNewEvents(eventContents);
+       handleNewEvents(eventContents, isNewInfo);
     }
 
 
@@ -950,12 +973,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * Notifies the fragment of the new events if the fragment in view is the EventsFragment
      * @param events
      */
-    public void handleNewEvents(ArrayList<EventContent> events) {
+    public void handleNewEvents(ArrayList<EventContent> events, boolean isNewInfo) {
         requestingEvents = false;
         String completeDate;
         String[] completeDateArray;
         String dateByDay;
         eventsMapByDate.clear();
+
+
 
         if(events == null){
             if(curFragment instanceof EventsFragment){
@@ -1005,6 +1030,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 curFragment.handleNewEvents(eventsMapByDate);
             }
         }
+
+        if(eventsMapByDate.size() != 0 && isNewInfo) {
+            lastEventsUpdate = Calendar.getInstance().getTime();
+        }
     }
 
     /**
@@ -1025,13 +1054,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }else{
             if(fileNameWithExtension.equals(constants.ICAL_FILE_NAME_WITH_EXTENSION)) {
-                handleNewEvents(null);
+                handleNewEvents(null, false);
                 requestingEvents = false;
             }if(fileNameWithExtension.equals(constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)){
                 handleGeofencesNewMethod(null, false);
                 requestingAllGeofencesNew = false;
             }if(fileNameWithExtension.equals(constants.QUESTS_FILE_NAME_WITH_EXTENSION)){
-                handleNewQuests(null);
+                handleNewQuests(null, false);
                 requestingQuests = false;
             }
         }
