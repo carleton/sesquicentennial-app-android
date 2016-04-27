@@ -20,13 +20,12 @@ import java.util.ArrayList;
 
 import carleton150.edu.carleton.carleton150.Adapters.QuestAdapter;
 import carleton150.edu.carleton.carleton150.Constants;
-import carleton150.edu.carleton.carleton150.Interfaces.FragmentChangeListener;
+import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.Interfaces.RecyclerViewClickListener;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.R;
 
-import static carleton150.edu.carleton.carleton150.R.id.txt_request_events;
 import static carleton150.edu.carleton.carleton150.R.id.txt_request_quests;
 
 /**
@@ -40,10 +39,15 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
     private QuestAdapter questAdapter;
     private int screenWidth;
     private View view;
+    private QuestStartedListener questStartedListener;
 
 
     public QuestFragment() {
         // Required empty public constructor
+    }
+
+    public void initialize(QuestStartedListener questStartedListener){
+        this.questStartedListener = questStartedListener;
     }
 
     @Override
@@ -132,8 +136,7 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
     private void beginQuest(Quest quest){
         QuestInProgressFragment fr=new QuestInProgressFragment();
         fr.initialize(quest);
-        FragmentChangeListener fc=(FragmentChangeListener)getActivity();
-        fc.replaceFragment(fr);
+        questStartedListener.questStarted(fr);
     }
 
     /**
@@ -264,5 +267,20 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
 
         return false;
 
+    }
+
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isVisibleToUser && isResumed()) {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            questInfo = mainActivity.getQuests();
+            if (questInfo == null) {
+                mainActivity.requestQuests();
+            } else {
+                handleNewQuests(questInfo);
+            }
+        }
     }
 }

@@ -48,7 +48,7 @@ public class Constants {
     //TODO: final URL should be : https://go.carleton.edu/appevents
     public static final String ICAL_FEED_URL = "https://apps.carleton.edu/calendar";
     public static final String ICAL_FEED_DATE_REQUEST = "/?start_date=";
-    public static final String ICAL_FEED_FORMAT_REQUEST = "/&format=ical";
+    public static final String ICAL_FEED_FORMAT_REQUEST = "&format=ical";
 
     public static final String ICAL_FILE_NAME_WITH_EXTENSION = "carleton150Events.ics";
     public static final String GEOFENCES_FILE_NAME_WITH_EXTENSION = "carleton150Geofences.txt";

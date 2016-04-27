@@ -31,7 +31,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
-import carleton150.edu.carleton.carleton150.Interfaces.FragmentChangeListener;
+import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.Models.BitmapWorkerTask;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
@@ -57,6 +57,8 @@ public class QuestInProgressFragment extends MapMainFragment {
 
     private SupportMapFragment mapFragment;
 
+    QuestStartedListener questStartedListener;
+
 
     public QuestInProgressFragment() {
         // Required empty public constructor
@@ -69,6 +71,10 @@ public class QuestInProgressFragment extends MapMainFragment {
      */
     public void initialize(Quest quest){
         this.quest = quest;
+    }
+
+    public void setQuestStartedListener(QuestStartedListener questStartedListener){
+        this.questStartedListener = questStartedListener;
     }
 
 
@@ -333,7 +339,6 @@ public class QuestInProgressFragment extends MapMainFragment {
             drawLocationMarker(mainActivity.mLastLocation);
         }
         drawTiles();
-
     }
 
     /**
@@ -401,8 +406,10 @@ public class QuestInProgressFragment extends MapMainFragment {
         setCamera(newLocation, zoomToUserLocation);
         drawLocationMarker(newLocation);
         MainActivity mainActivity = (MainActivity) getActivity();
-        if(mainActivity.mLastLocation != null) {
-            setUpMapIfNeeded();
+        if(mainActivity != null) {
+            if (mainActivity.mLastLocation != null) {
+                setUpMapIfNeeded();
+            }
         }
     }
 
@@ -540,6 +547,7 @@ public class QuestInProgressFragment extends MapMainFragment {
      * completed by showing the QuestCompletedFragment
      */
     private void showCompletedQuestMessage(){
+
         goToQuestCompletionScreen();
     }
 
@@ -644,15 +652,14 @@ public class QuestInProgressFragment extends MapMainFragment {
         super.onSaveInstanceState(outState);
     }
 
-    /**
+   /**
      * Starts fragment to show animation and message on quest completion
      */
     private void goToQuestCompletionScreen(){
         System.gc();
         QuestCompletedFragment fr = new QuestCompletedFragment();
         fr.initialize(quest);
-        FragmentChangeListener fc=(FragmentChangeListener)getActivity();
-        fc.replaceFragment(fr);
+        questStartedListener.questCompleted(fr);
     }
 
     /**

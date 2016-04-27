@@ -35,13 +35,12 @@
             android:minHeight="?attr/actionBarSize"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
-<!--
+
         <carleton150.edu.carleton.carleton150.NoSwipeViewPager
             android:id="@+id/pager"
             android:layout_width="match_parent"
             android:layout_height="fill_parent"
             android:layout_below="@id/tab_layout"/>
--->
 
     <FrameLayout
         android:layout_width="match_parent"

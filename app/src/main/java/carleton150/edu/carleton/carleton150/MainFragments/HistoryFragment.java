@@ -54,6 +54,7 @@ public class HistoryFragment extends MapMainFragment{
     private View view;
     //The Markers for geofences that are currently being displayed
     ArrayList<Marker> currentGeofenceMarkers = new ArrayList<Marker>();
+    AllGeofences allGeofences;
 
     //A Map of the info retrieved from the server where the string is the latitude
     //and longitude of the location where the events occur
@@ -159,6 +160,8 @@ public class HistoryFragment extends MapMainFragment{
         super.onViewCreated(view, savedInstanceState);
     }
 
+
+
     /**
      * If the tutorial is visible, makes it invisible. Otherwise, makes it visible
      */
@@ -230,12 +233,13 @@ public class HistoryFragment extends MapMainFragment{
     public void onResume() {
         super.onResume();
         MainActivity mainActivity = (MainActivity) getActivity();
-        if(mainActivity.isConnectedToNetwork()) {
-            setUpMapIfNeeded();
-        }
 
+        //TODO: do we need internet connectivity for this?
+        setUpMapIfNeeded();
         mMap.setMyLocationEnabled(mainActivity.checkIfGPSEnabled());
     }
+
+    //TODO: need to add back in fragmentInView method to draw geofence markers when fragment comes into view
 
     /**
 
@@ -339,38 +343,18 @@ public class HistoryFragment extends MapMainFragment{
     }
 
     /**
-     * Uses bubble sort to sort geofenceInfoContents by date
-     *
-     * @param geofenceInfoContents
-     * @return
-     */
-    private GeofenceInfoContent[] sortByDate(GeofenceInfoContent[] geofenceInfoContents){
-        GeofenceInfoContent infoContent = null;
-        for(int j = 0; j < geofenceInfoContents.length; j++) {
-            for (int i = 0; i < geofenceInfoContents.length; i++) {
-                infoContent = geofenceInfoContents[i];
-                if (i < geofenceInfoContents.length - 1) {
-                    String year1 = infoContent.getYear();
-                    String year2 = geofenceInfoContents[i + 1].getYear();
-                    int year1Int = Integer.parseInt(year1);
-                    int year2Int = Integer.parseInt(year2);
-                    if (year1Int < year2Int) {
-                        geofenceInfoContents[i] = geofenceInfoContents[i + 1];
-                        geofenceInfoContents[i + 1] = infoContent;
-                    }
-                }
-            }
-        }
-        return geofenceInfoContents;
-    }
-
-    /**
      * Gets new geofences
      * and draws markers on the map
      */
     public void updateGeofences() {
+
         MainActivity mainActivity = (MainActivity) getActivity();
-        mainActivity.requestGeofencesNewer();
+
+        if(mainActivity.getAllGeofencesNew() == null) {
+            mainActivity.requestGeofencesNewer();
+        }else{
+            allGeofences = mainActivity.getAllGeofencesNew();
+        }
     }
 
     /**
@@ -426,6 +410,7 @@ public class HistoryFragment extends MapMainFragment{
 
 
     public void addNewGeofenceInfoNew(AllGeofences allGeofences){
+        this.allGeofences = allGeofences;
         if(allGeofences == null){
             showUnableToRetrieveGeofences();
             Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences null");
@@ -446,6 +431,7 @@ public class HistoryFragment extends MapMainFragment{
         }else {
             Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences events length is: " + allGeofences.getEvents().length);
             hideUnableToRetrieveGeofences();
+            newCurrentGeofencesInfoMap.clear();
             for (int i = 0; i < allGeofences.getEvents().length; i++) {
                 Event event = allGeofences.getEvents()[i];
                 if(event.getGeo() != null) {
@@ -471,11 +457,21 @@ public class HistoryFragment extends MapMainFragment{
      * Draws geofence markers for every goefence
      */
     private void drawAllGeofenceMarkers(){
-        MainActivity mainActivity = (MainActivity) getActivity();
 
+        Log.i("GEOFENCE MONITORING", "HistoryFragment: drawAllGeofenceMarkers: called");
+        MainActivity mainActivity = (MainActivity) getActivity();
             if(mainActivity.getAllGeofencesNew() != null) {
-                addNewGeofenceInfoNew(mainActivity.getAllGeofencesNew());
+                Log.i("GEOFENCE MONITORING", "HistoryFragment: new geofences aren't null");
+                if(mainActivity.getAllGeofencesNew().getEvents().length == 0){
+                    Log.i("GEOFENCE MONITORING", "HistoryFragment: new geofences aren't null");
+                    mainActivity.requestGeofencesNewer();
+                }
+                else{
+                    allGeofences = mainActivity.getAllGeofencesNew();
+                    addNewGeofenceInfoNew(allGeofences);
+                }
         }else{
+                Log.i("GEOFENCE MONITORING", "HistoryFragment: new geofences are null");
                 mainActivity.requestGeofencesNewer();
             }
     }
@@ -500,6 +496,20 @@ public class HistoryFragment extends MapMainFragment{
             btnRequestGeofences.setVisibility(View.GONE);
         }catch (NullPointerException e){
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isVisibleToUser && isResumed()) {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            allGeofences = mainActivity.getAllGeofencesNew();
+            if (allGeofences == null) {
+                mainActivity.requestGeofencesNewer();
+            } else {
+                addNewGeofenceInfoNew(allGeofences);
+            }
         }
     }
 }

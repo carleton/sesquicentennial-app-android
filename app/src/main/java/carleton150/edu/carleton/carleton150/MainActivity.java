@@ -14,11 +14,13 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -58,20 +60,16 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 
+import carleton150.edu.carleton.carleton150.Adapters.MyFragmentPagerAdapter;
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
-import carleton150.edu.carleton.carleton150.Interfaces.FragmentChangeListener;
 import carleton150.edu.carleton.carleton150.Interfaces.RetrievedFileListener;
 import carleton150.edu.carleton.carleton150.MainFragments.EventsFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.HistoryFragment;
-import carleton150.edu.carleton.carleton150.MainFragments.MainFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestInProgressFragment;
 import carleton150.edu.carleton.carleton150.Models.DownloadFileFromURL;
 import carleton150.edu.carleton.carleton150.Models.GeofenceErrorMessages;
-import carleton150.edu.carleton.carleton150.Models.VolleyRequester;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
-import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
-import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoObject;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectContent;
 import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.AllGeofences;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
@@ -82,7 +80,7 @@ import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
  * and quests using VolleyRequester and stores them for the fragments.
  */
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, LocationListener, ResultCallback<Status>, FragmentChangeListener,
+        GoogleApiClient.OnConnectionFailedListener, LocationListener, ResultCallback<Status>,
         RetrievedFileListener {
 
     //things for location
@@ -95,8 +93,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private LocationRequest mLocationRequest;
     private static Constants constants = new Constants();
     private LogMessages logMessages = new LogMessages();
-    MainFragment curFragment = null;
     public boolean needToShowGPSAlert = true;
+
+    MyFragmentPagerAdapter adapter;
 
     private Handler handler = new Handler();
 
@@ -115,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ArrayList<Quest> questInfo = null;
     private java.util.Date lastQuestUpdate;
 
-    private LinkedHashMap<String, ArrayList<EventContent>> eventsMapByDate = new LinkedHashMap<String, ArrayList<EventContent>>();
+    private LinkedHashMap<String, ArrayList<EventContent>> eventsMapByDate;
     private ArrayList<EventContent> tempEventContentLst = new ArrayList<EventContent>();
     private boolean requestingEvents = false;
     private java.util.Date lastEventsUpdate;
@@ -154,59 +153,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             showGooglePlayServicesUnavailableDialog();
         }
 
-        //managing fragments and UI
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        //managing fragments an UI
+        final FragmentManager manager=getSupportFragmentManager();
+        adapter=new MyFragmentPagerAdapter(manager);
+        adapter.initialize(this, manager);
 
-        }
+        final NoSwipeViewPager viewPager = (NoSwipeViewPager) findViewById(R.id.pager);
+        viewPager.setAdapter(adapter);
+
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.history)));
-        tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.events)));
-        tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.quests)));
-        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+        tabLayout.setupWithViewPager(viewPager);
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        tabLayout.setTabsFromPagerAdapter(adapter);
 
-        curFragment = new HistoryFragment();
-        int commit = getSupportFragmentManager()
-                .beginTransaction().replace(R.id.containerLayout, curFragment).commit();
 
-        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                if (tab.getPosition() == 0) {
-                    if (curFragment instanceof HistoryFragment == false) {
-                        getSupportFragmentManager().beginTransaction().remove(curFragment).commit();
-                        curFragment = new HistoryFragment();
-                    }
-                }
-                if (tab.getPosition() == 1) {
-                    if (curFragment instanceof EventsFragment == false) {
-                        getSupportFragmentManager().beginTransaction().remove(curFragment).commit();
-                        curFragment = new EventsFragment();
-                    }
-                }
-                if (tab.getPosition() == 2) {
-                    if (curFragment instanceof QuestFragment == false) {
-                        getSupportFragmentManager().beginTransaction().remove(curFragment).commit();
-                        curFragment = new QuestFragment();
-                    }
-                }
-                int commit = getSupportFragmentManager()
-                        .beginTransaction().replace(R.id.containerLayout, curFragment).commit();
-
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
 
         if(isConnectedToNetwork()) {
             requestGeofencesNewer();
@@ -368,8 +328,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * Calls a method in the current fragment to handle a location change.
      */
     private void tellFragmentLocationChanged() {
-        if (curFragment != null) {
-            curFragment.handleLocationChange(mLastLocation);
+        if (adapter.getCurrentFragment() != null) {
+            adapter.getCurrentFragment().handleLocationChange(mLastLocation);
         }
     }
 
@@ -513,37 +473,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    /**
-     * Overridden from FragmentChangeListener interface to replace
-     * the QuestFragment with a new QuestInProgressFragment
-     * when a quest is started from the QuestFragment
-     *
-     * @param fragment
-     */
-    @Override
-    public void replaceFragment(MainFragment fragment) {
-        //adapter.replaceFragment(fragment);
-        getSupportFragmentManager().beginTransaction().remove(curFragment).commit();
-
-        curFragment = fragment;
-
-        int commit = getSupportFragmentManager()
-                .beginTransaction().replace(R.id.containerLayout, curFragment).commit();
-    }
-
 
     /**
-     * If QuestInProgressFragment is the current fragment,
+     * If QuestInProgressFragment or QuestCompletedFragment is the current fragment,
      * overrides back button to replaces the QuestInProgressFragment
      * with a new QuestFragment
      */
     @Override
     public void onBackPressed() {
-        if (curFragment instanceof QuestInProgressFragment || curFragment instanceof QuestCompletedFragment) {
-            getSupportFragmentManager().beginTransaction().remove(curFragment).commit();
-            curFragment = new QuestFragment();
-            int commit = getSupportFragmentManager()
-                    .beginTransaction().replace(R.id.containerLayout, curFragment).commit();
+        if (adapter.getCurrentFragment() instanceof QuestInProgressFragment ||
+                adapter.getCurrentFragment() instanceof QuestCompletedFragment) {
+            adapter.backButtonPressed();
         } else {
             super.onBackPressed();
         }
@@ -627,8 +567,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             questInfo = newQuests;
         }
 
-        if(curFragment instanceof QuestFragment){
-            curFragment.handleNewQuests(questInfo);
+        if(adapter.getCurrentFragment() instanceof QuestFragment){
+            adapter.getCurrentFragment().handleNewQuests(questInfo);
         }
 
     }
@@ -661,13 +601,23 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     public void handleGeofencesNewMethod(AllGeofences geofences, boolean isNewInfo){
         requestingAllGeofencesNew = false;
+        Log.i("GEOFENCE MONITORING", "MainActivity: handleGeofencesNEwMethod: called");
+
 
         if(geofences != null && isNewInfo) {
             lastGeofenceUpdate = Calendar.getInstance().getTime();
         }
 
-        if(curFragment instanceof HistoryFragment){
-            ((HistoryFragment) curFragment).addNewGeofenceInfoNew(geofences);
+        if(adapter.getCurrentFragment() instanceof HistoryFragment){
+            Log.i("GEOFENCE MONITORING", "MainActivity: handleGeofencesNewMethod: current fragment is historyfragment");
+
+            ((HistoryFragment) adapter.getCurrentFragment()).addNewGeofenceInfoNew(geofences);
+        }else if(adapter.getCurrentFragment() == null) {
+            Log.i("GEOFENCE MONITORING", "MainActivity: handleGeofencesNewMethod: current fragment is null");
+
+        }else{
+                Log.i("GEOFENCE MONITORING", "MainActivity: handleGeofencesNewMethod: current fragment is NOT historyfragment");
+
         }
         this.allGeofencesNew = geofences;
     }
@@ -683,20 +633,29 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void requestGeofencesNewer(){
         if(isConnectedToNetwork()) {
             if (!requestingAllGeofencesNew && lastGeofenceUpdate == null) {
+                Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: not requesting new geofences, last update null. About to request");
                 downloadFileFromURLGeofences.execute(constants.NEW_GEOFENCES_ENDPOINT);
                 requestingAllGeofencesNew = true;
             } else if (!requestingAllGeofencesNew && lastGeofenceUpdate != null) {
+                Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: not requesting new geofences, last update not null");
+
                 long hoursSinceUpdate = checkElapsedTime(lastGeofenceUpdate.getTime());
                 if (hoursSinceUpdate > 5) {
+                    Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: more than five hours since last update, requesting...");
+
                     downloadFileFromURLGeofences.execute(constants.NEW_GEOFENCES_ENDPOINT);
                     requestingAllGeofencesNew = true;
                 }
             }
         }else if(fileExists(constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)){
+            Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: no internet, parsing existing data");
+
             parseGeofences(constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, false);
         }else{
-            if(curFragment instanceof HistoryFragment) {
-                ((HistoryFragment) curFragment).addNewGeofenceInfoNew(null);
+            if(adapter.getCurrentFragment() instanceof HistoryFragment) {
+                Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: no internet, no existing info");
+
+                ((HistoryFragment) adapter.getCurrentFragment()).addNewGeofenceInfoNew(null);
             }
         }
     }
@@ -725,8 +684,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             if(fileExists(constants.ICAL_FILE_NAME_WITH_EXTENSION)){
                 parseIcalFeed(constants.ICAL_FILE_NAME_WITH_EXTENSION, false);
             }else{
-                if(curFragment instanceof EventsFragment) {
-                    curFragment.handleNewEvents(null);
+                if(adapter.getCurrentFragment() instanceof EventsFragment) {
+                    adapter.getCurrentFragment().handleNewEvents(null);
                 }
             }
         }
@@ -779,8 +738,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 parseQuests(constants.QUESTS_FILE_NAME_WITH_EXTENSION, false);
             }else{
                 Log.i("NEWQUESTS", "MainActivity: requestQuests : file does not exist");
-                if(curFragment instanceof QuestFragment){
-                    curFragment.handleNewQuests(null);
+                if(adapter.getCurrentFragment()instanceof QuestFragment){
+                    adapter.getCurrentFragment().handleNewQuests(null);
                 }
             }
         }
@@ -836,6 +795,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         String jsonString = readFromFile(fileNameWithExtension);
 
         Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : " + jsonString);
+
+        Log.i("GEOFENCE MONITORING", "MainActivity: parseGeofences");
+
+
         final Gson gson = new Gson();
 
         allGeofencesNew = gson.fromJson(jsonString, AllGeofences.class);
@@ -854,25 +817,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         String jsonString = readFromFile(fileNameWithExtension);
 
-        Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : " + jsonString);
+        Log.i("NEWGEOFENCES", "MainActivity : parseQuests : " + jsonString);
         final Gson gson = new Gson();
         try {
             JSONObject questsObject = new JSONObject(jsonString);
             JSONArray responseArr = questsObject.getJSONArray("content");
 
             for (int i = 0; i < responseArr.length(); i++) {
-                Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : i = " + i);
+                Log.i("NEWGEOFENCES", "MainActivity : parseQuests : i = " + i);
 
                 try {
-                    Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : in inner try block ");
+                    Log.i("NEWGEOFENCES", "MainActivity : parseQuests : in inner try block ");
 
                     Quest responseQuest = gson.fromJson(responseArr.getString(i), Quest.class);
                     Log.i(logMessages.VOLLEY, "requestQuests : quest response string = : " + responseArr.getString(i));
                     questInfo.add(responseQuest);
                 }
                 catch (Exception e) {
-                    Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : unable to parse: " + responseArr.getString(i));
-                    Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : unable to parse: error message: " + e.getMessage());
+                    Log.i("NEWGEOFENCES", "MainActivity : parseQuests : unable to parse: " + responseArr.getString(i));
+                    Log.i("NEWGEOFENCES", "MainActivity : parseQuests : unable to parse: error message: " + e.getMessage());
 
                     e.getMessage();
                     e.printStackTrace();
@@ -924,6 +887,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * @param calendar
      */
     private void buildEventContent(net.fortuna.ical4j.model.Calendar calendar, boolean isNewInfo){
+
+        Log.i("EVENT DEBUGGING", "MainActivity: buildEventContent: calendar component size is: " + calendar.getComponents().size());
         ComponentList componentList = calendar.getComponents();
         ArrayList<EventContent> eventContents = new ArrayList<>();
         boolean addComponent = true;
@@ -958,9 +923,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
             if(addComponent) {
                 eventContents.add(eventContent);
+            }else{
+                Log.i("EVENT DEBUGGING", "MainActivity: buildEventContent: NOT adding component");
+
             }
-
-
         }
 
        handleNewEvents(eventContents, isNewInfo);
@@ -974,19 +940,29 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * @param events
      */
     public void handleNewEvents(ArrayList<EventContent> events, boolean isNewInfo) {
+
+        Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents");
+
         requestingEvents = false;
         String completeDate;
         String[] completeDateArray;
         String dateByDay;
-        eventsMapByDate.clear();
 
 
 
         if(events == null){
-            if(curFragment instanceof EventsFragment){
-                curFragment.handleNewEvents(null);
+            if(adapter.getCurrentFragment()instanceof EventsFragment){
+                Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents : current fragment is eventsfragment, events are null");
+                adapter.getCurrentFragment().handleNewEvents(null);
             }
         }else {
+            Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents : events are not null");
+
+            if(eventsMapByDate == null) {
+                eventsMapByDate = new LinkedHashMap<>();
+            }
+            eventsMapByDate.clear();
+
 
             Calendar c = Calendar.getInstance();
 
@@ -1026,8 +1002,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             }
 
-            if (curFragment instanceof EventsFragment) {
-                curFragment.handleNewEvents(eventsMapByDate);
+            Log.i("EVENT DEBUGGING",
+                    "MainActivity: handleNewEvents : about to check current fragment : eventsMapByDate size is: "+eventsMapByDate.size());
+
+            if (adapter.getCurrentFragment() instanceof EventsFragment) {
+                Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents : current fragment is events fragment");
+                adapter.getCurrentFragment().handleNewEvents(eventsMapByDate);
             }
         }
 

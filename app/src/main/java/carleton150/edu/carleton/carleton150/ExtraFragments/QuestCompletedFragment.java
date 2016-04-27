@@ -16,7 +16,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import carleton150.edu.carleton.carleton150.Interfaces.FragmentChangeListener;
+import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.MainFragments.MainFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestFragment;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
@@ -29,6 +29,7 @@ public class QuestCompletedFragment extends MainFragment {
 
     private Quest quest;
     private View v;
+    private QuestStartedListener questStartedListener;
 
     public QuestCompletedFragment() {
         // Required empty public constructor
@@ -37,6 +38,11 @@ public class QuestCompletedFragment extends MainFragment {
     public void initialize(Quest quest){
         this.quest = quest;
     }
+
+    public void setQuestStartedListener(QuestStartedListener questStartedListener){
+        this.questStartedListener = questStartedListener;
+    }
+
 
 
     @Override
@@ -77,10 +83,11 @@ public class QuestCompletedFragment extends MainFragment {
             }
         });
 
+        //TODO: make work with viewpager
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goBackToQuestSelectionScreen();
+                questStartedListener.goBackToQuestScreen();
             }
         });
 
@@ -117,12 +124,12 @@ public class QuestCompletedFragment extends MainFragment {
         fragmentTransaction.commit();
     }
 
-    private void goBackToQuestSelectionScreen(){
+    /*private void goBackToQuestSelectionScreen(){
         System.gc();
         QuestFragment fr=new QuestFragment();
         FragmentChangeListener fc=(FragmentChangeListener)getActivity();
         fc.replaceFragment(fr);
-    }
+    }*/
 
 
     @Override

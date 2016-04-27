@@ -47,7 +47,7 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
     // RecyclerView Pager
     private static View v;
     private RecyclerView dates;
-    private LinkedHashMap<String, ArrayList<EventContent>> eventsMapByDate = new LinkedHashMap<String, ArrayList<EventContent>>();
+    private LinkedHashMap<String, ArrayList<EventContent>> eventsMapByDate;
     private int screenWidth;
     private LinearLayoutManager dateLayoutManager;
     private EventDateCardAdapter eventDateCardAdapter;
@@ -89,13 +89,12 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
 
         //TODO: can have zero events
         if(eventsMapByDate == null){
-            mainActivity.requestEvents();
-        }else if(eventsMapByDate.size() == 0){
+            Log.i("EVENTS DEBUGGING", "EventsFragment : onCreateView: eventsMapByDate is null, requesting events");
             mainActivity.requestEvents();
         }else{
+            Log.i("EVENTS DEBUGGING", "EventsFragment : onCreateView: eventsMapByDate is not null, handling new events");
             handleNewEvents(eventsMapByDate);
         }
-
 
         return v;
     }
@@ -136,20 +135,26 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
     @Override
     public void handleNewEvents(LinkedHashMap<String, ArrayList<EventContent>> eventsMapByDate) {
 
+        Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents");
+
+
         this.eventsMapByDate = eventsMapByDate;
         if(eventsMapByDate == null) {
+            Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : eventsMapByDate is null");
+
             showUnableToRetrieveEvents();
 
         }else if(eventsMapByDate.size() == 0){
-            showUnableToRetrieveEvents();
+            Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : eventsMapByDate size is 0");
+
+            //TODO: show message saying there are no new events
         }else {
             dateInfo.clear();
+            Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : eventsMapByDate size is : " + eventsMapByDate.entrySet().size());
+
             for (Map.Entry<String, ArrayList<EventContent>> entry : eventsMapByDate.entrySet()) {
                 dateInfo.add(entry.getKey());
             }
-
-            sortDateInfo();
-
             eventDateCardAdapter.notifyDataSetChanged();
 
             String key = eventsMapByDate.keySet().iterator().next();
@@ -161,10 +166,6 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
             hideUnableToRetrieveEvents();
         }
         eventsListAdapter.notifyDataSetChanged();
-    }
-
-    private void sortDateInfo(){
-
     }
 
 
@@ -200,5 +201,19 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
         final Button btnRequestGeofences = (Button) v.findViewById(R.id.btn_try_getting_events);
         txtRequestGeofences.setVisibility(View.GONE);
         btnRequestGeofences.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isVisibleToUser && isResumed()) {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            eventsMapByDate = mainActivity.getEventsMapByDate();
+            if (eventsMapByDate == null) {
+                mainActivity.requestEvents();
+            } else {
+                handleNewEvents(eventsMapByDate);
+            }
+        }
     }
 }
