@@ -124,6 +124,7 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
     @Override
     public void recyclerViewListClicked(View v, final int position) {
         Log.i("View", "QuestFragment : recyclerViewListClicked");
+
         beginQuest(questAdapter.getQuestList().get(position));
     }
 
@@ -134,6 +135,8 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
      * @param quest quest to begin
      */
     private void beginQuest(Quest quest){
+        MainActivity mainActivity = (MainActivity) getActivity();
+        mainActivity.setQuestInProgress(quest);
         QuestInProgressFragment fr=new QuestInProgressFragment();
         fr.initialize(quest);
         questStartedListener.questStarted(fr);

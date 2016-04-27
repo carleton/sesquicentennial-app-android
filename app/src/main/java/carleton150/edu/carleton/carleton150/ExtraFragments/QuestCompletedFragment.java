@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
+import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.MainFragments.MainFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestFragment;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
@@ -59,6 +60,13 @@ public class QuestCompletedFragment extends MainFragment {
         TextView txtCompMsg = (TextView) v.findViewById(R.id.txt_completion_message);
         RelativeLayout relLayoutQuestCompleted = (RelativeLayout) v.findViewById(R.id.rel_layout_quest_completed);
 
+        final MainActivity mainActivity = (MainActivity) getActivity();
+
+
+        if(quest == null){
+            quest = mainActivity.getQuestInProgress();
+        }
+
         txtCompMsg.setText(quest.getCompMsg());
         txtNumCompleted.setText(quest.getWaypoints().length + "/" + quest.getWaypoints().length);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -83,7 +91,6 @@ public class QuestCompletedFragment extends MainFragment {
             }
         });
 
-        //TODO: make work with viewpager
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

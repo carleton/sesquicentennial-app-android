@@ -22,7 +22,6 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
 
     private MainActivity mainActivity;
     private MainFragment currentFragment = new HistoryFragment();
-    private boolean questInProgress = false;
     private FragmentManager fm;
     private MainFragment mFragmentAtPos2 = null;
 
@@ -110,7 +109,6 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
 
     @Override
     public void questStarted(MainFragment newFragment) {
-        questInProgress = true;
         fm.beginTransaction().remove(mFragmentAtPos2).commit();
         mFragmentAtPos2 = newFragment;
         ((QuestInProgressFragment)newFragment).setQuestStartedListener(this);
@@ -119,7 +117,6 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
 
     public void backButtonPressed(){
         if(mFragmentAtPos2 instanceof QuestInProgressFragment || mFragmentAtPos2 instanceof QuestCompletedFragment){
-            questInProgress = false;
             fm.beginTransaction().remove(mFragmentAtPos2).commit();
             mFragmentAtPos2 = new QuestFragment();
             ((QuestFragment) mFragmentAtPos2).initialize(this);

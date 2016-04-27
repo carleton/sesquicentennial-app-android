@@ -95,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private LogMessages logMessages = new LogMessages();
     public boolean needToShowGPSAlert = true;
 
+    private Quest questInProgress;
+
     MyFragmentPagerAdapter adapter;
 
     private Handler handler = new Handler();
@@ -1044,6 +1046,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 requestingQuests = false;
             }
         }
+    }
+
+    public Quest getQuestInProgress() {
+        return questInProgress;
+    }
+
+    public void setQuestInProgress(Quest questInProgress) {
+        this.questInProgress = questInProgress;
     }
 
     //TODO: now that we no longer need a location sent in to request geofences, call that request

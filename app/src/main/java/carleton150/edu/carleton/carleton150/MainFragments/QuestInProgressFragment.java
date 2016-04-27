@@ -99,6 +99,13 @@ public class QuestInProgressFragment extends MapMainFragment {
         final ImageButton btnReturnToUserLocation = (ImageButton) v.findViewById(R.id.btn_return_to_my_location);
         final ImageButton btnReturnToCampus = (ImageButton) v.findViewById(R.id.btn_return_to_campus);
 
+        final MainActivity mainActivity = (MainActivity) getActivity();
+
+
+        if(quest == null){
+            quest = mainActivity.getQuestInProgress();
+        }
+
         ImageView imgQuestion = (ImageView) v.findViewById(R.id.img_question);
         /*
         Sets listeners to show the progress popover
@@ -139,7 +146,6 @@ public class QuestInProgressFragment extends MapMainFragment {
             showCompletedQuestMessage();
         }
 
-        final MainActivity mainActivity = (MainActivity) getActivity();
 
         btnReturnToUserLocation.setOnClickListener(new View.OnClickListener() {
             @Override
