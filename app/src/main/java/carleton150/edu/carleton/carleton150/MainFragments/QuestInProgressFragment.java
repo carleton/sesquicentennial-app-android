@@ -29,6 +29,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
@@ -345,12 +346,40 @@ public class QuestInProgressFragment extends MapMainFragment {
             drawLocationMarker(mainActivity.mLastLocation);
         }
         drawTiles();
+
+        if(getUserVisibleHint()) {
+            if(!mainActivity.checkIfGPSEnabled()){
+                mainActivity.buildAlertMessageNoGps(mainActivity.getResources().getString(R.string.feature_requires_gps));
+            }else if(!mainActivity.isConnectedToNetwork()){
+                mainActivity.showNetworkNotConnectedDialog();
+            }
+            else if (!onCampus()) {
+                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.feature_unuseable_off_campus),
+                        new AlertDialog.Builder(mainActivity).create());
+            }
+        }
     }
 
-    /**
-     * Checks if the user's current location is within the radius of the waypoint
-     * (both the radius and waypoint are specified in the quest object)
-     */
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isVisibleToUser && isResumed()) {
+            MainActivity mainActivity = (MainActivity) getActivity();
+
+            if (!mainActivity.checkIfGPSEnabled()) {
+                mainActivity.buildAlertMessageNoGps(mainActivity.getResources().getString(R.string.feature_requires_gps));
+            }else if(!mainActivity.isConnectedToNetwork()){
+                mainActivity.showNetworkNotConnectedDialog();
+            } else if (!onCampus()) {
+                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.feature_unuseable_off_campus),
+                        new AlertDialog.Builder(mainActivity).create());
+            }
+        }}
+
+            /**
+             * Checks if the user's current location is within the radius of the waypoint
+             * (both the radius and waypoint are specified in the quest object)
+             */
     private void checkIfClueFound(){
         MainActivity mainActivity = (MainActivity) getActivity();
         mainActivity.needToShowGPSAlert = true;
@@ -632,19 +661,6 @@ public class QuestInProgressFragment extends MapMainFragment {
     }
 
     /**
-     * sets drawables to null to save memory
-     */
-    @Override
-    public void fragmentOutOfView() {
-        super.fragmentOutOfView();
-        ImageView imgClue = (ImageView) v.findViewById(R.id.img_clue_image_front);
-        ImageView imgHint = (ImageView) v.findViewById(R.id.img_hint_image_back);
-        inView = false;
-        imgClue.setImageDrawable(null);
-        imgHint.setImageDrawable(null);
-    }
-
-    /**
      * Map should be set to null in onDestroyView(), but then there is an error
      * because the FragmentManager has already called onSaveInstanceState, so variables
      * can no longer be changed. Therefore, it is necessary to make mMap = null before
@@ -818,5 +834,29 @@ public class QuestInProgressFragment extends MapMainFragment {
         fragmentTransaction.add(R.id.fragment_container, recyclerViewPopoverFragment, "QuestProgressPopoverFragment");
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
+    }
+
+    /**
+     * checks whether the user's location is on campus
+     * @return true if the user is on campus, false otherwise
+     */
+    private boolean onCampus(){
+        MainActivity mainActivity = (MainActivity) getActivity();
+        Constants constants = new Constants();
+        Location location = mainActivity.getLastLocation();
+
+        if(location == null){
+            return false;
+        }
+
+        if(location.getLatitude() > constants.MIN_LATITUDE
+                && location.getLatitude() < constants.MAX_LATITUDE
+                && location.getLongitude() > constants.MIN_LONGITUDE
+                && location.getLongitude() < constants.MAX_LONGITUDE){
+            return true;
+        }
+
+        return false;
+
     }
 }

@@ -49,6 +49,8 @@ public class Constants {
     public static final String ICAL_FEED_URL = "https://apps.carleton.edu/calendar";
     public static final String ICAL_FEED_DATE_REQUEST = "/?start_date=";
     public static final String ICAL_FEED_FORMAT_REQUEST = "&format=ical";
+    public static final String INFO_URL = "https://go.carleton.edu/appinfo";
+    public static final String USER_AGENT_STRING = "CarletonSesquicentennialApp 1.0";
 
     public static final String ICAL_FILE_NAME_WITH_EXTENSION = "carleton150Events.ics";
     public static final String GEOFENCES_FILE_NAME_WITH_EXTENSION = "carleton150Geofences.txt";

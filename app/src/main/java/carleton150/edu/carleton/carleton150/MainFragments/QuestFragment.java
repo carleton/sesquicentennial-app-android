@@ -102,12 +102,6 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
             handleNewQuests(questInfo);
         }
 
-        if(!onCampus()){
-
-            mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.feature_unuseable_off_campus),
-                    new AlertDialog.Builder(mainActivity).create());
-        }
-
         return view;
     }
 
@@ -278,11 +272,40 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
         super.setUserVisibleHint(isVisibleToUser);
         if(isVisibleToUser && isResumed()) {
             MainActivity mainActivity = (MainActivity) getActivity();
+
+            if(!mainActivity.checkIfGPSEnabled()){
+                mainActivity.buildAlertMessageNoGps(mainActivity.getResources().getString(R.string.feature_requires_gps));
+            }else if(!mainActivity.isConnectedToNetwork()){
+                mainActivity.showNetworkNotConnectedDialog();
+            }else if (!onCampus()) {
+                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.feature_unuseable_off_campus),
+                        new AlertDialog.Builder(mainActivity).create());
+            }
+
             questInfo = mainActivity.getQuests();
             if (questInfo == null) {
                 mainActivity.requestQuests();
             } else {
                 handleNewQuests(questInfo);
+            }
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(getUserVisibleHint()) {
+            MainActivity mainActivity = (MainActivity) getActivity();
+
+            if(!mainActivity.checkIfGPSEnabled()){
+                mainActivity.buildAlertMessageNoGps(mainActivity.getResources().getString(R.string.feature_requires_gps));
+            }else if(!mainActivity.isConnectedToNetwork()){
+                mainActivity.showNetworkNotConnectedDialog();
+            }
+            else if (!onCampus()) {
+                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.feature_unuseable_off_campus),
+                        new AlertDialog.Builder(mainActivity).create());
             }
         }
     }

@@ -65,6 +65,8 @@ import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragmen
 import carleton150.edu.carleton.carleton150.Interfaces.RetrievedFileListener;
 import carleton150.edu.carleton.carleton150.MainFragments.EventsFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.HistoryFragment;
+import carleton150.edu.carleton.carleton150.MainFragments.InfoFragment;
+import carleton150.edu.carleton.carleton150.MainFragments.MainFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestInProgressFragment;
 import carleton150.edu.carleton.carleton150.Models.DownloadFileFromURL;
@@ -331,7 +333,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     private void tellFragmentLocationChanged() {
         if (adapter.getCurrentFragment() != null) {
-            adapter.getCurrentFragment().handleLocationChange(mLastLocation);
+            if(adapter.getCurrentFragment() instanceof MainFragment) {
+                ((MainFragment)adapter.getCurrentFragment()).handleLocationChange(mLastLocation);
+            }
         }
     }
 
@@ -396,11 +400,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             if (activeNetworkInfo.isConnected()) {
                 return true;
             } else {
-                showNetworkNotConnectedDialog();
                 return false;
             }
         } else {
-            showNetworkNotConnectedDialog();
             return false;
         }
     }
@@ -522,7 +524,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if(!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
             if(needToShowGPSAlert) {
                 needToShowGPSAlert = false;
-                buildAlertMessageNoGps();
+                buildAlertMessageNoGps(getString(R.string.gps_not_enabled));
             }
             return false;
         }return true;
@@ -531,9 +533,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     /**
      * Alerts the user that their GPS is not enabled and gives them option to enable it
      */
-    private void buildAlertMessageNoGps() {
+    public void buildAlertMessageNoGps(String alertMessage) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(getString(R.string.gps_not_enabled))
+        builder.setMessage(alertMessage)
                 .setCancelable(false)
                 .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
                     public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
@@ -570,7 +572,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         if(adapter.getCurrentFragment() instanceof QuestFragment){
-            adapter.getCurrentFragment().handleNewQuests(questInfo);
+            ((QuestFragment)adapter.getCurrentFragment()).handleNewQuests(questInfo);
         }
 
     }
@@ -654,6 +656,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             parseGeofences(constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, false);
         }else{
+            showNetworkNotConnectedDialog();
             if(adapter.getCurrentFragment() instanceof HistoryFragment) {
                 Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: no internet, no existing info");
 
@@ -686,8 +689,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             if(fileExists(constants.ICAL_FILE_NAME_WITH_EXTENSION)){
                 parseIcalFeed(constants.ICAL_FILE_NAME_WITH_EXTENSION, false);
             }else{
+                showNetworkNotConnectedDialog();
                 if(adapter.getCurrentFragment() instanceof EventsFragment) {
-                    adapter.getCurrentFragment().handleNewEvents(null);
+                    ((EventsFragment)adapter.getCurrentFragment()).handleNewEvents(null);
                 }
             }
         }
@@ -739,9 +743,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Log.i("NEWQUESTS", "MainActivity: requestQuests : file does exist");
                 parseQuests(constants.QUESTS_FILE_NAME_WITH_EXTENSION, false);
             }else{
+                showNetworkNotConnectedDialog();
                 Log.i("NEWQUESTS", "MainActivity: requestQuests : file does not exist");
                 if(adapter.getCurrentFragment()instanceof QuestFragment){
-                    adapter.getCurrentFragment().handleNewQuests(null);
+                    ((QuestFragment)adapter.getCurrentFragment()).handleNewQuests(null);
                 }
             }
         }
@@ -955,7 +960,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if(events == null){
             if(adapter.getCurrentFragment()instanceof EventsFragment){
                 Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents : current fragment is eventsfragment, events are null");
-                adapter.getCurrentFragment().handleNewEvents(null);
+                ((EventsFragment)adapter.getCurrentFragment()).handleNewEvents(null);
             }
         }else {
             Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents : events are not null");
@@ -1009,7 +1014,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             if (adapter.getCurrentFragment() instanceof EventsFragment) {
                 Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents : current fragment is events fragment");
-                adapter.getCurrentFragment().handleNewEvents(eventsMapByDate);
+                ((EventsFragment)adapter.getCurrentFragment()).handleNewEvents(eventsMapByDate);
             }
         }
 

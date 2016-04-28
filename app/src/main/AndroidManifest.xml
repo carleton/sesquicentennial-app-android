@@ -79,6 +79,12 @@
 
             </intent-filter>
         </activity>
+        <receiver
+            android:name="carleton150.edu.carleton.carleton150.Models.ConnectionBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
 
         <service android:name=".GeofencingTransitionsIntentService" />
 

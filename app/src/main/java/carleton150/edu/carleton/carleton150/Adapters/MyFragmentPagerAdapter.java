@@ -2,6 +2,7 @@ package carleton150.edu.carleton.carleton150.Adapters;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.view.ViewGroup;
 
@@ -10,6 +11,7 @@ import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.MainFragments.EventsFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.HistoryFragment;
+import carleton150.edu.carleton.carleton150.MainFragments.InfoFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.MainFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestInProgressFragment;
@@ -21,7 +23,7 @@ import carleton150.edu.carleton.carleton150.R;
 public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements QuestStartedListener {
 
     private MainActivity mainActivity;
-    private MainFragment currentFragment = new HistoryFragment();
+    private Fragment currentFragment = new HistoryFragment();
     private FragmentManager fm;
     private MainFragment mFragmentAtPos2 = null;
 
@@ -51,6 +53,8 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
                     ((QuestFragment) mFragmentAtPos2).initialize(this);
                 }
                 return mFragmentAtPos2;
+            case 3:
+                fragment = new InfoFragment();
         }
         return fragment;
     }
@@ -82,7 +86,7 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
 
     @Override
     public int getCount() {
-        return 3;
+        return 4;
     }
 
     @Override
@@ -98,11 +102,13 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
             case 2:
                 title = mainActivity.getResources().getString(R.string.quests);
                 break;
+            case 3:
+                title = mainActivity.getResources().getString(R.string.info);
         }
         return title;
     }
 
-    public MainFragment getCurrentFragment(){
+    public Fragment getCurrentFragment(){
         return this.currentFragment;
     }
 

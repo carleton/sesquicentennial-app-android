@@ -146,8 +146,7 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
 
         }else if(eventsMapByDate.size() == 0){
             Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : eventsMapByDate size is 0");
-
-            //TODO: show message saying there are no new events
+            showNoEventsHappening();
         }else {
             dateInfo.clear();
             Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : eventsMapByDate size is : " + eventsMapByDate.entrySet().size());
@@ -192,6 +191,15 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
         txtRequestGeofences.setText(getResources().getString(R.string.no_events_retrieved));
         txtRequestGeofences.setVisibility(View.VISIBLE);
         btnRequestGeofences.setVisibility(View.VISIBLE);
+        eventsListView.setVisibility(View.GONE);
+    }
+
+    private void showNoEventsHappening(){
+        final TextView txtRequestGeofences = (TextView) v.findViewById(txt_request_events);
+        final Button btnRequestGeofences = (Button) v.findViewById(R.id.btn_try_getting_events);
+        txtRequestGeofences.setText(getResources().getString(R.string.no_events_listed));
+        txtRequestGeofences.setVisibility(View.VISIBLE);
+        btnRequestGeofences.setVisibility(View.GONE);
         eventsListView.setVisibility(View.GONE);
     }
 
