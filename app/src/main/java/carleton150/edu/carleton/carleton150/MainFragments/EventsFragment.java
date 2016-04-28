@@ -122,7 +122,7 @@ public class EventsFragment extends MainFragment implements RecyclerViewDatesCli
         eventsLayoutManager = new LinearLayoutManager(getActivity());
         eventsLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         eventsListView.setLayoutManager(eventsLayoutManager);
-        eventsListAdapter = new EventsListAdapter(getActivity(), eventsList);
+        eventsListAdapter = new EventsListAdapter(((MainActivity)getActivity()), eventsList);
         eventsListView.setAdapter(eventsListAdapter);
         eventsListAdapter.notifyDataSetChanged();
     }

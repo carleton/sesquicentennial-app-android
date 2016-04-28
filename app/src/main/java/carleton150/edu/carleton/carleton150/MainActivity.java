@@ -10,6 +10,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -53,6 +54,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -523,6 +525,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return memoryClass;
     }
 
+    public void showEventInfoInBrowser(String url){
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(browserIntent);
+    }
+
     /**
      * Checks if gps is enabled on the device
      * @return true if enabled, false otherwise
@@ -915,7 +922,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 eventContent.setLocation(propertyList.getProperty(Property.LOCATION).getValue());
             }else {
                 eventContent.setLocation(getResources().getString(R.string.no_location));
-            }if(propertyList.getProperty(Property.SUMMARY) != null) {
+            }if(propertyList.getProperty(Property.URL) != null){
+                eventContent.setUrl(propertyList.getProperty(Property.URL).getValue());
+            }
+            if(propertyList.getProperty(Property.SUMMARY) != null) {
                     eventContent.setTitle(propertyList.getProperty(Property.SUMMARY).getValue());
             }else{
                 eventContent.setTitle(getResources().getString(R.string.no_title));

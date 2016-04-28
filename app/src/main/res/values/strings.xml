@@ -49,12 +49,12 @@
     <string name="successfully_added_memory">Added memory successfully!</string>
     <string name="unable_to_add_memory">We were unable to add your memory at this time. Please try again later.</string>
 
-    <string name="tutorial_quest_in_progress">"You are on a quest! If you think you've reached the location the clue is referring to, click the "Am I There?" button and the GPS on your phone will let you know if you've reached the correct location and give you the next clue! If you’re stuck, click on "HINT" to help you out!"</string>
+    <string name="tutorial_quest_in_progress">"You are on a quest! If you think you've reached the location the clue is referring to, click the 'Am I There?' button and the GPS on your phone will let you know if you've reached the correct location and give you the next clue! If you’re stuck, click on "HINT" to help you out!"</string>
 
     <string name="tutorial_history_view">"Explore Carleton’s history! Markers represent points of interest on the Carleton campus. Tap on a marker to view more information about the point.
-        \nTo see stories and images others have uploaded about Carleton or to upload your own, tap on “Read and Share Carleton Stories”."</string>
+        \nTo see stories and images others have uploaded about Carleton or to upload your own, tap on 'Read and Share Carleton Stories'."</string>
 
-    <string name="tutorial_quests">"Ready for a Carleton adventure? Embark on a quest using the clues provided! After figuring out what location on campus each clue refers to, walk to that location. When you think you've found the correct location, tap "Am I There?" to recieve the next clue. If you’re stuck, use the Hints provided to help you out!"</string>
+    <string name="tutorial_quests">"Ready for a Carleton adventure? Embark on a quest using the clues provided! After figuring out what location on campus each clue refers to, walk to that location. When you think you've found the correct location, tap 'Am I There?' to receive the next clue. If you’re stuck, use the Hints provided to help you out!"</string>
 
     <string name="not_rated">Not Rated</string>
     <string name="intended_for">Intended for: </string>
@@ -71,7 +71,7 @@
     <string name = "yes">Yes</string>
     <string name="no">No</string>
     <string name="pref_previously_started">false</string>
-    <string name="walk_to_location">"Walk to the correct location and click "Am I There?""</string>
+    <string name="walk_to_location">"Walk to the correct location and click 'Am I There?'"</string>
     <string name="quests_unuseable_off_campus">The Quests feature is intended to be used on the Carleton College campus. Visit campus soon to embark on a Quest!</string>
     <string name="quest_in_progress_unuseable_off_campus">"It looks like you're off campus! Return to campus soon to finish your quest."</string>
     <string name="feature_requires_gps">This feature requires GPS to be used. Would you like to turn it on?</string>
@@ -80,6 +80,8 @@
     <string name="no_description">No Description</string>
     <string name="read_stories">Read and Share Carleton Stories</string>
     <string name="no_events_listed">There are currently no events listed. Please try again soon.</string>
+    <string name="more_information">More Information:</string>
+    <string name="click_here_for_more_information">Click here for more information</string>
 
 
 </resources>

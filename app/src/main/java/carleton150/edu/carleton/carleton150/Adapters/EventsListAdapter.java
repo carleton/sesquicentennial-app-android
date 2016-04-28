@@ -25,13 +25,17 @@ package carleton150.edu.carleton.carleton150.Adapters;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.text.DateFormat;
@@ -41,6 +45,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import carleton150.edu.carleton.carleton150.Constants;
+import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.Event;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
 import carleton150.edu.carleton.carleton150.R;
@@ -49,9 +55,9 @@ import carleton150.edu.carleton.carleton150.R;
 public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private List<EventContent> events;
-    private Activity context;
+    private MainActivity context;
 
-    public EventsListAdapter(Activity context, List<EventContent> events){
+    public EventsListAdapter(MainActivity context, List<EventContent> events){
         this.events = events;
         this.context = context;
     }
@@ -114,6 +120,12 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
         myHolder.setLocation(events.get(position).getLocation());
         myHolder.setExpanded(events.get(position).isExpanded());
 
+        if(events.get(position).getUrl() != null){
+            myHolder.setBtnUrl(events.get(position).getUrl());
+        }else{
+            myHolder.hasNoUrl();
+        }
+
         View view = myHolder.getItemView();
         view.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,10 +146,13 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
         TextView dateTitle;
         TextView txtTitle;
         TextView txtLocation;
-        private Context context;
+        LinearLayout linLayoutUrl;
+        Button btnUrl;
+        private MainActivity context;
+        private boolean hasUrl = false;
 
 
-        public EventViewHolder(View itemView, Context context) {
+        public EventViewHolder(View itemView, MainActivity context) {
             super(itemView);
             itemView.setOnClickListener(this);
             dateTitle = (TextView) itemView.findViewById(R.id.txt_event_date);
@@ -145,6 +160,8 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
             txtLocation = (TextView) itemView.findViewById(R.id.txt_event_location);
             txtDescription = (TextView) itemView.findViewById(R.id.txt_event_description);
             iconExpand = (ImageView) itemView.findViewById(R.id.img_icon_expand);
+            linLayoutUrl = (LinearLayout) itemView.findViewById(R.id.lin_layout_url);
+            btnUrl = (Button) itemView.findViewById(R.id.btn_url);
             this.context = context;
         }
 
@@ -165,6 +182,20 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
            swapExpanded();
             setIconExpand(context);
 
+        }
+
+        public void setBtnUrl(final String url) {
+            hasUrl = true;
+            btnUrl.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    context.showEventInfoInBrowser(url);
+                }
+            });
+        }
+
+        public void hasNoUrl(){
+            hasUrl = false;
         }
 
         // Set date in event calendar date tabs
@@ -192,10 +223,14 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
         public void setIconExpand(Context context){
             if(expanded){
                 txtDescription.setVisibility(View.VISIBLE);
+                if(hasUrl){
+                    linLayoutUrl.setVisibility(View.VISIBLE);
+                }
                 iconExpand.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_navigation_expand_less));
             }else{
                 iconExpand.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_navigation_expand_more));
                 txtDescription.setVisibility(View.GONE);
+                linLayoutUrl.setVisibility(View.GONE);
             }
         }
 
