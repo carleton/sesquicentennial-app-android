@@ -40,6 +40,7 @@ public class InfoFragment extends MainFragment {
 
         curURL = constants.INFO_URL;
         myWebView = (WebView) v.findViewById(R.id.web_view);
+        myWebView.getSettings().setUserAgentString(constants.USER_AGENT_STRING);
 
 
         myWebView.getSettings().setJavaScriptEnabled(true);
