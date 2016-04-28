@@ -278,7 +278,7 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
             }else if(!mainActivity.isConnectedToNetwork()){
                 mainActivity.showNetworkNotConnectedDialog();
             }else if (!onCampus()) {
-                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.feature_unuseable_off_campus),
+                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.quests_unuseable_off_campus),
                         new AlertDialog.Builder(mainActivity).create());
             }
 
@@ -304,7 +304,7 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
                 mainActivity.showNetworkNotConnectedDialog();
             }
             else if (!onCampus()) {
-                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.feature_unuseable_off_campus),
+                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.quests_unuseable_off_campus),
                         new AlertDialog.Builder(mainActivity).create());
             }
         }

@@ -488,9 +488,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (adapter.getCurrentFragment() instanceof QuestInProgressFragment ||
                 adapter.getCurrentFragment() instanceof QuestCompletedFragment) {
             adapter.backButtonPressed();
-        } else {
+        }else if(adapter.getCurrentFragment() instanceof InfoFragment){
+
+            boolean wentBack = ((InfoFragment)adapter.getCurrentFragment()).backPressed();
+            if(!wentBack){
+                super.onBackPressed();
+            }
+
+        }else{
             super.onBackPressed();
         }
+
     }
 
     /**

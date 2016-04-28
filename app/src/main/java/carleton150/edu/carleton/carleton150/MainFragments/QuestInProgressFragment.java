@@ -354,7 +354,7 @@ public class QuestInProgressFragment extends MapMainFragment {
                 mainActivity.showNetworkNotConnectedDialog();
             }
             else if (!onCampus()) {
-                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.feature_unuseable_off_campus),
+                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.quest_in_progress_unuseable_off_campus),
                         new AlertDialog.Builder(mainActivity).create());
             }
         }
@@ -371,7 +371,7 @@ public class QuestInProgressFragment extends MapMainFragment {
             }else if(!mainActivity.isConnectedToNetwork()){
                 mainActivity.showNetworkNotConnectedDialog();
             } else if (!onCampus()) {
-                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.feature_unuseable_off_campus),
+                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.quest_in_progress_unuseable_off_campus),
                         new AlertDialog.Builder(mainActivity).create());
             }
         }}

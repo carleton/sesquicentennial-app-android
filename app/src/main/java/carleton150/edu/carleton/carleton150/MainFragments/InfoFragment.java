@@ -4,6 +4,7 @@ package carleton150.edu.carleton.carleton150.MainFragments;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -72,6 +73,16 @@ public class InfoFragment extends MainFragment {
                 mainActivity.showNetworkNotConnectedDialog();
             }
         }
+    }
+
+    public boolean backPressed(){
+        if(myWebView != null){
+            if(myWebView.canGoBack()){
+                myWebView.goBack();
+                return true;
+            }
+        }
+        return false;
     }
 
     private class WebClient extends WebViewClient {
