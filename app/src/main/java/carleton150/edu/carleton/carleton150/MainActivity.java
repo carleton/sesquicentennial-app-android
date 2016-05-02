@@ -222,10 +222,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             if (mRequestingLocationUpdates) {
                 if(checkIfGPSEnabled()) {
                    startLocationUpdates();
+                }else{
+                    showGenericGPSAlert();
                 }
             }
         } else {
-            checkIfGPSEnabled();
+            if(!checkIfGPSEnabled()){
+                showGenericGPSAlert();
+            }
             if (isConnectedToNetwork()) {
                 // check availability of play services for location data and geofencing
                 if (checkPlayServices()) {
@@ -250,12 +254,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mLastLocation = LocationServices.FusedLocationApi
                     .getLastLocation(mGoogleApiClient);
             tellFragmentLocationChanged();
+        }else{
+            showGenericGPSAlert();
         }
 
         //starts periodic location updates
         if (mRequestingLocationUpdates) {
             if(checkIfGPSEnabled()) {
                startLocationUpdates();
+            }else{
+                showGenericGPSAlert();
             }
         }
 
@@ -373,6 +381,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                             mGoogleApiClient, mLocationRequest, this);
                 }
             }
+        }else{
+            showGenericGPSAlert();
         }
     }
 
@@ -537,12 +547,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public boolean checkIfGPSEnabled() {
         final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if(!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-            if(needToShowGPSAlert) {
-                needToShowGPSAlert = false;
-                buildAlertMessageNoGps(getString(R.string.gps_not_enabled));
-            }
             return false;
         }return true;
+    }
+
+    private void showGenericGPSAlert(){
+        if(needToShowGPSAlert) {
+            needToShowGPSAlert = false;
+            buildAlertMessageNoGps(getString(R.string.gps_not_enabled));
+        }
     }
 
     /**
@@ -550,7 +563,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     public void buildAlertMessageNoGps(String alertMessage) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        if(needToShowGPSAlert) {
             needToShowGPSAlert = false;
             builder.setMessage(alertMessage)
                     .setCancelable(false)
@@ -566,7 +578,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     });
             final AlertDialog alert = builder.create();
             alert.show();
-        }
     }
 
     /**
