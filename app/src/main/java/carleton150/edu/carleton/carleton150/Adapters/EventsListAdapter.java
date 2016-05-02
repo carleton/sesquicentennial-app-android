@@ -68,6 +68,8 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
         String[] dateArray = startTime.split("(-)|(T)|(:)");
 
 
+
+
         // Check if hours/minutes/seconds included
         SimpleDateFormat df;
         Calendar newStartTime;
@@ -85,8 +87,32 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
             newStartTime.set(Integer.parseInt(dateArray[0]),
                     Integer.parseInt(dateArray[1])-1, Integer.parseInt(dateArray[2]));
         }
+
+        String formattedEventTime = df.format(newStartTime.getTime());
+
+
+        String duration = event.getDuration();
+        String formatDuration;
+        int eventDurationHours;
+        int eventDurationMinutes;
+        String[] durationArray;
+        if(duration != null){
+            formatDuration = duration.replace("PT", "");
+            durationArray = formatDuration.split("(H)|(M)|(S)");
+            if(durationArray.length > 0) {
+                eventDurationHours = Integer.parseInt(durationArray[0]);
+                newStartTime.add(Calendar.HOUR, eventDurationHours);
+
+            }if(durationArray.length > 1) {
+                eventDurationMinutes = Integer.parseInt(durationArray[1]);
+                newStartTime.add(Calendar.MINUTE, eventDurationMinutes);
+            }
+            String formattedEndTime = df.format(newStartTime.getTime());
+            formattedEventTime += " - " +formattedEndTime;
+
+        }
         // Set display to new formatted startTime
-        return df.format(newStartTime.getTime());
+        return formattedEventTime;
     }
 
     public void setEvents(List<EventContent> events){

@@ -45,8 +45,8 @@ public class Constants {
     public static final String NEW_GEOFENCES_ENDPOINT = "https://go.carleton.edu/apphistory";
     public static final String QUESTS_FEED_URL = "https://go.carleton.edu/appquests";
 
-    //TODO: final URL should be : https://go.carleton.edu/appevents
-    public static final String ICAL_FEED_URL = "https://apps.carleton.edu/calendar";
+    //TODO: URL for actual calendar : https://apps.carleton.edu/calendar
+    public static final String ICAL_FEED_URL = "https://go.carleton.edu/appevents";
     public static final String ICAL_FEED_DATE_REQUEST = "/?start_date=";
     public static final String ICAL_FEED_FORMAT_REQUEST = "&format=ical";
     public static final String INFO_URL = "https://go.carleton.edu/appinfo";
