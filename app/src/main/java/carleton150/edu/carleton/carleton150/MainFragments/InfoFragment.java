@@ -1,16 +1,16 @@
 package carleton150.edu.carleton.carleton150.MainFragments;
 
 
-import android.graphics.Bitmap;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.view.KeyEvent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.webkit.WebViewFragment;
 
 import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.MainActivity;
@@ -49,6 +49,31 @@ public class InfoFragment extends MainFragment {
         myWebView.setWebViewClient(new WebClient());
 
         myWebView.loadUrl(curURL);
+
+
+        //when a link is clicked, instead of opening the page in the webview, launches a browser
+        //and opens page in browser
+        final WebViewClient webViewClient= new WebViewClient(){
+            private boolean pageFinished = false;
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView  view, String  url){
+                if(pageFinished){
+                    Log.i("Home debugging", "curURL: " + curURL + "   url : " + url);
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(browserIntent);
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                pageFinished = true;
+            }
+        };
+
+        myWebView.setWebViewClient(webViewClient);
 
         return v;
     }
