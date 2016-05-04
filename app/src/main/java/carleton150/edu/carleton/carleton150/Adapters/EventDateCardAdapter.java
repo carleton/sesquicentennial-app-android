@@ -24,15 +24,13 @@ import carleton150.edu.carleton.carleton150.R;
  */
 public class EventDateCardAdapter extends RecyclerView.Adapter<EventDateCardAdapter.EventDateCardViewHolder> {
 
-    public static RecyclerViewDatesClickListener clickListener;
     private int screenWidth;
     private ArrayList<String> dateInfo;
 
 
-    public EventDateCardAdapter(ArrayList<String> dateInfo, RecyclerViewDatesClickListener clickListener,
+    public EventDateCardAdapter(ArrayList<String> dateInfo,
                                 int screenWidth) {
 
-        this.clickListener = clickListener;
         this.screenWidth = screenWidth;
         this.dateInfo = dateInfo;
     }
@@ -52,7 +50,7 @@ public class EventDateCardAdapter extends RecyclerView.Adapter<EventDateCardAdap
     @Override
     public void onBindViewHolder(EventDateCardViewHolder holder, int position) {
         holder.setDate(dateInfo.get(position));
-        holder.setWidth((int) (screenWidth / 2.5));
+        holder.setWidth(screenWidth, dateInfo.get(position));
     }
 
     @Override
@@ -64,33 +62,37 @@ public class EventDateCardAdapter extends RecyclerView.Adapter<EventDateCardAdap
         }
     }
 
-    public static class EventDateCardViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static class EventDateCardViewHolder extends RecyclerView.ViewHolder {
 
         public EventDateCardViewHolder(View itemView) {
             super(itemView);
-            itemView.setOnClickListener(this);
 
         }
 
         /**
-         * @param width
+         * @param screenWidth
+         * Does smaller width for the start and end blocks(that have no date) to make the SnapToCenterRecyclerView
+         * work even on the edges of scrolling
          */
-        public void setWidth(int width) {
-            itemView.setLayoutParams(new RecyclerView.LayoutParams(width, RecyclerView.LayoutParams.MATCH_PARENT));
-        }
-
-        @Override
-        public void onClick(View v) {
-            TextView dateTitle = (TextView) itemView.findViewById(R.id.event_date_title);
-            String dateInfo = dateTitle.getTag().toString();
-
-            clickListener.recyclerViewListClicked(dateInfo);
-
+        public void setWidth(int screenWidth, String date) {
+            if(date.equals("")){
+                int width = (int) ((screenWidth - ((int) screenWidth/2.5))/2);
+                itemView.setLayoutParams(new RecyclerView.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
+                return;
+            }
+            itemView.setLayoutParams(new RecyclerView.LayoutParams((int) (screenWidth / 2.5), RecyclerView.LayoutParams.MATCH_PARENT));
         }
 
         // Set date in event calendar date tabs
         public void setDate(String dateInfo) {
+
             TextView dateTitle = (TextView) itemView.findViewById(R.id.event_date_title);
+
+            if(dateInfo.equals("")){
+                dateTitle.setText("");
+                dateTitle.setTag("");
+                return;
+            }
 
             DateFormat dfCorrect = new SimpleDateFormat("EEE'\r\n'MMM dd',' yyyy", Locale.US);
 

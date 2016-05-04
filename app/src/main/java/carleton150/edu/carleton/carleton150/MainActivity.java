@@ -1005,37 +1005,35 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             Calendar c = Calendar.getInstance();
 
-            for (int i = 0; i < events.size(); i++) {
+            //ArrayList<EventContent> sortedEvents = sortEventsByDate(events);
 
-                // Add new date values to hashmap if not already there
-                completeDate = events.get(i).getStartTime();
-                completeDateArray = completeDate.split("T");
-                dateByDay = completeDateArray[0];
+            ArrayList<EventContent> eventsToDay = new ArrayList<>();
 
-                String[] dateArray = dateByDay.split("-");
+            completeDateArray = events.get(0).getStartTime().split("T");
+            dateByDay = completeDateArray[0];
 
-                java.util.Calendar eventCalendar = java.util.Calendar.getInstance();
-                eventCalendar.set(Integer.parseInt(dateArray[0]), Integer.parseInt(dateArray[1]) - 1, Integer.parseInt(dateArray[2]), 23, 59, 59);
+            for (int i = events.size() - 1; i >= 0; i--) {
 
-                if (eventCalendar.getTimeInMillis() >= c.getTimeInMillis()) {
+                long eventTime = getDateValueFromString(events.get(i).getStartTime());
 
+                String[] newDateArr = events.get(i).getStartTime().split("T");
+                String newDateByDay = completeDateArray[0];
+
+                if (eventTime >= c.getTimeInMillis()) {
 
                     // If key already there, add + update new values
-                    if (!eventsMapByDate.containsKey(dateByDay)) {
-                        tempEventContentLst.clear();
-                        tempEventContentLst.add(events.get(i));
-                        ArrayList<EventContent> eventContents1 = new ArrayList<>();
-                        for (int k = 0; k < tempEventContentLst.size(); k++) {
-                            eventContents1.add(tempEventContentLst.get(k));
+                    if (!newDateByDay.equals(dateByDay)) {
+                        if(eventsToDay.size() > 0){
+                            ArrayList<EventContent> placeHolderEventContent = new ArrayList<>();
+                            for(int j = 0; j<eventsToDay.size(); j++){
+                                placeHolderEventContent.add(eventsToDay.get(j));
+                            }
+                            eventsMapByDate.put(dateByDay, placeHolderEventContent);
+                            dateByDay = newDateByDay;
                         }
-                        eventsMapByDate.put(dateByDay, eventContents1);
+                        eventsToDay.add(0, events.get(i));
                     } else {
-                        tempEventContentLst.add(events.get(i));
-                        ArrayList<EventContent> eventContents1 = new ArrayList<>();
-                        for (int k = 0; k < tempEventContentLst.size(); k++) {
-                            eventContents1.add(tempEventContentLst.get(k));
-                        }
-                        eventsMapByDate.put(dateByDay, eventContents1);
+                        eventsToDay.add(0, events.get(i));
                     }
 
                 }
@@ -1053,6 +1051,36 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if(eventsMapByDate.size() != 0 && isNewInfo) {
             lastEventsUpdate = Calendar.getInstance().getTime();
         }
+    }
+
+    /*private ArrayList<EventContent> sortEventsByDate(ArrayList<EventContent> events){
+
+        for(int i = 0; i<events.size(); i++){
+            for(int j = 0; j<events.size() - 1; j++){
+                long leftDate = getDateValueFromString(events.get(j).getStartTime());
+                long rightDate = getDateValueFromString(events.get(j+1).getStartTime());
+                if(rightDate < leftDate){
+                    EventContent rightDateHolder = events.get(j+1);
+                    events.set(j+1, events.get(j));
+                    events.set(j, rightDateHolder);
+                }
+            }
+        }
+        return events;
+    }*/
+
+    private long getDateValueFromString(String date){
+        // Add new date values to hashmap if not already there
+
+        String[] completeDateArray = date.split("T");
+        String dateByDay = completeDateArray[0];
+
+        String[] dateArray = dateByDay.split("-");
+
+        java.util.Calendar eventCalendar = java.util.Calendar.getInstance();
+        eventCalendar.set(Integer.parseInt(dateArray[0]), Integer.parseInt(dateArray[1]) - 1, Integer.parseInt(dateArray[2]), 23, 59, 59);
+
+        return eventCalendar.getTimeInMillis();
     }
 
     /**

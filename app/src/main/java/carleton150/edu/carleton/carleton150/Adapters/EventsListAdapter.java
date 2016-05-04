@@ -145,6 +145,7 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
         myHolder.setTitle(events.get(position).getTitle());
         myHolder.setLocation(events.get(position).getLocation());
         myHolder.setExpanded(events.get(position).isExpanded());
+        myHolder.setIconExpand(context);
 
         if(events.get(position).getUrl() != null){
             myHolder.setBtnUrl(events.get(position).getUrl());

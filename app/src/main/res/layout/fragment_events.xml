@@ -14,14 +14,33 @@
             android:weightSum="100"
             android:background="@color/windowBackground">
 
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_weight="11"
+                android:layout_gravity="center_horizontal"
+                android:layout_height="0dp">
+
+
+
             <!-- Scrollable date tabs -->
-            <android.support.v7.widget.RecyclerView
+            <carleton150.edu.carleton.carleton150.LayoutManagers.SnapToCenterRecyclerView
                 android:id="@+id/lst_event_dates"
                 android:layout_gravity="center_horizontal"
                 android:scrollbars="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="11" />
+                android:layout_height="match_parent" />
+
+                <View
+                    android:id="@+id/view_highlight"
+                    android:layout_width="0dp"
+                    android:background="@drawable/bg_highlight_date"
+                    android:visibility="gone"
+                    android:elevation="10dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_height="match_parent"/>
+
+
+            </RelativeLayout>
 
             <!-- Event list items -->
             <android.support.v7.widget.RecyclerView
