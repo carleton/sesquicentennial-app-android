@@ -42,19 +42,22 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
         MainFragment fragment = null;
         switch(position){
             case 0:
-                fragment = new HistoryFragment();
+                fragment = new InfoFragment();
+
                 break;
             case 1:
                 fragment = new EventsFragment();
                 break;
             case 2:
+                fragment = new HistoryFragment();
+                break;
+            case 3:
                 if(mFragmentAtPos2 == null) {
                     mFragmentAtPos2 = new QuestFragment();
                     ((QuestFragment) mFragmentAtPos2).initialize(this);
                 }
                 return mFragmentAtPos2;
-            case 3:
-                fragment = new InfoFragment();
+
         }
         return fragment;
     }
@@ -94,16 +97,18 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
         String title = "";
         switch (position){
             case 0:
-                title = mainActivity.getResources().getString(R.string.history);
+                title = mainActivity.getResources().getString(R.string.home);
                 break;
             case 1:
                 title = mainActivity.getResources().getString(R.string.events);
                 break;
             case 2:
-                title = mainActivity.getResources().getString(R.string.quests);
+                title = mainActivity.getResources().getString(R.string.history);
                 break;
             case 3:
-                title = mainActivity.getResources().getString(R.string.info);
+                title = mainActivity.getResources().getString(R.string.quests);
+
+
         }
         return title;
     }
