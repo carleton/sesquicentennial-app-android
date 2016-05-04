@@ -1,11 +1,13 @@
 package carleton150.edu.carleton.carleton150.MainFragments;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -28,6 +30,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.squareup.picasso.Picasso;
 
 import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
@@ -47,8 +50,6 @@ import static carleton150.edu.carleton.carleton150.R.id.rel_layout_found_it_hint
 public class QuestInProgressFragment extends MapMainFragment {
     private Quest quest = null;
     private int numClue = 0;
-    private int screenWidth;
-    private int screenHeight;
     private View cardFace;
     private View cardBack;
     private View v;
@@ -124,10 +125,6 @@ public class QuestInProgressFragment extends MapMainFragment {
             checkIfQuestStarted();
             Log.i("CHECK QUEST", "onCreateView, checking if quest is started");
         }
-        DisplayMetrics metrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        screenWidth = metrics.widthPixels;
-        screenHeight = metrics.heightPixels;
         btnFoundIt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -206,7 +203,7 @@ public class QuestInProgressFragment extends MapMainFragment {
             if (image != null) {
                 slidingDrawerClue.setVisibility(View.VISIBLE);
                 relLayoutFoundItClue.setPadding(0, 0, 0, dpAsPixelsBigPadding);
-                setImage(image, screenWidth, screenHeight, imgClue);
+                setImage(image, imgClue);
             } else {
                 slidingDrawerClue.setVisibility(View.GONE);
                 relLayoutFoundItClue.setPadding(0, 0, 0, dpAsPixelsSmallPadding);
@@ -215,7 +212,7 @@ public class QuestInProgressFragment extends MapMainFragment {
             if (hintImage != null) {
                 slidingDrawerHint.setVisibility(View.VISIBLE);
                 relLayoutFoundItHint.setPadding(0, 0, 0, dpAsPixelsBigPadding);
-                setImage(hintImage, screenWidth, screenHeight, imgHint);
+                setImage(hintImage, imgHint);
             } else {
                 slidingDrawerHint.setVisibility(View.GONE);
                 relLayoutFoundItHint.setPadding(0, 0, 0, dpAsPixelsSmallPadding);
@@ -523,7 +520,7 @@ public class QuestInProgressFragment extends MapMainFragment {
             }
             if (image != null){
                 slidingDrawerClue.setVisibility(View.VISIBLE);
-                setImage(image, screenWidth, screenHeight, imgClue);
+                setImage(image, imgClue);
                 relLayoutFoundItClue.setPadding(0, 0, 0, dpAsPixelsBigPadding);
             }else{
                 slidingDrawerClue.setVisibility(View.GONE);
@@ -533,7 +530,7 @@ public class QuestInProgressFragment extends MapMainFragment {
 
             if (hintImage != null){
                 slidingDrawerHint.setVisibility(View.VISIBLE);
-                setImage(hintImage, screenWidth, screenHeight, imgHint);
+                setImage(hintImage, imgHint);
                 relLayoutFoundItHint.setPadding(0, 0, 0, dpAsPixelsBigPadding);
 
             }else{
@@ -598,8 +595,7 @@ public class QuestInProgressFragment extends MapMainFragment {
         txtQuestCompleted.setMovementMethod(new ScrollingMovementMethod());
 
         if(quest.getWaypoints()[numClue].getCompletion().getImage() != null){
-            setImage(quest.getWaypoints()[numClue].getCompletion().getImage().getImage(),
-                    screenWidth, screenHeight, imgQuestCompleted);
+            setImage(quest.getWaypoints()[numClue].getCompletion().getImage().getImage(), imgQuestCompleted);
         }else{
             imgQuestCompleted.setVisibility(View.GONE);
         }
@@ -649,11 +645,11 @@ public class QuestInProgressFragment extends MapMainFragment {
             }
             if (waypoints[numClue].getHint().getImage() != null) {
                 hintImage = waypoints[numClue].getHint().getImage().getImage();
-                setImage(hintImage, screenWidth, screenHeight, imgHint);
+                setImage(hintImage, imgHint);
             }
             if (waypoints[numClue].getClue().getImage() != null) {
                 image = waypoints[numClue].getClue().getImage().getImage();
-                setImage(image, screenWidth, screenHeight, imgClue);
+                setImage(image, imgClue);
             }
         }
 
@@ -709,13 +705,14 @@ public class QuestInProgressFragment extends MapMainFragment {
      * Downsizes a 64-bit encoded image and sets it to be the image displayed
      * in the imageView
      *
-     * @param encodedImage 64-bit encoded image
-     * @param screenWidth width of phone screen in pixels
-     * @param screenHeight height of phone screen in pixels
+     * @param imageURL the URL for the image
      * @param imageView image view to display image
      */
-    public void setImage(String encodedImage, int screenWidth, int screenHeight, ImageView imageView) {
-       //TODO: set the image using picasso
+    public void setImage(String imageURL, ImageView imageView) {
+
+        Uri uri = Uri.parse(imageURL);
+        Context imgContext = imageView.getContext();
+        Picasso.with(imgContext).load(uri).into(imageView);
     }
 
     /**

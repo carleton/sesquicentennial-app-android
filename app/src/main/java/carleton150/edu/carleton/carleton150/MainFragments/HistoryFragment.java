@@ -77,7 +77,6 @@ public class HistoryFragment extends MapMainFragment{
         //Managing UI
         final TextView txtRequestGeofences = (TextView) view.findViewById(txt_try_getting_geofences);
         final Button btnRequestGeofences = (Button) view.findViewById(R.id.btn_request_geofences);
-        final Button btnGetNearbyMemories = (Button) view.findViewById(R.id.btn_get_nearby_memories);
         final ImageButton btnReturnToUserLocation = (ImageButton) view.findViewById(R.id.btn_return_to_my_location);
         final ImageButton btnReturnToCampus = (ImageButton) view.findViewById(R.id.btn_return_to_campus);
 
@@ -89,18 +88,6 @@ public class HistoryFragment extends MapMainFragment{
                 toggleTutorial();
             }
         });
-
-        btnGetNearbyMemories.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(constants.STORIES_URL));
-                startActivity(browserIntent);
-
-                //Shows a popover displaying nearby memories, disabled because we are no longer using this feature
-                //showMemoriesPopover();
-            }
-        });
-
 
 
         /*If geofences weren't retrieved (likely due to network error), shows button for user

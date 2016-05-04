@@ -87,18 +87,6 @@
 
             </RelativeLayout>
 
-            <Button
-                android:id="@+id/btn_get_nearby_memories"
-                android:layout_width="match_parent"
-                android:layout_margin="20dp"
-                android:background="@drawable/bg_color_primary_btn"
-                android:elevation="10dp"
-                android:textColor="@color/colorAccent"
-                android:padding="10dp"
-                android:text="@string/read_stories"
-                android:layout_alignParentBottom="true"
-                android:layout_height="wrap_content" />
-
         </RelativeLayout>
 
 

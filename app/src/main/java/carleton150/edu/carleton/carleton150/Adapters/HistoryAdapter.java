@@ -1,8 +1,6 @@
 package carleton150.edu.carleton.carleton150.Adapters;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -18,6 +16,7 @@ import com.squareup.picasso.Picasso;
 import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Event;
+import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Text_;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;
 import carleton150.edu.carleton.carleton150.R;
 
@@ -169,6 +168,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     ((HistoryViewHolderImage) holder).setTxtDate(geofenceInfoContent.getStartDate().getYear());
                     ((HistoryViewHolderImage) holder).setTxtCaption(geofenceInfoContent.getMedia().getCaption());
                     ((HistoryViewHolderImage) holder).setTxtDescription(geofenceInfoContent.getMedia().getCredit());
+                    ((HistoryViewHolderImage) holder).setText(geofenceInfoContent.getText());
                     ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
                     ImageView imgExpanded = ((HistoryViewHolderImage) holder).getIconExpand();
                     ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
@@ -240,6 +240,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         private TextView txtCaption;
         private ImageView iconExpand;
         private TextView txtDescription;
+        private TextView txtText;
         private boolean expanded = false;
 
         public HistoryViewHolderImage(View itemView) {
@@ -250,10 +251,21 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             txtCaption = (TextView) itemView.findViewById(R.id.txt_caption);
             iconExpand = (ImageView) itemView.findViewById(R.id.img_expand);
             txtDescription = (TextView) itemView.findViewById(R.id.txt_image_description);
+            txtText = (TextView) itemView.findViewById(R.id.txt_text);
         }
 
         public void setTxtDescription(String txtDescription) {
             this.txtDescription.setText(txtDescription);
+        }
+
+        public void setText(Text_ text){
+            if(text != null){
+                if(text.getText() != null){
+                    if(!text.getText().equals("")){
+                        txtText.setText(text.getText());
+                    }
+                }
+            }
         }
 
         public void setTxtDate(String txtDate) {
@@ -285,10 +297,16 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             if(context != null) {
                 if (expanded) {
                     iconExpand.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_navigation_expand_less));
-                    txtDescription.setVisibility(View.VISIBLE);
+                    if(!txtDescription.getText().equals("")) {
+                        txtDescription.setVisibility(View.VISIBLE);
+                    }
+                    if(!txtText.getText().equals("")) {
+                        txtText.setVisibility(View.VISIBLE);
+                    }
                 } else {
                     iconExpand.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_navigation_expand_more));
                     txtDescription.setVisibility(View.GONE);
+                    txtText.setVisibility(View.GONE);
                 }
             }
         }
