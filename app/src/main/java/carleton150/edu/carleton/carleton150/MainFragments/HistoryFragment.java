@@ -26,17 +26,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import org.apache.commons.lang.ObjectUtils;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import carleton150.edu.carleton.carleton150.ExtraFragments.AddMemoryFragment;
 import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
 import carleton150.edu.carleton.carleton150.MainActivity;
-import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
-import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectContent;
 import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.AllGeofences;
 import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Event;
 import carleton150.edu.carleton.carleton150.R;
@@ -357,46 +352,6 @@ public class HistoryFragment extends MapMainFragment{
         }
     }
 
-    /**
-     * Shows a popover to display nearby memories
-     * This will no longer be used because the memories feature was removed
-     */
-    private void showMemoriesPopover(){
-
-        RelativeLayout relLayoutTutorial = (RelativeLayout) view.findViewById(R.id.tutorial);
-        relLayoutTutorial.setVisibility(View.GONE);
-
-        FragmentManager fm = getActivity().getSupportFragmentManager();
-        RecyclerViewPopoverFragment recyclerViewPopoverFragment = RecyclerViewPopoverFragment.newInstance(this);
-
-        // Transaction start
-        FragmentTransaction fragmentTransaction = fm.beginTransaction();
-
-        fragmentTransaction.setCustomAnimations(R.anim.abc_slide_in_bottom, R.anim.abc_slide_out_bottom,
-                R.anim.abc_slide_in_bottom, R.anim.abc_slide_out_bottom);
-        fragmentTransaction.add(R.id.fragment_container, recyclerViewPopoverFragment, "RecyclerViewPopoverFragment");
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
-    }
-
-    /**
-     * shows a popover for user to add a memory
-     * This method will not be used because the memories functionality was removed
-     */
-    public void showAddMemoriesPopover(){
-        Log.i(logMessages.MEMORY_MONITORING, "HistoryFragment : showAddMemoriesPopover called");
-        FragmentManager fm = getActivity().getSupportFragmentManager();
-        AddMemoryFragment addMemoryFragment = AddMemoryFragment.newInstance();
-
-        // Transaction start
-        FragmentTransaction fragmentTransaction = fm.beginTransaction();
-
-        fragmentTransaction.setCustomAnimations(R.anim.abc_slide_in_top, R.anim.abc_slide_out_bottom,
-                R.anim.abc_slide_in_top, R.anim.abc_slide_out_bottom);
-        fragmentTransaction.replace(R.id.fragment_container, addMemoryFragment, "AddMemoriesFragment");
-
-        fragmentTransaction.commit();
-    }
 
     @Override
     public void onDestroyView() {

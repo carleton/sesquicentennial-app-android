@@ -15,12 +15,8 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-
 import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.LogMessages;
-import carleton150.edu.carleton.carleton150.Models.BitmapWorkerTask;
-import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Event;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;
 import carleton150.edu.carleton.carleton150.R;
@@ -32,10 +28,6 @@ import carleton150.edu.carleton.carleton150.R;
  */
 public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
-    //TODO: old version
-    private GeofenceInfoContent[] historyList = null;
-
-    //TODO:  new version
     private Event[] historyListNew = null;
 
     private LogMessages logMessages = new LogMessages();
@@ -44,28 +36,16 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private Waypoint[] waypointList = null;
     public int screenWidth;
     public int screenHeight;
-    public boolean isMemories;
     public boolean isQuestProgress;
     public Context context;
     private static Constants constants = new Constants();
 
-    public HistoryAdapter(Context context, GeofenceInfoContent[] historyList, Waypoint[] waypoints, int screenWidth, int screenHeight, boolean isMemories, boolean isQuestProgress) {
-        this.historyList = historyList;
-        this.screenHeight = screenHeight;
-        this.historyListNew = null;
-        this.screenWidth = screenWidth;
-        this.isMemories = isMemories;
-        this.waypointList = waypoints;
-        this.isQuestProgress = isQuestProgress;
-        this.context = context;
-    }
 
-    public HistoryAdapter(Context context, Event[] historyListNew, Waypoint[] waypoints, int screenWidth, int screenHeight, boolean isMemories, boolean isQuestProgress) {
+
+    public HistoryAdapter(Context context, Event[] historyListNew, Waypoint[] waypoints, int screenWidth, int screenHeight, boolean isQuestProgress) {
         this.historyListNew = historyListNew;
-        this.historyList = null;
         this.screenHeight = screenHeight;
         this.screenWidth = screenWidth;
-        this.isMemories = isMemories;
         this.waypointList = waypoints;
         this.isQuestProgress = isQuestProgress;
         this.context = context;
@@ -84,23 +64,18 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
      */
     @Override
     public int getItemViewType(int position) {
-        if(isMemories){
-            return 0;
-        }if(isQuestProgress){
+       if(isQuestProgress){
             return 2;
         }
         if(historyListNew != null){
-            if(historyListNew[position].getText() != null){
-                return 1;
-            }else{
+            if(historyListNew[position].getMedia() != null && historyListNew[position].getMedia().getUrl() != null &&
+                     !historyListNew[position].getMedia().getUrl().equals("")){
                 return 0;
+            }else{
+                return 1;
             }
         }
-        if(historyList[position].getType().equals(historyList[position].TYPE_IMAGE)){
-            return 0;
-        } if(historyList[position].getType().equals(historyList[position].TYPE_TEXT)){
-            return 1;
-        } else {
+        else {
             return -1;
         }
     }
@@ -121,19 +96,15 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onCreateViewHolder : viewType : " + viewType);
-        if(isMemories){
-            View view = LayoutInflater.
-                    from(parent.getContext()).
-                    inflate(R.layout.history_info_card_memories, parent, false);
-            return new HistoryViewHolderImage(view);
-        }
         switch (viewType) {
             case 0:
+                Log.i("Image debugging", "image case");
                 View itemView = LayoutInflater.
                         from(parent.getContext()).
                         inflate(R.layout.history_info_card_image, parent, false);
                 return new HistoryViewHolderImage(itemView);
             case 1:
+                Log.i("Image debugging", "text case");
                 View view = LayoutInflater.
                         from(parent.getContext()).
                         inflate(R.layout.history_info_card_text, parent, false);
@@ -157,28 +128,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         //Sets fields of a HistoryViewHolderText and sets an OnClickListener to expand the view
         if(holder instanceof HistoryViewHolderText){
-            if(historyList != null) {
-                Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder :textHolder: historyList NOT null ");
-
-                final GeofenceInfoContent geofenceInfoContent = historyList[position];
-                ((HistoryViewHolderText) holder).setTxtSummary(geofenceInfoContent.getSummary());
-                ((HistoryViewHolderText) holder).setTxtDescription(geofenceInfoContent.getData());
-                ((HistoryViewHolderText) holder).setTxtDate(geofenceInfoContent.getYear());
-                ((HistoryViewHolderText) holder).setExpanded(geofenceInfoContent.isExpanded());
-                ImageView imgExpanded = ((HistoryViewHolderText) holder).getIconExpand();
-
-                ((HistoryViewHolderText) holder).setExpanded(geofenceInfoContent.isExpanded());
-                ((HistoryViewHolderText) holder).setIconExpand(context);
-
-                imgExpanded.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        geofenceInfoContent.setExpanded(!geofenceInfoContent.isExpanded());
-                        ((HistoryViewHolderText) holder).setExpanded(geofenceInfoContent.isExpanded());
-                        ((HistoryViewHolderText) holder).setIconExpand(context);
-                    }
-                });
-            }else if(historyListNew != null){
+            if(historyListNew != null){
                 Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: textHolder: historyListNew not null");
 
                 final Event geofenceInfoContent = historyListNew[position];
@@ -204,28 +154,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         }else if(holder instanceof HistoryViewHolderImage){
             //Sets fields of a HistoryViewHolderImage and sets an OnClickListener to expand the view
-            if(!isMemories && !isQuestProgress) {
-                if(historyList != null) {
-                    final GeofenceInfoContent geofenceInfoContent = historyList[position];
-                    Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: imageHolder: historyList NOT null");
-
-                    ((HistoryViewHolderImage) holder).setImage(position, geofenceInfoContent.getData(), screenWidth, screenHeight);
-                    ((HistoryViewHolderImage) holder).setTxtDate(geofenceInfoContent.getYear());
-                    ((HistoryViewHolderImage) holder).setTxtCaption(geofenceInfoContent.getCaption());
-                    ((HistoryViewHolderImage) holder).setTxtDescription(geofenceInfoContent.getDesc());
-                    ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
-                    ImageView imgExpanded = ((HistoryViewHolderImage) holder).getIconExpand();
-                    ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
-                    ((HistoryViewHolderImage) holder).setIconExpand(context);
-                    imgExpanded.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            geofenceInfoContent.setExpanded(!geofenceInfoContent.isExpanded());
-                            ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
-                            ((HistoryViewHolderImage) holder).setIconExpand(context);
-                        }
-                    });
-                }else if(historyListNew != null){
+            if(!isQuestProgress) {
+                if(historyListNew != null){
 
                     Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: imageHolder: historyListNew not null");
 
@@ -252,27 +182,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                         }
                     });
                 }
-            }else if (isMemories){
-                final GeofenceInfoContent geofenceInfoContent = historyList[position];
-
-                //Sets fields of a HistoryViewHolderImage and sets an OnClickListener to expand the view
-                //not that the memories use the HistoryViewHolderImage, but just fills in different fields
-                ((HistoryViewHolderImage) holder).setImage(position, geofenceInfoContent.getImage(), screenWidth, screenHeight);
-                ((HistoryViewHolderImage) holder).setTxtDate(geofenceInfoContent.getTimestamp());
-                ((HistoryViewHolderImage) holder).setTxtCaption(geofenceInfoContent.getCaption());
-                ((HistoryViewHolderImage) holder).setTxtDescription(geofenceInfoContent.getDesc());
-                ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
-                ImageView imgExpanded = ((HistoryViewHolderImage) holder).getIconExpand();
-                ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
-                ((HistoryViewHolderImage) holder).setIconExpand(context);
-                imgExpanded.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        geofenceInfoContent.setExpanded(!geofenceInfoContent.isExpanded());
-                        ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
-                        ((HistoryViewHolderImage) holder).setIconExpand(context);
-                    }
-                });
             }
 
         }else if(holder instanceof ViewHolderQuestInProgress) {
@@ -313,9 +222,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
      */
     @Override
     public int getItemCount() {
-        if (historyList != null) {
-            return historyList.length;
-        } else if(historyListNew != null) {
+        if(historyListNew != null) {
             return historyListNew.length;
         } else if (waypointList != null){
             return waypointList.length;
@@ -387,77 +294,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
 
 
-        /**
-         * Sets the image by downsizing and decoding the image string, then putting the image
-         * into the recyclerView at the specified position
-         *
-         * @param resId position of image in RecyclerView
-         * @param encodedImage 64-bit encoded image
-         * @param screenWidth width of phone screen
-         * @param screenHeight height of phone screen
-         */
-        //TODO: old version
-        public void setImage(int resId, String encodedImage, int screenWidth, int screenHeight) {
-            System.gc();
-            int w = constants.PLACEHOLDER_IMAGE_DIMENSIONS, h = constants.PLACEHOLDER_IMAGE_DIMENSIONS;
-            Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
-            Bitmap mPlaceHolderBitmap = Bitmap.createBitmap(w, h, conf); // this creates a MUTABLE bitmap
-
-            if (cancelPotentialWork(resId, imgMedia)) {
-                final BitmapWorkerTask task = new BitmapWorkerTask(imgMedia,  encodedImage
-                        , screenWidth, screenHeight/2);
-                final BitmapWorkerTask.AsyncDrawable asyncDrawable =
-                        new BitmapWorkerTask.AsyncDrawable(mPlaceHolderBitmap, task);
-                imgMedia.setImageDrawable(asyncDrawable);
-                task.execute(resId);
-            }
-        }
 
 
         public ImageView getImgMedia(){
             return this.imgMedia;
-        }
-
-        /**
-         * Cancels the previous task if a view is recycled so it can use the correct image
-         *
-         * @param data
-         * @param imageView
-         * @return
-         */
-        public static boolean cancelPotentialWork(int data, ImageView imageView) {
-            final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
-
-            if (bitmapWorkerTask != null) {
-                final int bitmapData = bitmapWorkerTask.data;
-                // If bitmapData is not yet set or it differs from the new data
-                if (bitmapData == 0 || bitmapData != data) {
-                    // Cancel previous task
-                    bitmapWorkerTask.cancel(true);
-                } else {
-                    // The same work is already in progress
-                    return false;
-                }
-            }
-            // No task associated with the ImageView, or an existing task was cancelled
-            return true;
-        }
-
-
-        /**
-         * Gets the worker task that is trying to decode an image for the imageView
-         * @param imageView
-         * @return
-         */
-        private static BitmapWorkerTask getBitmapWorkerTask(ImageView imageView) {
-            if (imageView != null) {
-                final Drawable drawable = imageView.getDrawable();
-                if (drawable instanceof BitmapWorkerTask.AsyncDrawable) {
-                    final BitmapWorkerTask.AsyncDrawable asyncDrawable = (BitmapWorkerTask.AsyncDrawable) drawable;
-                    return asyncDrawable.getBitmapWorkerTask();
-                }
-            }
-            return null;
         }
 
         /**
@@ -694,18 +534,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
          */
         public void setImageClue(int resId, String encodedImage, int screenWidth, int screenHeight) {
             if(hasClueImage) {
-                System.gc();
-                int w = 10, h = 10;
-                Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
-                Bitmap mPlaceHolderBitmap = Bitmap.createBitmap(w, h, conf); // this creates a MUTABLE bitmap
-                if (cancelPotentialWork(resId, imgClue)) {
-                    final BitmapWorkerTask task = new BitmapWorkerTask(imgClue, encodedImage
-                            , screenWidth / 2, screenHeight / 3);
-                    final BitmapWorkerTask.AsyncDrawable asyncDrawable =
-                            new BitmapWorkerTask.AsyncDrawable(mPlaceHolderBitmap, task);
-                    imgClue.setImageDrawable(asyncDrawable);
-                    task.execute(resId);
-                }
+                //TODO: load in image using picasso
             }
 
         }
@@ -721,18 +550,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
          */
         public void setImageHint(int resId, String encodedImage, int screenWidth, int screenHeight) {
             if(hasHintImage) {
-                System.gc();
-                int w = constants.PLACEHOLDER_IMAGE_DIMENSIONS, h = constants.PLACEHOLDER_IMAGE_DIMENSIONS;
-                Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
-                Bitmap mPlaceHolderBitmap = Bitmap.createBitmap(w, h, conf); // this creates a MUTABLE bitmap
-                if (cancelPotentialWork(resId, imgHint)) {
-                    final BitmapWorkerTask task = new BitmapWorkerTask(imgHint, encodedImage
-                            , screenWidth / 2, screenHeight / 3);
-                    final BitmapWorkerTask.AsyncDrawable asyncDrawable =
-                            new BitmapWorkerTask.AsyncDrawable(mPlaceHolderBitmap, task);
-                    imgHint.setImageDrawable(asyncDrawable);
-                    task.execute(resId);
-                }
+                //TODO: load in image using picasso
             }
         }
 
@@ -747,59 +565,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
          */
         public void setImageComp(int resId, String encodedImage, int screenWidth, int screenHeight) {
             if(hasCompImage) {
-                System.gc();
-                int w = constants.PLACEHOLDER_IMAGE_DIMENSIONS, h = constants.PLACEHOLDER_IMAGE_DIMENSIONS;
-                Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
-                Bitmap mPlaceHolderBitmap = Bitmap.createBitmap(w, h, conf); // this creates a MUTABLE bitmap
-                if (cancelPotentialWork(resId, imgCompImage)) {
-                    final BitmapWorkerTask task = new BitmapWorkerTask(imgCompImage, encodedImage
-                            , screenWidth / 2, screenHeight / 3);
-                    final BitmapWorkerTask.AsyncDrawable asyncDrawable =
-                            new BitmapWorkerTask.AsyncDrawable(mPlaceHolderBitmap, task);
-                    imgCompImage.setImageDrawable(asyncDrawable);
-                    task.execute(resId);
-                }
+                //TODO: load in image using picasso
             }
-        }
-
-        /**
-         * Cancels the previous task if a view is recycled so it can use the correct image
-         *
-         * @param data
-         * @param imageView
-         * @return
-         */
-        public static boolean cancelPotentialWork(int data, ImageView imageView) {
-            final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
-            if (bitmapWorkerTask != null) {
-                final int bitmapData = bitmapWorkerTask.data;
-                // If bitmapData is not yet set or it differs from the new data
-                if (bitmapData == 0 || bitmapData != data) {
-                    // Cancel previous task
-                    bitmapWorkerTask.cancel(true);
-                } else {
-                    // The same work is already in progress
-                    return false;
-                }
-            }
-            // No task associated with the ImageView, or an existing task was cancelled
-            return true;
-        }
-
-        /**
-         * Gets the worker task that is trying to decode an image for the imageView
-         * @param imageView
-         * @return
-         */
-        private static BitmapWorkerTask getBitmapWorkerTask(ImageView imageView) {
-            if (imageView != null) {
-                final Drawable drawable = imageView.getDrawable();
-                if (drawable instanceof BitmapWorkerTask.AsyncDrawable) {
-                    final BitmapWorkerTask.AsyncDrawable asyncDrawable = (BitmapWorkerTask.AsyncDrawable) drawable;
-                    return asyncDrawable.getBitmapWorkerTask();
-                }
-            }
-            return null;
         }
 
         @Override

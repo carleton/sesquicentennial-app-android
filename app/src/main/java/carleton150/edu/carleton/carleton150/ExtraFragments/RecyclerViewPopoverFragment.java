@@ -25,9 +25,7 @@ import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.MainFragments.HistoryFragment;
-import carleton150.edu.carleton.carleton150.Models.VolleyRequester;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
-import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.MemoriesContent;
 import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Event;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;
@@ -45,21 +43,11 @@ public class RecyclerViewPopoverFragment extends Fragment{
     private LinearLayoutManager historyLayoutManager;
     private HistoryAdapter historyAdapter;
     private Button btnClose;
-    private static boolean isMemories = false;
     private int screenWidth;
     private int screenHeight;
     private TextView txtErrorGettingMemories;
-    private double memoriesRadius;
-    private Constants constants = new Constants();
-    private static HistoryFragment parentFragment;
     private static boolean isQuestInProgress = false;
-    private static boolean isNewHistory = false;
     private static String geofenceName;
-
-    //TODO: old version
-    private static GeofenceInfoContent[] geofenceInfoObject;
-
-    //TODO: new version
     private static ArrayList<Event> geofenceInfoObjectNew;
 
     private static Quest quest;
@@ -73,43 +61,16 @@ public class RecyclerViewPopoverFragment extends Fragment{
     }
 
     /**
-     * Creates a new instance of the RecyclerViewPopoverFragment where the GeofenceInfoContent[]
+     * Creates a new instance of the RecyclerViewPopoverFragment where the ArrayList of Events
      * to display in the RecyclerView is provided. This is called when creating a history popover
      *
      * @param object the GeofenceInfoContent[] for the RecyclerViewPopoverFragment to display
      * @return the RecyclerViewPopoverFragment that was created
      */
-    public static RecyclerViewPopoverFragment newInstance(GeofenceInfoContent[] object, String name) {
-        RecyclerViewPopoverFragment f = new RecyclerViewPopoverFragment();
-        geofenceInfoObject = object;
-        geofenceName = name;
-        isMemories = false;
-        isQuestInProgress = false;
-        return f;
-    }
-
     public static RecyclerViewPopoverFragment newInstance(ArrayList<Event> object, String name) {
         RecyclerViewPopoverFragment f = new RecyclerViewPopoverFragment();
         geofenceInfoObjectNew = object;
         geofenceName = name;
-        isMemories = false;
-        isNewHistory = true;
-        isQuestInProgress = false;
-        return f;
-    }
-
-    /**
-     * Creates a new instance of the RecyclerViewPopoverFragment where the array to be displayed
-     * by the RecyclerView is not provided. This means that this was called to display memories,
-     * and the memories to display must be requested by the VolleyRequester
-     *
-     * @param mParentFragment
-     * @return the RecyclerViewPopoverFragment that was created
-     */
-    public static RecyclerViewPopoverFragment newInstance(HistoryFragment mParentFragment){
-        RecyclerViewPopoverFragment f = new RecyclerViewPopoverFragment();
-        isMemories = true;
-        parentFragment = mParentFragment;
         isQuestInProgress = false;
         return f;
     }
@@ -125,7 +86,6 @@ public class RecyclerViewPopoverFragment extends Fragment{
      */
     public static RecyclerViewPopoverFragment newInstance(Quest mQuest, int mProgress){
         RecyclerViewPopoverFragment f = new RecyclerViewPopoverFragment();
-        isMemories = false;
         quest = mQuest;
         progressThroughQuest = mProgress;
         isQuestInProgress = true;
@@ -143,24 +103,6 @@ public class RecyclerViewPopoverFragment extends Fragment{
         txtErrorGettingMemories = (TextView) view.findViewById(R.id.txt_error_getting_memories);
         btnClose = (Button) view.findViewById(R.id.btn_exit_popup);
 
-        //Sets a listener for the "Add Memory" button
-        Button btnAddMemory = (Button) view.findViewById(R.id.btn_add_memory);
-        if(isMemories){
-            /*
-            If the RecyclerViewPopoverFragment is being used to display memories, makes the "Add Memory" button
-            visible and listens for clicks. On a click, launches the AddMemoriesFragment
-             */
-            btnAddMemory.setVisibility(View.VISIBLE);
-            btnAddMemory.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showAddMemoriesFragment();
-                }
-            });
-        }else{
-            //If not being used to display memories, sets visibility of button to add memory to "GONE"
-            btnAddMemory.setVisibility(View.GONE);
-        }
 
         //Closes the RecyclerViewPopoverFragment when the close button is pressed
         btnClose.setOnClickListener(new View.OnClickListener() {
@@ -170,7 +112,7 @@ public class RecyclerViewPopoverFragment extends Fragment{
             }
         });
 
-        if(!isMemories && !isQuestInProgress) {
+        if(!isQuestInProgress) {
             //If this is being used to show the history, sets the title to the name of the geofence
 
             if(geofenceName != null) {
@@ -178,18 +120,9 @@ public class RecyclerViewPopoverFragment extends Fragment{
             }else{
                 txtTitle.setText("");
             }
-        }
-        else if (isMemories){
-            txtTitle.setText(getString(R.string.nearby_memories_title));
-            txtErrorGettingMemories.setVisibility(View.VISIBLE);
-            txtErrorGettingMemories.setText(R.string.getting_nearby_memories);
         }else if(isQuestInProgress){
             txtTitle.setText(getString(R.string.progress_through_quest_title));
             txtErrorGettingMemories.setVisibility(View.GONE);
-        }
-
-        if(isMemories){
-            setMemoriesColorScheme();
         }
 
         //builds RecyclerViews to display info
@@ -236,32 +169,13 @@ public class RecyclerViewPopoverFragment extends Fragment{
             screenWidth = metrics.widthPixels;
             screenHeight = metrics.heightPixels;
 
-            if(!isMemories && !isQuestInProgress) {
-                if(!isNewHistory) {
-                    buildHistoryRecyclerView();
-                }else{
-                    buildNewHistoryRecyclerView();
-                }
-            }else if (isMemories){
-               buildMemoriesRecyclerView();
+            if(!isQuestInProgress) {
+                buildNewHistoryRecyclerView();
             }else if (isQuestInProgress){
                 buildQuestProgressRecyclerView();
             }
     }
 
-    /**
-     * Builds a RecyclerView when the RecyclerViewPopoverFragment is being used to display
-     * history info
-     */
-    private void buildHistoryRecyclerView(){
-        historyAdapter = new HistoryAdapter(getActivity(), geofenceInfoObject, null, screenWidth,
-                screenHeight, isMemories, isQuestInProgress);
-        //RecyclerView animation
-        MyScaleInAnimationAdapter scaleInAnimationAdapter = new MyScaleInAnimationAdapter(historyAdapter);
-        scaleInAnimationAdapter.setFirstOnly(false);
-        scaleInAnimationAdapter.setInterpolator(new OvershootInterpolator());
-        historyInfoObjects.setAdapter(scaleInAnimationAdapter);
-    }
 
     /**
      * Builds a RecyclerView when the RecyclerViewPopoverFragment is being used to display
@@ -277,41 +191,13 @@ public class RecyclerViewPopoverFragment extends Fragment{
             events[i] = geofenceInfoObjectNew.get(i);
         }
         historyAdapter = new HistoryAdapter(getActivity(), events, null, screenWidth,
-                screenHeight, isMemories, isQuestInProgress);
+                screenHeight, isQuestInProgress);
         //RecyclerView animation
         MyScaleInAnimationAdapter scaleInAnimationAdapter = new MyScaleInAnimationAdapter(historyAdapter);
         scaleInAnimationAdapter.setFirstOnly(false);
         scaleInAnimationAdapter.setInterpolator(new OvershootInterpolator());
         historyInfoObjects.setAdapter(scaleInAnimationAdapter);
         historyAdapter.notifyDataSetChanged();
-    }
-
-    /**
-     * Builds a RecyclerView when the RecyclerViewPopoverFragment is being used to display
-     * memories
-     */
-    private void buildMemoriesRecyclerView(){
-        VolleyRequester volleyRequester = new VolleyRequester();
-        MainActivity activity = (MainActivity) getActivity();
-        Location location = activity.getLastLocation();
-
-        //Need a location to request memories. If location not available, notifies user
-        if(location != null) {
-            Location centerCampus = new Location("");
-            centerCampus.setLatitude(constants.CENTER_CAMPUS.latitude);
-            centerCampus.setLongitude(constants.CENTER_CAMPUS.longitude);
-            float distanceOffCampusInMeters = location.distanceTo(centerCampus);
-            if(distanceOffCampusInMeters >= constants.DISTANCE_OFF_CAMPUS_TO_INCREASE_MEMORIES_RADIUS){
-                memoriesRadius = constants.AWAY_FROM_CAMPUS_MEMORIES_RADIUS;
-            }else{
-                memoriesRadius = constants.NEAR_CAMPUS_MEMORIES_RADIUS;
-            }
-            volleyRequester.requestMemories(location.getLatitude(), location.getLongitude(),
-                    memoriesRadius, this);
-        }else{
-            txtErrorGettingMemories.setVisibility(View.VISIBLE);
-            txtErrorGettingMemories.setText(getString(R.string.no_current_location));
-        }
     }
 
     /**
@@ -324,7 +210,7 @@ public class RecyclerViewPopoverFragment extends Fragment{
         for(int i = 0; i<progressThroughQuest; i++){
             completedWaypoints[i] = waypoints[i];
         }
-        historyAdapter = new HistoryAdapter(getActivity(), (GeofenceInfoContent[]) null, completedWaypoints, screenWidth, screenHeight, false, true);
+        historyAdapter = new HistoryAdapter(getActivity(), null, completedWaypoints, screenWidth, screenHeight, true);
         MyScaleInAnimationAdapter scaleInAnimationAdapter = new MyScaleInAnimationAdapter(historyAdapter);
         scaleInAnimationAdapter.setFirstOnly(false);
         scaleInAnimationAdapter.setInterpolator(new OvershootInterpolator());
@@ -340,44 +226,6 @@ public class RecyclerViewPopoverFragment extends Fragment{
         historyLayoutManager = null;
         historyAdapter = null;
         btnClose = null;
-        geofenceInfoObject = null;
         txtErrorGettingMemories = null;
-        parentFragment = null;
-
-    }
-
-    /**
-     * Called from VolleyRequester. Creates a HistoryAdapter for the new memories and displays
-     * them in the RecyclerView
-     *
-     * @param memories memories retrieved from server
-     */
-    public void handleNewMemories(MemoriesContent memories){
-        if(memories != null) {
-            if(memories.getContent().length == 0){
-                txtErrorGettingMemories.setVisibility(View.VISIBLE);
-                txtErrorGettingMemories.setText(getString(R.string.no_nearby_memories));
-            }else{
-                txtErrorGettingMemories.setVisibility(View.GONE);
-            }
-            historyAdapter = new HistoryAdapter(getActivity(), memories.getContent(), null, screenWidth,
-                    screenHeight, isMemories, isQuestInProgress);
-            //RecyclerView animation
-            MyScaleInAnimationAdapter scaleInAnimationAdapter = new MyScaleInAnimationAdapter(historyAdapter);
-            scaleInAnimationAdapter.setFirstOnly(false);
-            scaleInAnimationAdapter.setInterpolator(new OvershootInterpolator());
-            historyInfoObjects.setAdapter(scaleInAnimationAdapter);
-            historyAdapter.notifyDataSetChanged();
-        }else{
-            txtErrorGettingMemories.setVisibility(View.VISIBLE);
-            txtErrorGettingMemories.setText(getString(R.string.memories_null));
-        }
-    }
-
-    /**
-     * Calles a method in the parentFragment to show the popover to add a memory
-     */
-    private void showAddMemoriesFragment(){
-        parentFragment.showAddMemoriesPopover();
     }
 }

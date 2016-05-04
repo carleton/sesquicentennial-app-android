@@ -22,7 +22,6 @@ import java.util.ArrayList;
 
 import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.Interfaces.RecyclerViewClickListener;
-import carleton150.edu.carleton.carleton150.Models.BitmapWorkerTask;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.R;
 
@@ -218,75 +217,6 @@ public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.QuestViewHol
          */
         public void setWidth(int width) {
             itemView.setLayoutParams(new RecyclerView.LayoutParams(width, RecyclerView.LayoutParams.MATCH_PARENT));
-        }
-
-        /**
-         * Sets the image by downsizing and decoding the image string, then putting the image
-         * into the recyclerView at the specified position in the image ImageView
-         *
-         * @param resId position of image in RecyclerView
-         * @param encodedImage 64-bit encoded image
-         * @param screenWidth width of phone screen
-         * @param screenHeight height of phone screen
-         */
-        public void setImage(int resId, String encodedImage, int screenWidth, int screenHeight) {
-            System.gc();
-            if(encodedImage == null) {
-                image.setImageResource(R.drawable.test_image1);
-                image.setColorFilter(R.color.blackSemiTransparent);
-            }else {
-                int w = constants.PLACEHOLDER_IMAGE_DIMENSIONS, h = constants.PLACEHOLDER_IMAGE_DIMENSIONS;
-                Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
-                Bitmap mPlaceHolderBitmap = Bitmap.createBitmap(w, h, conf); // this creates a MUTABLE bitmap
-                if (cancelPotentialWork(resId, image)) {
-                    final BitmapWorkerTask task = new BitmapWorkerTask(image, encodedImage
-                            , screenWidth / 2, screenHeight / 2);
-                    final BitmapWorkerTask.AsyncDrawable asyncDrawable =
-                            new BitmapWorkerTask.AsyncDrawable(mPlaceHolderBitmap, task);
-                    image.setImageDrawable(asyncDrawable);
-                    task.execute(resId);
-                }
-            }
-        }
-
-        /**
-         * Cancels the previous task if a view is recycled so it can use the correct image
-         *
-         * @param data
-         * @param imageView
-         * @return
-         */
-        public static boolean cancelPotentialWork(int data, ImageView imageView) {
-            final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
-            if (bitmapWorkerTask != null) {
-                final int bitmapData = bitmapWorkerTask.data;
-                // If bitmapData is not yet set or it differs from the new data
-                if (bitmapData == 0 || bitmapData != data) {
-                    // Cancel previous task
-                    bitmapWorkerTask.cancel(true);
-                } else {
-                    // The same work is already in progress
-                    return false;
-                }
-            }
-            // No task associated with the ImageView, or an existing task was cancelled
-            return true;
-        }
-
-        /**
-         * Gets the worker task that is trying to decode an image for the imageView
-         * @param imageView
-         * @return the new BitmapWorkerTask for the imageView
-         */
-        private static BitmapWorkerTask getBitmapWorkerTask(ImageView imageView) {
-            if (imageView != null) {
-                final Drawable drawable = imageView.getDrawable();
-                if (drawable instanceof BitmapWorkerTask.AsyncDrawable) {
-                    final BitmapWorkerTask.AsyncDrawable asyncDrawable = (BitmapWorkerTask.AsyncDrawable) drawable;
-                    return asyncDrawable.getBitmapWorkerTask();
-                }
-            }
-            return null;
         }
 
         /**

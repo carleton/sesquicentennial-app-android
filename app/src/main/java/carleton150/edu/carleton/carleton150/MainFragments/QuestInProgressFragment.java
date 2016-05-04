@@ -34,7 +34,6 @@ import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragmen
 import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.MainActivity;
-import carleton150.edu.carleton.carleton150.Models.BitmapWorkerTask;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;
 import carleton150.edu.carleton.carleton150.R;
@@ -716,15 +715,7 @@ public class QuestInProgressFragment extends MapMainFragment {
      * @param imageView image view to display image
      */
     public void setImage(String encodedImage, int screenWidth, int screenHeight, ImageView imageView) {
-        int w = constants.PLACEHOLDER_IMAGE_DIMENSIONS, h = constants.PLACEHOLDER_IMAGE_DIMENSIONS;
-        Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
-        Bitmap mPlaceHolderBitmap = Bitmap.createBitmap(w, h, conf); // this creates a MUTABLE bitmap
-        final BitmapWorkerTask task = new BitmapWorkerTask(imageView,  encodedImage
-                , screenWidth/3, screenHeight/6);
-        final BitmapWorkerTask.AsyncDrawable asyncDrawable =
-                new BitmapWorkerTask.AsyncDrawable(mPlaceHolderBitmap, task);
-        imageView.setImageDrawable(asyncDrawable);
-        task.execute();
+       //TODO: set the image using picasso
     }
 
     /**
