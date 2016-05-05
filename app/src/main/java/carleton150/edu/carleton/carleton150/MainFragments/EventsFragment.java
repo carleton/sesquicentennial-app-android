@@ -167,16 +167,29 @@ public class EventsFragment extends MainFragment {
         eventsListView.setAdapter(eventsListAdapter);
 
         eventsListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-
-            int prevPos = 0;
-
+            
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                int pos = dateLayoutManager.findFirstCompletelyVisibleItemPosition();
-                if(prevPos < pos){
-                    //TODO: scrolling down
-                }else if (prevPos > pos){
-                    //TODO: scrolling up
+                int pos = eventsLayoutManager.findFirstCompletelyVisibleItemPosition();
+                int datePos = dateLayoutManager.findFirstCompletelyVisibleItemPosition();
+                if (datePos == 0) {
+                    datePos = 1;
+                }
+
+                String startTimeString = eventsList.get(pos).getStartTime();
+                String[] completeDateArray = startTimeString.split("T");
+                String dateByDay = completeDateArray[0];
+                if (!dateByDay.equals(dateInfo.get(datePos))) {
+                    int index = 0;
+                    for (int i = 0; i < dateInfo.size(); i++) {
+                        if (dateByDay.equals(dateInfo.get(i))) {
+                            index = i;
+                            break;
+                        }
+                    }
+
+                    updateDateScroller(index);
+
                 }
             }
         });
@@ -234,7 +247,11 @@ public class EventsFragment extends MainFragment {
      */
     private void updateEventsList(String dateInfo){
         eventsLayoutManager.scrollToPositionWithOffset(eventsMapByDate.get(dateInfo), 0);
-        //eventsListView.scrollToPosition(eventsMapByDate.get(dateInfo));
+    }
+
+    private void updateDateScroller(int pos){
+        int offset = (int) ((screenWidth - screenWidth/2.5)/2);
+        dateLayoutManager.scrollToPositionWithOffset(pos, offset);
 
     }
 

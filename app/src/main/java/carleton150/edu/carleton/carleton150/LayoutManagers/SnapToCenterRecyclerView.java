@@ -59,4 +59,5 @@ public class SnapToCenterRecyclerView extends RecyclerView{
 
         return true;
     }
+
 }
