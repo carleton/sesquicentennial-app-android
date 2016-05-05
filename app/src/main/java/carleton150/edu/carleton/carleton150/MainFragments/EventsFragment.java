@@ -46,7 +46,7 @@ public class EventsFragment extends MainFragment {
     // RecyclerView Pager
     private static View v;
     private SnapToCenterRecyclerView dates;
-    private LinkedHashMap<String, ArrayList<EventContent>> eventsMapByDate;
+    private LinkedHashMap<String, Integer> eventsMapByDate;
     private int screenWidth;
     private LinearLayoutManager dateLayoutManager;
     private EventDateCardAdapter eventDateCardAdapter;
@@ -67,6 +67,8 @@ public class EventsFragment extends MainFragment {
         // Before buildRecyclerViews is called, we need to grab all events
         MainActivity mainActivity = (MainActivity) getActivity();
         eventsMapByDate = mainActivity.getEventsMapByDate();
+        ArrayList<EventContent> eventContents = mainActivity.getAllEvents();
+
 
 
         /*If no events were retrieved, displays this button so the user can click
@@ -92,7 +94,9 @@ public class EventsFragment extends MainFragment {
             mainActivity.requestEvents();
         }else{
             Log.i("EVENTS DEBUGGING", "EventsFragment : onCreateView: eventsMapByDate is not null, handling new events");
-            handleNewEvents(eventsMapByDate);
+            Log.i("EVENT DEBUGGING",
+                    "EventsFragment: onCreateView : eventsList size is: "+ eventsList.size());
+            handleNewEvents(eventsMapByDate, eventContents);
         }
 
         return v;
@@ -126,9 +130,10 @@ public class EventsFragment extends MainFragment {
                     There is a blank view at position 0 that is the first completely visible item if the view is scrolled
                     all the way left. In this case, we want the date at position 1 to be the date we use
                      */
-                    if(pos == 0){
+                    if (pos == 0) {
                         pos = 1;
                     }
+
                     updateEventsList(dateInfo.get(pos));
                 }
             }
@@ -160,8 +165,23 @@ public class EventsFragment extends MainFragment {
         eventsListView.setLayoutManager(eventsLayoutManager);
         eventsListAdapter = new EventsListAdapter(((MainActivity)getActivity()), eventsList);
         eventsListView.setAdapter(eventsListAdapter);
-        eventsListAdapter.notifyDataSetChanged();
 
+        eventsListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
+            int prevPos = 0;
+
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                int pos = dateLayoutManager.findFirstCompletelyVisibleItemPosition();
+                if(prevPos < pos){
+                    //TODO: scrolling down
+                }else if (prevPos > pos){
+                    //TODO: scrolling up
+                }
+            }
+        });
+
+        eventsListAdapter.notifyDataSetChanged();
     }
 
 
@@ -170,23 +190,30 @@ public class EventsFragment extends MainFragment {
      * @param eventsMapByDate
      */
     @Override
-    public void handleNewEvents(LinkedHashMap<String, ArrayList<EventContent>> eventsMapByDate) {
+    public void handleNewEvents(LinkedHashMap<String, Integer> eventsMapByDate, ArrayList<EventContent> events) {
         Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents");
         this.eventsMapByDate = eventsMapByDate;
         if(eventsMapByDate == null) {
             Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : eventsMapByDate is null");
-
             showUnableToRetrieveEvents();
-
         }else if(eventsMapByDate.size() == 0){
             Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : eventsMapByDate size is 0");
             showNoEventsHappening();
         }else {
+            this.eventsList.clear();
+
+            Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : events size is : " + events.size());
+
+            for(int i = 0; i< events.size(); i++){
+                this.eventsList.add(events.get(i));
+            }
             dateInfo.clear();
             Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : eventsMapByDate size is : " + eventsMapByDate.entrySet().size());
+            Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : eventsList size is : " + eventsList.size());
 
-            for (Map.Entry<String, ArrayList<EventContent>> entry : eventsMapByDate.entrySet()) {
-                dateInfo.add(0, entry.getKey());
+
+            for (Map.Entry<String, Integer> entry : eventsMapByDate.entrySet()) {
+                dateInfo.add(entry.getKey());
             }
             dateInfo.add(0, "");
             dateInfo.add("");
@@ -195,13 +222,6 @@ public class EventsFragment extends MainFragment {
                 showHighlightedDate();
             }
             eventDateCardAdapter.notifyDataSetChanged();
-
-            String key = eventsMapByDate.keySet().iterator().next();
-            ArrayList<EventContent> newEvents = eventsMapByDate.get(key);
-            eventsList.clear();
-            for (int i = 0; i < newEvents.size(); i++) {
-                eventsList.add(newEvents.get(i));
-            }
             hideUnableToRetrieveEvents();
         }
         eventsListAdapter.notifyDataSetChanged();
@@ -213,16 +233,9 @@ public class EventsFragment extends MainFragment {
      * @param dateInfo
      */
     private void updateEventsList(String dateInfo){
-        ArrayList<EventContent> newEvents = eventsMapByDate.get(dateInfo);
-        eventsList.clear();
+        eventsLayoutManager.scrollToPositionWithOffset(eventsMapByDate.get(dateInfo), 0);
+        //eventsListView.scrollToPosition(eventsMapByDate.get(dateInfo));
 
-        if(newEvents != null){
-            for(int i = 0; i<newEvents.size(); i++){
-                eventsList.add(newEvents.get(i));
-            }
-        }
-
-        eventsListAdapter.notifyDataSetChanged();
     }
 
 
@@ -258,10 +271,13 @@ public class EventsFragment extends MainFragment {
         if(isVisibleToUser && isResumed()) {
             MainActivity mainActivity = (MainActivity) getActivity();
             eventsMapByDate = mainActivity.getEventsMapByDate();
-            if (eventsMapByDate == null) {
+            ArrayList<EventContent> eventsArray = mainActivity.getAllEvents();
+            if (eventsMapByDate == null || eventsList == null) {
                 mainActivity.requestEvents();
             } else {
-                handleNewEvents(eventsMapByDate);
+                Log.i("EVENT DEBUGGING",
+                        "EventsFragment: setUserVisibleHint : eventsList size is: "+ eventsList.size());
+                handleNewEvents(eventsMapByDate, eventsArray);
             }
         }
     }

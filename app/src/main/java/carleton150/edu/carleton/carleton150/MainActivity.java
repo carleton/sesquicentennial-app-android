@@ -120,8 +120,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ArrayList<Quest> questInfo = null;
     private java.util.Date lastQuestUpdate;
 
-    private LinkedHashMap<String, ArrayList<EventContent>> eventsMapByDate;
-    private ArrayList<EventContent> tempEventContentLst = new ArrayList<EventContent>();
+    private LinkedHashMap<String, Integer> eventsMapByDate;
+    private ArrayList<EventContent> eventContentList;
     private boolean requestingEvents = false;
     private java.util.Date lastEventsUpdate;
 
@@ -621,7 +621,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * @return a LinkedHashMap where the key is the date of the event and the value
      * is an ArrayList of EventContent
      */
-    public LinkedHashMap<String, ArrayList<EventContent>> getEventsMapByDate(){
+    public LinkedHashMap<String, Integer> getEventsMapByDate(){
         return this.eventsMapByDate;
     }
 
@@ -720,7 +720,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }else{
                 showNetworkNotConnectedDialog();
                 if(adapter.getCurrentFragment() instanceof EventsFragment) {
-                    ((EventsFragment)adapter.getCurrentFragment()).handleNewEvents(null);
+                    ((EventsFragment)adapter.getCurrentFragment()).handleNewEvents(null, null);
                 }
             }
         }
@@ -980,6 +980,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     public void handleNewEvents(ArrayList<EventContent> events, boolean isNewInfo) {
 
+
+        //TODO: events same for every day now. Hashmap should now contain the positions of
+        //the start of the new dates (although doing a linear search is probably fine...)
+
         Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents");
 
         requestingEvents = false;
@@ -992,7 +996,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if(events == null){
             if(adapter.getCurrentFragment()instanceof EventsFragment){
                 Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents : current fragment is eventsfragment, events are null");
-                ((EventsFragment)adapter.getCurrentFragment()).handleNewEvents(null);
+                ((EventsFragment)adapter.getCurrentFragment()).handleNewEvents(null, null);
             }
         }else {
             Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents : events are not null");
@@ -1002,38 +1006,36 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
             eventsMapByDate.clear();
 
+            if(eventContentList == null){
+                eventContentList = new ArrayList<>();
+            }
+            eventContentList.clear();
+
 
             Calendar c = Calendar.getInstance();
 
-            //ArrayList<EventContent> sortedEvents = sortEventsByDate(events);
+            for (int i = 0; i < events.size(); i++) {
 
-            ArrayList<EventContent> eventsToDay = new ArrayList<>();
+                // Add new date values to hashmap if not already there
+                completeDate = events.get(i).getStartTime();
+                completeDateArray = completeDate.split("T");
+                dateByDay = completeDateArray[0];
 
-            completeDateArray = events.get(0).getStartTime().split("T");
-            dateByDay = completeDateArray[0];
+                String[] dateArray = dateByDay.split("-");
 
-            for (int i = events.size() - 1; i >= 0; i--) {
+                java.util.Calendar eventCalendar = java.util.Calendar.getInstance();
+                eventCalendar.set(Integer.parseInt(dateArray[0]), Integer.parseInt(dateArray[1]) - 1, Integer.parseInt(dateArray[2]), 23, 59, 59);
 
-                long eventTime = getDateValueFromString(events.get(i).getStartTime());
+                if (eventCalendar.getTimeInMillis() >= c.getTimeInMillis()) {
 
-                String[] newDateArr = events.get(i).getStartTime().split("T");
-                String newDateByDay = completeDateArray[0];
+                    eventContentList.add(events.get(i));
+                    Log.i("EVENT DEBUGGING", "adding item to eventContentList from events");
+                    Log.i("EVENT DEBUGGING", "item is: " + events.get(i).getDescription());
 
-                if (eventTime >= c.getTimeInMillis()) {
 
                     // If key already there, add + update new values
-                    if (!newDateByDay.equals(dateByDay)) {
-                        if(eventsToDay.size() > 0){
-                            ArrayList<EventContent> placeHolderEventContent = new ArrayList<>();
-                            for(int j = 0; j<eventsToDay.size(); j++){
-                                placeHolderEventContent.add(eventsToDay.get(j));
-                            }
-                            eventsMapByDate.put(dateByDay, placeHolderEventContent);
-                            dateByDay = newDateByDay;
-                        }
-                        eventsToDay.add(0, events.get(i));
-                    } else {
-                        eventsToDay.add(0, events.get(i));
+                    if (!eventsMapByDate.containsKey(dateByDay)) {
+                        eventsMapByDate.put(dateByDay, i);
                     }
 
                 }
@@ -1042,46 +1044,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.i("EVENT DEBUGGING",
                     "MainActivity: handleNewEvents : about to check current fragment : eventsMapByDate size is: "+eventsMapByDate.size());
 
+            Log.i("EVENT DEBUGGING",
+                    "MainActivity: handleNewEvents : eventContentList size is: "+eventContentList.size());
+
+            Log.i("EVENT DEBUGGING",
+                    "MainActivity: handleNewEvents : events size is: "+events.size());
+
+
             if (adapter.getCurrentFragment() instanceof EventsFragment) {
                 Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents : current fragment is events fragment");
-                ((EventsFragment)adapter.getCurrentFragment()).handleNewEvents(eventsMapByDate);
+                ((EventsFragment)adapter.getCurrentFragment()).handleNewEvents(eventsMapByDate, eventContentList);
             }
         }
 
-        if(eventsMapByDate.size() != 0 && isNewInfo) {
+        if(events.size() != 0 && isNewInfo) {
             lastEventsUpdate = Calendar.getInstance().getTime();
         }
     }
 
-    /*private ArrayList<EventContent> sortEventsByDate(ArrayList<EventContent> events){
-
-        for(int i = 0; i<events.size(); i++){
-            for(int j = 0; j<events.size() - 1; j++){
-                long leftDate = getDateValueFromString(events.get(j).getStartTime());
-                long rightDate = getDateValueFromString(events.get(j+1).getStartTime());
-                if(rightDate < leftDate){
-                    EventContent rightDateHolder = events.get(j+1);
-                    events.set(j+1, events.get(j));
-                    events.set(j, rightDateHolder);
-                }
-            }
-        }
-        return events;
-    }*/
-
-    private long getDateValueFromString(String date){
-        // Add new date values to hashmap if not already there
-
-        String[] completeDateArray = date.split("T");
-        String dateByDay = completeDateArray[0];
-
-        String[] dateArray = dateByDay.split("-");
-
-        java.util.Calendar eventCalendar = java.util.Calendar.getInstance();
-        eventCalendar.set(Integer.parseInt(dateArray[0]), Integer.parseInt(dateArray[1]) - 1, Integer.parseInt(dateArray[2]), 23, 59, 59);
-
-        return eventCalendar.getTimeInMillis();
+    public ArrayList<EventContent> getAllEvents(){
+        return this.eventContentList;
     }
+
 
     /**
      * Called by DownloadFileFromURL when the events are retrieved. If the

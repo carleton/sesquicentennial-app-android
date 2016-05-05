@@ -82,7 +82,7 @@ public class MainFragment extends Fragment{
      * handles new events from server, called by VolleyRequester
      * @param eventsMapByDate
      */
-    public void handleNewEvents(LinkedHashMap<String, ArrayList<EventContent>> eventsMapByDate){
+    public void handleNewEvents(LinkedHashMap<String, Integer> eventsMapByDate, ArrayList<EventContent> events){
 
     }
 

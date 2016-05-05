@@ -6,8 +6,6 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
 
-import carleton150.edu.carleton.carleton150.Interfaces.RecyclerViewDateCenteredListener;
-
 /**
  * Created by haleyhinze on 5/4/16.
  */
