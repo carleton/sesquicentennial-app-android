@@ -134,7 +134,27 @@ public class EventsFragment extends MainFragment {
                         pos = 1;
                     }
 
-                    updateEventsList(dateInfo.get(pos));
+                    String dateByDayDateScroller = dateInfo.get(pos);
+
+                    String startTimeString = eventsList.get(eventsLayoutManager.findFirstCompletelyVisibleItemPosition()).getStartTime();
+                    String[] completeDateArray = startTimeString.split("T");
+                    String dateByDay = completeDateArray[0];
+                    if (!dateByDay.equals(dateByDayDateScroller)) {
+                        int index = 0;
+                        for (int i = 0; i < eventsList.size(); i++) {
+                            startTimeString = eventsList.get(i).getStartTime();
+                            completeDateArray = startTimeString.split("T");
+                            dateByDay = completeDateArray[0];
+                            if (dateByDay.equals(dateByDayDateScroller)) {
+                                index = i;
+                                break;
+                            }
+                        }
+
+                        updateEventsList(index);
+
+                    }
+
                 }
             }
         });
@@ -167,7 +187,7 @@ public class EventsFragment extends MainFragment {
         eventsListView.setAdapter(eventsListAdapter);
 
         eventsListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            
+
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 int pos = eventsLayoutManager.findFirstCompletelyVisibleItemPosition();
@@ -243,10 +263,10 @@ public class EventsFragment extends MainFragment {
     /**
      * When a recycler view date selector is scrolled to, shows events for that day
      *
-     * @param dateInfo
+     * @param pos
      */
-    private void updateEventsList(String dateInfo){
-        eventsLayoutManager.scrollToPositionWithOffset(eventsMapByDate.get(dateInfo), 0);
+    private void updateEventsList(int pos){
+        eventsLayoutManager.scrollToPositionWithOffset(pos, 0);
     }
 
     private void updateDateScroller(int pos){
