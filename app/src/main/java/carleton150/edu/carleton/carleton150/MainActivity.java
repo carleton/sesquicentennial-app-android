@@ -74,7 +74,6 @@ import carleton150.edu.carleton.carleton150.MainFragments.QuestInProgressFragmen
 import carleton150.edu.carleton.carleton150.Models.DownloadFileFromURL;
 import carleton150.edu.carleton.carleton150.Models.GeofenceErrorMessages;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
-import carleton150.edu.carleton.carleton150.POJO.GeofenceObject.GeofenceObjectContent;
 import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.AllGeofences;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 
@@ -124,9 +123,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ArrayList<EventContent> eventContentList;
     private boolean requestingEvents = false;
     private java.util.Date lastEventsUpdate;
-
-    private HashMap<String, GeofenceObjectContent> allGeofencesMap = new HashMap<>();
-
     private AllGeofences allGeofencesNew = null;
     private boolean requestingAllGeofencesNew = false;
     private java.util.Date lastGeofenceUpdate;
@@ -466,9 +462,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
-    public HashMap<String, GeofenceObjectContent> getAllGeofencesMap(){
-        return allGeofencesMap;
-    }
 
 
     /**

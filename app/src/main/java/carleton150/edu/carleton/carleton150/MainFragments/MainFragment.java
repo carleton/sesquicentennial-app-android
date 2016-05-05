@@ -13,7 +13,6 @@ import java.util.LinkedHashMap;
 import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
-import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 
 /**
@@ -95,10 +94,6 @@ public class MainFragment extends Fragment{
     }
 
     public void handleNewQuests(ArrayList<Quest> newQuests){
-
-    }
-
-    public void addNewGeofenceInfo(HashMap<String, GeofenceInfoContent[]> geofenceToAdd){
 
     }
 }

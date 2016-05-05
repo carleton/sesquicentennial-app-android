@@ -21,11 +21,7 @@ import java.util.ArrayList;
 
 import carleton150.edu.carleton.carleton150.Adapters.HistoryAdapter;
 import carleton150.edu.carleton.carleton150.Adapters.MyScaleInAnimationAdapter;
-import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.LogMessages;
-import carleton150.edu.carleton.carleton150.MainActivity;
-import carleton150.edu.carleton.carleton150.MainFragments.HistoryFragment;
-import carleton150.edu.carleton.carleton150.POJO.GeofenceInfoObject.GeofenceInfoContent;
 import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Event;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;

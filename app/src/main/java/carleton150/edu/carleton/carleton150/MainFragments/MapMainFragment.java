@@ -18,7 +18,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import carleton150.edu.carleton.carleton150.MainActivity;
-import carleton150.edu.carleton.carleton150.POJO.GeofenceRequestObject.Location;
 import carleton150.edu.carleton.carleton150.R;
 
 /**

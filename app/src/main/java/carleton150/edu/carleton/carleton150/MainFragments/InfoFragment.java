@@ -51,7 +51,7 @@ public class InfoFragment extends MainFragment {
         myWebView.loadUrl(curURL);
 
 
-        //when a link is clicked, instead of opening the page in the webview, launches a browser
+        /*//when a link is clicked, instead of opening the page in the webview, launches a browser
         //and opens page in browser
         final WebViewClient webViewClient= new WebViewClient(){
             private boolean pageFinished = false;
@@ -71,9 +71,9 @@ public class InfoFragment extends MainFragment {
                 super.onPageFinished(view, url);
                 pageFinished = true;
             }
-        };
+        };*/
 
-        myWebView.setWebViewClient(webViewClient);
+       // myWebView.setWebViewClient(webViewClient);
 
         return v;
     }
