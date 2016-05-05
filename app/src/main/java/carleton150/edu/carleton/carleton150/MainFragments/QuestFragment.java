@@ -275,8 +275,6 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
 
             if(!mainActivity.checkIfGPSEnabled()){
                 mainActivity.buildAlertMessageNoGps(mainActivity.getResources().getString(R.string.feature_requires_gps));
-            }else if(!mainActivity.isConnectedToNetwork()){
-                mainActivity.showNetworkNotConnectedDialog();
             }else if (!onCampus()) {
                 mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.quests_unuseable_off_campus),
                         new AlertDialog.Builder(mainActivity).create());
@@ -300,8 +298,6 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
 
             if(!mainActivity.checkIfGPSEnabled()){
                 mainActivity.buildAlertMessageNoGps(mainActivity.getResources().getString(R.string.feature_requires_gps));
-            }else if(!mainActivity.isConnectedToNetwork()){
-                mainActivity.showNetworkNotConnectedDialog();
             }
             else if (!onCampus()) {
                 mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.quests_unuseable_off_campus),

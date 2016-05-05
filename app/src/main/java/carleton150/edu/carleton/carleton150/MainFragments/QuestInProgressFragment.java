@@ -346,8 +346,6 @@ public class QuestInProgressFragment extends MapMainFragment {
         if(getUserVisibleHint()) {
             if(!mainActivity.checkIfGPSEnabled()){
                 mainActivity.buildAlertMessageNoGps(mainActivity.getResources().getString(R.string.feature_requires_gps));
-            }else if(!mainActivity.isConnectedToNetwork()){
-                mainActivity.showNetworkNotConnectedDialog();
             }
             else if (!onCampus()) {
                 mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.quest_in_progress_unuseable_off_campus),
@@ -364,8 +362,6 @@ public class QuestInProgressFragment extends MapMainFragment {
 
             if (!mainActivity.checkIfGPSEnabled()) {
                 mainActivity.buildAlertMessageNoGps(mainActivity.getResources().getString(R.string.feature_requires_gps));
-            }else if(!mainActivity.isConnectedToNetwork()){
-                mainActivity.showNetworkNotConnectedDialog();
             } else if (!onCampus()) {
                 mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.quest_in_progress_unuseable_off_campus),
                         new AlertDialog.Builder(mainActivity).create());

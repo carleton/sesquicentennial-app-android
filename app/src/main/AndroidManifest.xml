@@ -85,8 +85,6 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".GeofencingTransitionsIntentService" />
-
     </application>
 
 </manifest>

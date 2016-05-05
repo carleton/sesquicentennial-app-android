@@ -126,7 +126,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private AllGeofences allGeofencesNew = null;
     private boolean requestingAllGeofencesNew = false;
     private java.util.Date lastGeofenceUpdate;
-    DownloadFileFromURL downloadFileFromURLGeofences = new DownloadFileFromURL(this, constants.GEOFENCES_FILE_NAME_WITH_EXTENSION);
 
 
 
@@ -139,7 +138,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         Log.i("GEOFENCE MONITORING", "onCreate in MainActivity called");
 
         networkAlertDialog = new AlertDialog.Builder(MainActivity.this).create();
@@ -148,9 +146,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (checkPlayServices()) {
             buildGoogleApiClient();
             createLocationRequest();
-            if (isConnectedToNetwork()) {
+            //if (isConnectedToNetwork()) {
                 mGoogleApiClient.connect();
-            }
+            //}
         } else {
             showGooglePlayServicesUnavailableDialog();
         }
@@ -226,14 +224,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             if(!checkIfGPSEnabled()){
                 showGenericGPSAlert();
             }
-            if (isConnectedToNetwork()) {
+            //if (isConnectedToNetwork()) {
                 // check availability of play services for location data and geofencing
                 if (checkPlayServices()) {
                     mGoogleApiClient.connect();
                 } else {
                     showGooglePlayServicesUnavailableDialog();
                 }
-            }
+            //}
         }
     }
 
@@ -246,6 +244,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onConnected(Bundle bundle) {
         // Once connected with google api, get the location
+
+        Log.i("GOOGLE PLAY", "connected!");
         if(checkIfGPSEnabled()) {
             mLastLocation = LocationServices.FusedLocationApi
                     .getLastLocation(mGoogleApiClient);
@@ -660,6 +660,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if(isConnectedToNetwork()) {
             if (!requestingAllGeofencesNew && lastGeofenceUpdate == null) {
                 Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: not requesting new geofences, last update null. About to request");
+                DownloadFileFromURL downloadFileFromURLGeofences = new DownloadFileFromURL(this, constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, this);
                 downloadFileFromURLGeofences.execute(constants.NEW_GEOFENCES_ENDPOINT);
                 requestingAllGeofencesNew = true;
             } else if (!requestingAllGeofencesNew && lastGeofenceUpdate != null) {
@@ -668,13 +669,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 long hoursSinceUpdate = checkElapsedTime(lastGeofenceUpdate.getTime());
                 if (hoursSinceUpdate > 5) {
                     Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: more than five hours since last update, requesting...");
-
+                    DownloadFileFromURL downloadFileFromURLGeofences = new DownloadFileFromURL(this, constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, this);
                     downloadFileFromURLGeofences.execute(constants.NEW_GEOFENCES_ENDPOINT);
                     requestingAllGeofencesNew = true;
                 }
             }
         }else if(fileExists(constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)){
             Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: no internet, parsing existing data");
+            Log.i("INTERNAL STORAGE DEBUGGING", "MainActivity: requestGeofencesNewer: file does NOT exist, returning false");
 
             parseGeofences(constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, false);
         }else{
@@ -695,20 +697,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             if (!requestingEvents && lastEventsUpdate == null) {
                 String url = buildEventsRequestURL();
                 Log.i("EVENTS", "MainActivity: requestEvents: url is: " + url);
-                DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.ICAL_FILE_NAME_WITH_EXTENSION);
+                DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.ICAL_FILE_NAME_WITH_EXTENSION, this);
                 downloadFileFromURL.execute(url);
                 requestingEvents = true;
             }else if(!requestingEvents && lastEventsUpdate !=null){
                 long hoursSinceUpdate = checkElapsedTime(lastEventsUpdate.getTime());
                 if (hoursSinceUpdate > 5) {
                     String url = buildEventsRequestURL();
-                    DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.ICAL_FILE_NAME_WITH_EXTENSION);
+                    DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.ICAL_FILE_NAME_WITH_EXTENSION, this);
                     downloadFileFromURL.execute(url);
                     requestingEvents = true;
                 }
             }
         }else{
             if(fileExists(constants.ICAL_FILE_NAME_WITH_EXTENSION)){
+                Log.i("INTERNAL STORAGE DEBUGGING", "MainActivity: requestEvents: file does exist");
                 parseIcalFeed(constants.ICAL_FILE_NAME_WITH_EXTENSION, false);
             }else{
                 showNetworkNotConnectedDialog();
@@ -749,13 +752,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void requestQuests(){
         if(isConnectedToNetwork()) {
             if (lastQuestUpdate == null && !requestingQuests) {
-                DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.QUESTS_FILE_NAME_WITH_EXTENSION);
+                DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.QUESTS_FILE_NAME_WITH_EXTENSION, this);
                 downloadFileFromURL.execute(constants.QUESTS_FEED_URL);
                 requestingQuests = true;
             }else if(!requestingQuests && lastQuestUpdate != null){
                 long hoursSinceLastUpdate = checkElapsedTime(lastQuestUpdate.getTime());
                 if(hoursSinceLastUpdate > 5){
-                    DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.QUESTS_FILE_NAME_WITH_EXTENSION);
+                    DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, constants.QUESTS_FILE_NAME_WITH_EXTENSION, this);
                     downloadFileFromURL.execute(constants.QUESTS_FEED_URL);
                     requestingQuests = true;
                 }
@@ -763,6 +766,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }else{
             if(fileExists(constants.QUESTS_FILE_NAME_WITH_EXTENSION)){
                 Log.i("NEWQUESTS", "MainActivity: requestQuests : file does exist");
+                Log.i("INTERNAL STORAGE DEBUGGING", "MainActivity: requestQuests: file does exist");
+
                 parseQuests(constants.QUESTS_FILE_NAME_WITH_EXTENSION, false);
             }else{
                 showNetworkNotConnectedDialog();
@@ -775,10 +780,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private boolean fileExists(String fileNameWithExtension){
-        File file = new File(Environment.getExternalStorageDirectory().toString()+"/"+fileNameWithExtension);
-        if(file.exists()){
+        try {
+            InputStream inputStream = openFileInput(fileNameWithExtension);
+            Log.i("INTERNAL STORAGE DEBUGGING", "MainActivity: fileExists: file does exist, returning true");
+
             return true;
-        }else{
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            Log.i("INTERNAL STORAGE DEBUGGING", "MainActivity: fileExists: file does NOT exist, returning false");
+
             return false;
         }
     }
@@ -794,27 +804,37 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if(newInfo){
             lastEventsUpdate = Calendar.getInstance().getTime();
         }
-        File file = new File(Environment.getExternalStorageDirectory().toString() + "/" + fileNameWithExtension);
         FileInputStream fin = null;
         try {
-            fin = new FileInputStream(file);
+            fin = openFileInput(fileNameWithExtension);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         CalendarBuilder builder = new CalendarBuilder();
         net.fortuna.ical4j.model.Calendar calendar = null;
         CompatibilityHints.setHintEnabled(CompatibilityHints.KEY_RELAXED_PARSING, true);
-        try {
-            calendar = builder.build(fin);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParserException e) {
-            e.printStackTrace();
+
+        if(fin != null) {
+            try {
+                calendar = builder.build(fin);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ParserException e) {
+                e.printStackTrace();
+            }
         }
         if (calendar != null) {
             Log.i("EVENTS", "MainActivity: parseIcalFeed : calendar not null ");
             PropertyList plist = calendar.getProperties();
             buildEventContent(calendar, newInfo);
+        }
+
+        if(fin != null){
+            try {
+                fin.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
     }
@@ -882,10 +902,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         String ret = "";
 
-        File file = new File(Environment.getExternalStorageDirectory().toString() + "/" + fileNameWithExtension);
-
         try {
-            InputStream inputStream = new FileInputStream(file);
+            InputStream inputStream = openFileInput(fileNameWithExtension);
 
             if ( inputStream != null ) {
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);

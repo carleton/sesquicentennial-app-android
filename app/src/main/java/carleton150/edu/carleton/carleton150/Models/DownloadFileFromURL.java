@@ -4,6 +4,7 @@ package carleton150.edu.carleton.carleton150.Models;
  * Created by haleyhinze on 4/25/16.
  */
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
@@ -25,10 +26,12 @@ public class DownloadFileFromURL extends AsyncTask<String, String, String> {
 
     RetrievedFileListener retrievedFileListener;
     String fileNameWithExtension;
+    Context context;
 
-    public DownloadFileFromURL(RetrievedFileListener retrievedFileListener, String fileNameWithExtension){
+    public DownloadFileFromURL(RetrievedFileListener retrievedFileListener, String fileNameWithExtension, Context context){
         this.retrievedFileListener = retrievedFileListener;
         this.fileNameWithExtension = fileNameWithExtension;
+        this.context = context;
     }
 
     /**
@@ -45,9 +48,7 @@ public class DownloadFileFromURL extends AsyncTask<String, String, String> {
             // download the file
             InputStream input = new BufferedInputStream(connection.getInputStream());
             // Output stream
-            OutputStream output = new FileOutputStream(Environment
-                    .getExternalStorageDirectory().toString()
-                    + "/" +fileNameWithExtension);
+            FileOutputStream output = context.openFileOutput(fileNameWithExtension, Context.MODE_PRIVATE);
 
             byte data[] = new byte[1024];
 
@@ -74,7 +75,6 @@ public class DownloadFileFromURL extends AsyncTask<String, String, String> {
 
     @Override
     protected void onPostExecute(String s) {
-        Log.i("EVENTS", "DownloadFileFromURL: onPostExecute : String is : " + s);
         if(retrievedFileListener != null){
             retrievedFileListener.retrievedFile(true, fileNameWithExtension);
         }
