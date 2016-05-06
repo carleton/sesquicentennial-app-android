@@ -18,6 +18,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.internal.view.ContextThemeWrapper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -112,8 +113,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     };
 
-    AlertDialog networkAlertDialog;
-    AlertDialog playServicesConnectivityAlertDialog;
+    AlertDialog.Builder networkAlertDialogBuilder;
+    AlertDialog.Builder playServicesConnectivityAlertDialogBuilder;
+    AlertDialog.Builder noGpsAlertDialogBuilder;
 
     private boolean requestingQuests = false;
     private ArrayList<Quest> questInfo = null;
@@ -140,11 +142,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         setContentView(R.layout.activity_main);
 
         Thread.setDefaultUncaughtExceptionHandler(new TopExceptionHandler(this));
-
         Log.i("GEOFENCE MONITORING", "onCreate in MainActivity called");
 
-        networkAlertDialog = new AlertDialog.Builder(MainActivity.this).create();
-        playServicesConnectivityAlertDialog = new AlertDialog.Builder(MainActivity.this).create();
+        networkAlertDialogBuilder = new AlertDialog.Builder(this);
+        playServicesConnectivityAlertDialogBuilder = new AlertDialog.Builder(this);
+        noGpsAlertDialogBuilder = new AlertDialog.Builder(this);
+
         // check availability of play services for location data and geofencing
         if (checkPlayServices()) {
             buildGoogleApiClient();
@@ -285,9 +288,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        showAlertDialog("Connection to play services failed with message: " +
-                        connectionResult.getErrorMessage() + "\nCode: " + connectionResult.getErrorCode(),
-                playServicesConnectivityAlertDialog);
+        AlertDialog dialog = playServicesConnectivityAlertDialogBuilder.create();
+        if(!dialog.isShowing()) {
+            showAlertDialog("Connection to play services failed with message: " +
+                            connectionResult.getErrorMessage() + "\nCode: " + connectionResult.getErrorCode(),
+                    dialog);
+        }
     }
 
     /**
@@ -422,15 +428,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * displays a dialog requesting that the user connect to a network
      */
     public void showNetworkNotConnectedDialog() {
-        showAlertDialog(getResources().getString(R.string.no_network_connection),
-                networkAlertDialog);
+        AlertDialog dialog = networkAlertDialogBuilder.create();
+        if(!dialog.isShowing()) {
+            showAlertDialog(getResources().getString(R.string.no_network_connection),
+                    dialog);
+        }
     }
 
     /**
      * Shows a dialog to tell user google play services is unavailable
      */
     private void showGooglePlayServicesUnavailableDialog() {
-        showAlertDialog(getResources().getString(R.string.no_google_services), playServicesConnectivityAlertDialog);
+        AlertDialog dialog = playServicesConnectivityAlertDialogBuilder.create();
+        if(!dialog.isShowing()) {
+            showAlertDialog(getResources().getString(R.string.no_google_services), dialog);
+        }
     }
 
     /**
@@ -461,7 +473,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * @param dialog
      */
     public void showAlertDialogNoNeutralButton(AlertDialog dialog) {
-        dialog.show();
+        if (!dialog.isShowing()) {
+            dialog.show();
+        }
     }
 
 
@@ -558,9 +572,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * Alerts the user that their GPS is not enabled and gives them option to enable it
      */
     public void buildAlertMessageNoGps(String alertMessage) {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
             needToShowGPSAlert = false;
-            builder.setMessage(alertMessage)
+            noGpsAlertDialogBuilder.setMessage(alertMessage)
                     .setCancelable(false)
                     .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
                         public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
@@ -572,7 +585,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                             dialog.cancel();
                         }
                     });
-            final AlertDialog alert = builder.create();
+            final AlertDialog alert = noGpsAlertDialogBuilder.create();
             alert.show();
     }
 

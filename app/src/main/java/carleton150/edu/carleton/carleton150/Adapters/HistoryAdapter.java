@@ -157,9 +157,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 if(historyListNew != null){
 
                     Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: imageHolder: historyListNew not null");
-
-
-                    //TODO: Items can have both text and media...
                     final Event geofenceInfoContent = historyListNew[position];
                     //((HistoryViewHolderImage) holder).setImageNew(position, geofenceInfoContent.getMedia().getUrl(), screenWidth, screenHeight);
                     Uri uri = Uri.parse(geofenceInfoContent.getMedia().getUrl());
@@ -169,6 +166,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     ((HistoryViewHolderImage) holder).setTxtCaption(geofenceInfoContent.getMedia().getCaption());
                     ((HistoryViewHolderImage) holder).setTxtDescription(geofenceInfoContent.getMedia().getCredit());
                     ((HistoryViewHolderImage) holder).setText(geofenceInfoContent.getText());
+                    ((HistoryViewHolderImage) holder).setImgCredit(geofenceInfoContent.getMedia().getCredit());
                     ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
                     ImageView imgExpanded = ((HistoryViewHolderImage) holder).getIconExpand();
                     ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
@@ -241,6 +239,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         private ImageView iconExpand;
         private TextView txtDescription;
         private TextView txtText;
+        private TextView txtImgCredit;
         private boolean expanded = false;
 
         public HistoryViewHolderImage(View itemView) {
@@ -252,6 +251,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             iconExpand = (ImageView) itemView.findViewById(R.id.img_expand);
             txtDescription = (TextView) itemView.findViewById(R.id.txt_image_description);
             txtText = (TextView) itemView.findViewById(R.id.txt_text);
+            txtImgCredit = (TextView) itemView.findViewById(R.id.txt_img_credit);
         }
 
         public void setTxtDescription(String txtDescription) {
@@ -274,6 +274,17 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         public void setTxtCaption(String caption){
             this.txtCaption.setText(caption);
+        }
+
+        public void setImgCredit(String credit){
+            if(credit != null){
+                if (!credit.equals("")){
+                    txtImgCredit.setText(credit);
+                    txtImgCredit.setVisibility(View.VISIBLE);
+                    return;
+                }
+            }
+            txtImgCredit.setVisibility(View.GONE);
         }
 
         public void setExpanded(boolean expanded){
@@ -300,6 +311,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     if(!txtDescription.getText().equals("")) {
                         txtDescription.setVisibility(View.VISIBLE);
                     }
+
                     if(!txtText.getText().equals("")) {
                         txtText.setVisibility(View.VISIBLE);
                     }
