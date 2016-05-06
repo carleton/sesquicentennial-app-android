@@ -138,6 +138,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Thread.setDefaultUncaughtExceptionHandler(new TopExceptionHandler(this));
+
         Log.i("GEOFENCE MONITORING", "onCreate in MainActivity called");
 
         networkAlertDialog = new AlertDialog.Builder(MainActivity.this).create();
@@ -676,7 +679,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }else if(fileExists(constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)){
             Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: no internet, parsing existing data");
-            Log.i("INTERNAL STORAGE DEBUGGING", "MainActivity: requestGeofencesNewer: file does NOT exist, returning false");
+            Log.i("INTERNAL STORAGE DEBUG", "MainActivity: requestGeofencesNewer: file does NOT exist, returning false");
 
             parseGeofences(constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, false);
         }else{
@@ -711,7 +714,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }else{
             if(fileExists(constants.ICAL_FILE_NAME_WITH_EXTENSION)){
-                Log.i("INTERNAL STORAGE DEBUGGING", "MainActivity: requestEvents: file does exist");
+                Log.i("INTERNAL STORAGE DEBUG", "MainActivity: requestEvents: file does exist");
                 parseIcalFeed(constants.ICAL_FILE_NAME_WITH_EXTENSION, false);
             }else{
                 showNetworkNotConnectedDialog();
@@ -766,7 +769,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }else{
             if(fileExists(constants.QUESTS_FILE_NAME_WITH_EXTENSION)){
                 Log.i("NEWQUESTS", "MainActivity: requestQuests : file does exist");
-                Log.i("INTERNAL STORAGE DEBUGGING", "MainActivity: requestQuests: file does exist");
+                Log.i("INTERNAL STORAGE DEBUG", "MainActivity: requestQuests: file does exist");
 
                 parseQuests(constants.QUESTS_FILE_NAME_WITH_EXTENSION, false);
             }else{
@@ -782,12 +785,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private boolean fileExists(String fileNameWithExtension){
         try {
             InputStream inputStream = openFileInput(fileNameWithExtension);
-            Log.i("INTERNAL STORAGE DEBUGGING", "MainActivity: fileExists: file does exist, returning true");
+            Log.i("INTERNAL STORAGE DEBUG", "MainActivity: fileExists: file does exist, returning true");
 
             return true;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            Log.i("INTERNAL STORAGE DEBUGGING", "MainActivity: fileExists: file does NOT exist, returning false");
+            Log.i("INTERNAL STORAGE DEBUG", "MainActivity: fileExists: file does NOT exist, returning false");
 
             return false;
         }

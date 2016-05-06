@@ -192,7 +192,7 @@ public class EventsFragment extends MainFragment {
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 int pos = eventsLayoutManager.findFirstCompletelyVisibleItemPosition();
                 int datePos = dateLayoutManager.findFirstCompletelyVisibleItemPosition();
-                if (datePos == 0) {
+                if (datePos <= 0) {
                     datePos = 1;
                 }
 
