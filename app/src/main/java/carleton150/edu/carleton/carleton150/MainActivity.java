@@ -92,8 +92,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public Location mLastLocation = null;
     // Google client to interact with Google API
     public GoogleApiClient mGoogleApiClient;
+
     // boolean flag to toggle periodic location updates
-    private boolean mRequestingLocationUpdates = true;
+    private boolean mRequestingLocationUpdates = false;
+    private boolean shouldBeRequestingLocationUpdates = false;
+
     private LocationRequest mLocationRequest;
     private static Constants constants = new Constants();
     private LogMessages logMessages = new LogMessages();
@@ -116,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     AlertDialog.Builder networkAlertDialogBuilder;
     AlertDialog.Builder playServicesConnectivityAlertDialogBuilder;
     AlertDialog.Builder noGpsAlertDialogBuilder;
+    AlertDialog.Builder onCampusFeatureAlertDialogBuilder;
 
     private boolean requestingQuests = false;
     private ArrayList<Quest> questInfo = null;
@@ -147,14 +151,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         networkAlertDialogBuilder = new AlertDialog.Builder(this);
         playServicesConnectivityAlertDialogBuilder = new AlertDialog.Builder(this);
         noGpsAlertDialogBuilder = new AlertDialog.Builder(this);
+        onCampusFeatureAlertDialogBuilder = new AlertDialog.Builder(this);
 
         // check availability of play services for location data and geofencing
         if (checkPlayServices()) {
             buildGoogleApiClient();
             createLocationRequest();
-            //if (isConnectedToNetwork()) {
-                mGoogleApiClient.connect();
-            //}
+            mGoogleApiClient.connect();
         } else {
             showGooglePlayServicesUnavailableDialog();
         }
@@ -197,16 +200,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return super.onOptionsItemSelected(item);
     }
 
-    //TODO: START and stop location updates from questInProgressFragment? That is the only time location is needed now...
-    /**
-     * Stops location updates to save battery
-     */
-    @Override
-    protected void onPause() {
-        super.onPause();
-        needToShowGPSAlert = true;
-        stopLocationUpdates();
-    }
 
     /**
      * Overridden lifecycle method to start location updates if possible
@@ -215,29 +208,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onResume() {
         super.onResume();
-
         // Resuming the periodic location updates
         if (mGoogleApiClient.isConnected()) {
-            isConnectedToNetwork();
-            if (mRequestingLocationUpdates) {
-                if(checkIfGPSEnabled()) {
-                   startLocationUpdates();
-                }else{
-                    showGenericGPSAlert();
-                }
-            }
+            startLocationUpdates();
         } else {
-            if(!checkIfGPSEnabled()){
-                showGenericGPSAlert();
-            }
-            //if (isConnectedToNetwork()) {
                 // check availability of play services for location data and geofencing
                 if (checkPlayServices()) {
                     mGoogleApiClient.connect();
                 } else {
                     showGooglePlayServicesUnavailableDialog();
                 }
-            //}
         }
     }
 
@@ -256,19 +236,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mLastLocation = LocationServices.FusedLocationApi
                     .getLastLocation(mGoogleApiClient);
             tellFragmentLocationChanged();
-        }else{
-            showGenericGPSAlert();
         }
-
-        //starts periodic location updates
-        if (mRequestingLocationUpdates) {
-            if(checkIfGPSEnabled()) {
-               startLocationUpdates();
-            }else{
-                showGenericGPSAlert();
-            }
-        }
-
+        startLocationUpdates();
     }
 
     /**
@@ -378,28 +347,45 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     /**
      * Starting the location updates
      */
-    protected void startLocationUpdates() {
+    private void startLocationUpdates() {
+
         if(checkIfGPSEnabled()) {
             if (mGoogleApiClient.isConnected()) {
-                if (mRequestingLocationUpdates) {
+                if (shouldBeRequestingLocationUpdates && !mRequestingLocationUpdates) {
+                    Log.i(LogMessages.LOCATION, "Location updates started");
+                    mRequestingLocationUpdates = true;
                     LocationServices.FusedLocationApi.requestLocationUpdates(
                             mGoogleApiClient, mLocationRequest, this);
                 }
+            }else{
+                Log.i(LogMessages.LOCATION, "Location updates unable to start. Connecting API client");
+                mGoogleApiClient.connect();
             }
-        }else{
-            showGenericGPSAlert();
         }
     }
 
     /**
      * Stopping location updates
      */
-    protected void stopLocationUpdates() {
-        if (mGoogleApiClient.isConnected()) {
-            Log.i(logMessages.LOCATION, "stopLocationUpdates : location updates stopped");
+    private void stopLocationUpdates() {
+        if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
+            Log.i(logMessages.LOCATION, "Location updates stopped");
+            mRequestingLocationUpdates = false;
             LocationServices.FusedLocationApi.removeLocationUpdates(
                     mGoogleApiClient, this);
         }
+    }
+
+    public void startLocationUpdatesIfPossible(){
+        Log.i(logMessages.LOCATION, "starting location updates if possible");
+        shouldBeRequestingLocationUpdates = true;
+        startLocationUpdates();
+    }
+
+    public void stopLocationUpdatesIfPossible(){
+        Log.i(logMessages.LOCATION, "stopping location updates if possible");
+        shouldBeRequestingLocationUpdates = false;
+        stopLocationUpdates();
     }
 
 
@@ -442,6 +428,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         AlertDialog dialog = playServicesConnectivityAlertDialogBuilder.create();
         if(!dialog.isShowing()) {
             showAlertDialog(getResources().getString(R.string.no_google_services), dialog);
+        }
+    }
+
+    public void showOnCampusFeatureAlertDialogQuests() {
+        AlertDialog dialog = onCampusFeatureAlertDialogBuilder.create();
+        if(!dialog.isShowing()){
+            showAlertDialog(getString(R.string.quests_unuseable_off_campus), dialog);
+        }
+    }
+
+    public void showOnCampusFeatureAlertDialogQuestInProgress() {
+        AlertDialog dialog = onCampusFeatureAlertDialogBuilder.create();
+        if(!dialog.isShowing()){
+            showAlertDialog(getString(R.string.quest_in_progress_unuseable_off_campus), dialog);
         }
     }
 
@@ -561,19 +561,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }return true;
     }
 
-    private void showGenericGPSAlert(){
-        if(needToShowGPSAlert) {
-            needToShowGPSAlert = false;
-            buildAlertMessageNoGps(getString(R.string.gps_not_enabled));
-        }
-    }
-
     /**
      * Alerts the user that their GPS is not enabled and gives them option to enable it
      */
-    public void buildAlertMessageNoGps(String alertMessage) {
+    public void buildAlertMessageNoGps() {
             needToShowGPSAlert = false;
-            noGpsAlertDialogBuilder.setMessage(alertMessage)
+            noGpsAlertDialogBuilder.setMessage(getString(R.string.feature_requires_gps))
                     .setCancelable(false)
                     .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
                         public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
@@ -586,7 +579,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         }
                     });
             final AlertDialog alert = noGpsAlertDialogBuilder.create();
+
+        if(!alert.isShowing()) {
             alert.show();
+        }
     }
 
     /**
@@ -1131,6 +1127,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void setQuestInProgress(Quest questInProgress) {
         this.questInProgress = questInProgress;
     }
+
+    @Override
+    protected void onPause() {
+        stopLocationUpdates();
+        super.onPause();
+    }
+
+
 
     //TODO: now that we no longer need a location sent in to request geofences, call that request
     //TODO: earlier, before getting location updates, then we only need to get location updates

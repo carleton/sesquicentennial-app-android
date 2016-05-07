@@ -242,66 +242,17 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
         btnRequestGeofences.setVisibility(View.GONE);
     }
 
-    /**
-     * checks whether the user's location is on campus
-     * @return true if the user is on campus, false otherwise
-     */
-    private boolean onCampus(){
-        MainActivity mainActivity = (MainActivity) getActivity();
-        Constants constants = new Constants();
-        Location location = mainActivity.getLastLocation();
-
-        if(location == null){
-            return false;
-        }
-
-        if(location.getLatitude() > constants.MIN_LATITUDE
-                && location.getLatitude() < constants.MAX_LATITUDE
-                && location.getLongitude() > constants.MIN_LONGITUDE
-                && location.getLongitude() < constants.MAX_LONGITUDE){
-            return true;
-        }
-
-        return false;
-
-    }
-
 
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if(isVisibleToUser && isResumed()) {
             MainActivity mainActivity = (MainActivity) getActivity();
-
-            if(!mainActivity.checkIfGPSEnabled()){
-                mainActivity.buildAlertMessageNoGps(mainActivity.getResources().getString(R.string.feature_requires_gps));
-            }else if (!onCampus()) {
-                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.quests_unuseable_off_campus),
-                        new AlertDialog.Builder(mainActivity).create());
-            }
-
             questInfo = mainActivity.getQuests();
             if (questInfo == null) {
                 mainActivity.requestQuests();
             } else {
                 handleNewQuests(questInfo);
-            }
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        if(getUserVisibleHint()) {
-            MainActivity mainActivity = (MainActivity) getActivity();
-
-            if(!mainActivity.checkIfGPSEnabled()){
-                mainActivity.buildAlertMessageNoGps(mainActivity.getResources().getString(R.string.feature_requires_gps));
-            }
-            else if (!onCampus()) {
-                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.quests_unuseable_off_campus),
-                        new AlertDialog.Builder(mainActivity).create());
             }
         }
     }

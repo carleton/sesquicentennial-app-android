@@ -56,6 +56,8 @@ public class QuestInProgressFragment extends MapMainFragment {
     private boolean inView = false;
     private Marker curLocationMarker;
 
+    private boolean locationUpdatesRequested = false;
+
     private SupportMapFragment mapFragment;
 
     QuestStartedListener questStartedListener;
@@ -343,13 +345,14 @@ public class QuestInProgressFragment extends MapMainFragment {
         }
         drawTiles();
 
-        if(getUserVisibleHint()) {
-            if(!mainActivity.checkIfGPSEnabled()){
-                mainActivity.buildAlertMessageNoGps(mainActivity.getResources().getString(R.string.feature_requires_gps));
-            }
-            else if (!onCampus()) {
-                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.quest_in_progress_unuseable_off_campus),
-                        new AlertDialog.Builder(mainActivity).create());
+        if(!locationUpdatesRequested && getUserVisibleHint()) {
+            if(mainActivity.checkIfGPSEnabled()){
+                mainActivity.startLocationUpdatesIfPossible();
+                locationUpdatesRequested = true;
+            }if(!mainActivity.checkIfGPSEnabled()){
+                mainActivity.buildAlertMessageNoGps();
+            }else if(!onCampus()){
+                mainActivity.showOnCampusFeatureAlertDialogQuestInProgress();
             }
         }
     }
@@ -357,18 +360,40 @@ public class QuestInProgressFragment extends MapMainFragment {
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
+
         if(isVisibleToUser && isResumed()) {
             MainActivity mainActivity = (MainActivity) getActivity();
 
-            if (!mainActivity.checkIfGPSEnabled()) {
-                mainActivity.buildAlertMessageNoGps(mainActivity.getResources().getString(R.string.feature_requires_gps));
-            } else if (!onCampus()) {
-                mainActivity.showAlertDialog(mainActivity.getResources().getString(R.string.quest_in_progress_unuseable_off_campus),
-                        new AlertDialog.Builder(mainActivity).create());
+            if(!locationUpdatesRequested) {
+                if(mainActivity.checkIfGPSEnabled()){
+                    mainActivity.startLocationUpdatesIfPossible();
+                    locationUpdatesRequested = true;
+                }if(!mainActivity.checkIfGPSEnabled()){
+                    mainActivity.buildAlertMessageNoGps();
+                }else if(!onCampus()){
+                    mainActivity.showOnCampusFeatureAlertDialogQuestInProgress();
+                }
             }
-        }}
+        }else if(!isVisibleToUser){
+            MainActivity mainActivity = (MainActivity) getActivity();
+            if(mainActivity != null && locationUpdatesRequested){
+                mainActivity.stopLocationUpdatesIfPossible();
+                locationUpdatesRequested = false;
+            }
+        }
+    }
 
-            /**
+    @Override
+    public void onPause() {
+        MainActivity mainActivity = (MainActivity) getActivity();
+        if(mainActivity != null && locationUpdatesRequested){
+            mainActivity.stopLocationUpdatesIfPossible();
+            locationUpdatesRequested = false;
+        }
+        super.onPause();
+    }
+
+    /**
              * Checks if the user's current location is within the radius of the waypoint
              * (both the radius and waypoint are specified in the quest object)
              */
