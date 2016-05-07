@@ -1,6 +1,5 @@
 package carleton150.edu.carleton.carleton150.MainFragments;
 
-import android.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,7 +18,6 @@ import java.util.Map;
 
 import carleton150.edu.carleton.carleton150.Adapters.EventDateCardAdapter;
 import carleton150.edu.carleton.carleton150.Adapters.EventsListAdapter;
-import carleton150.edu.carleton.carleton150.Interfaces.RecyclerViewDatesClickListener;
 import carleton150.edu.carleton.carleton150.LayoutManagers.SnapToCenterRecyclerView;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;

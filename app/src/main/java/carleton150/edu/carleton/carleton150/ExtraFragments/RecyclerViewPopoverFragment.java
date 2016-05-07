@@ -46,7 +46,6 @@ public class RecyclerViewPopoverFragment extends Fragment{
     private static Quest quest;
     private static int progressThroughQuest;
 
-    LogMessages logMessages = new LogMessages();
 
     public RecyclerViewPopoverFragment()
     {
@@ -176,8 +175,8 @@ public class RecyclerViewPopoverFragment extends Fragment{
      */
     private void buildNewHistoryRecyclerView(){
 
-        Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "RecyclerViewPopoverFragment: buildNewHistoryRecyclerView");
-        Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "RecyclerViewPopoverFragment: buildNewHistoryRecyclerView : length of geofenceInfoObjectNew is: " + geofenceInfoObjectNew.size());
+        Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, "RecyclerViewPopoverFragment: buildNewHistoryRecyclerView");
+        Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, "RecyclerViewPopoverFragment: buildNewHistoryRecyclerView : length of geofenceInfoObjectNew is: " + geofenceInfoObjectNew.size());
 
         Event[] events = new Event[geofenceInfoObjectNew.size()];
         for(int i = 0 ; i<geofenceInfoObjectNew.size(); i++){

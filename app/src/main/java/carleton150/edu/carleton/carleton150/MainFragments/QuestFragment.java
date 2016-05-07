@@ -19,9 +19,9 @@ import com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager;
 import java.util.ArrayList;
 
 import carleton150.edu.carleton.carleton150.Adapters.QuestAdapter;
-import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.Interfaces.RecyclerViewClickListener;
+import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.R;
@@ -212,7 +212,7 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
                     questAdapter.updateQuestList(questInfo);
                     questAdapter.notifyDataSetChanged();
                     quests.setVisibility(View.VISIBLE);
-                    Log.i(logMessages.VOLLEY, "QuestFragment: handleNewQuests : questAdapter contains : " + questAdapter.getItemCount());
+                    Log.i(LogMessages.VOLLEY, "QuestFragment: handleNewQuests : questAdapter contains : " + questAdapter.getItemCount());
                 }
                 if (questInfo == null) {
                     if (quests != null) {

@@ -17,11 +17,10 @@ import jp.wasabeef.recyclerview.animators.adapters.AnimationAdapter;
 public class MyScaleInAnimationAdapter extends AnimationAdapter {
 
 
-    private static Constants constants = new Constants();
     private final float mFrom;
 
     public MyScaleInAnimationAdapter(RecyclerView.Adapter adapter) {
-        this(adapter, constants.DEFAULT_SCALE_FROM);
+        this(adapter, Constants.DEFAULT_SCALE_FROM);
     }
 
     public MyScaleInAnimationAdapter(RecyclerView.Adapter adapter, float from) {

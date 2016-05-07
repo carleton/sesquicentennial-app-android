@@ -45,7 +45,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.Event;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;

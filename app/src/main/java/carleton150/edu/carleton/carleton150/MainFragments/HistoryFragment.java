@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
+import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.AllGeofences;
 import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Event;
@@ -279,11 +280,11 @@ public class HistoryFragment extends MapMainFragment{
     }
 
     public void showPopupNew(ArrayList<Event> events, String name){
-        Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "showPopupNew: events size is: " + events.size());
+        Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, "showPopupNew: events size is: " + events.size());
         RelativeLayout relLayoutTutorial = (RelativeLayout) view.findViewById(R.id.tutorial);
         relLayoutTutorial.setVisibility(View.GONE);
         ArrayList<Event> sortedEvents = sortByDateNew(events);
-        Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "showPopupNew: sortedEvents size is: " + sortedEvents.size());
+        Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, "showPopupNew: sortedEvents size is: " + sortedEvents.size());
 
 
         FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -355,29 +356,29 @@ public class HistoryFragment extends MapMainFragment{
         this.allGeofences = allGeofences;
         if(allGeofences == null){
             showUnableToRetrieveGeofences();
-            Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences null");
+            Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences null");
         }else if(allGeofences.getEvents() == null){
-            Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences.getEvents() null");
+            Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences.getEvents() null");
 
             if(allGeofences.getTitle() == null){
-                Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences.getTitle() null");
+                Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences.getTitle() null");
             }else if(allGeofences.getTitle().getText() == null){
-                Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences.getTitle().getText() null");
+                Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences.getTitle().getText() null");
 
             }
 
             showUnableToRetrieveGeofences();
         }else if(allGeofences.getEvents().length == 0){
-            Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences events length is 0");
+            Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences events length is 0");
             showUnableToRetrieveGeofences();
         }else {
-            Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences events length is: " + allGeofences.getEvents().length);
+            Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, " allGeofences events length is: " + allGeofences.getEvents().length);
             hideUnableToRetrieveGeofences();
             newCurrentGeofencesInfoMap.clear();
             for (int i = 0; i < allGeofences.getEvents().length; i++) {
                 Event event = allGeofences.getEvents()[i];
                 if(event.getGeo() != null) {
-                    Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " geo is not null");
+                    Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, " geo is not null");
 
                     String name = event.getGeo().getName();
                     ArrayList<Event> eventsAtPoint = new ArrayList<>();
@@ -387,7 +388,7 @@ public class HistoryFragment extends MapMainFragment{
                     eventsAtPoint.add(event);
                     newCurrentGeofencesInfoMap.put(name, eventsAtPoint);
                 }else {
-                    Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, " geo IS null");
+                    Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, " geo IS null");
 
                 }
             }

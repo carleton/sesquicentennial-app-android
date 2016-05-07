@@ -13,7 +13,6 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Event;
 import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Text_;
@@ -29,16 +28,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private Event[] historyListNew = null;
 
-    private LogMessages logMessages = new LogMessages();
-
-
     private Waypoint[] waypointList = null;
     public int screenWidth;
     public int screenHeight;
     public boolean isQuestProgress;
     public Context context;
-    private static Constants constants = new Constants();
-
 
 
     public HistoryAdapter(Context context, Event[] historyListNew, Waypoint[] waypoints, int screenWidth, int screenHeight, boolean isQuestProgress) {
@@ -94,7 +88,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
      */
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onCreateViewHolder : viewType : " + viewType);
+        Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onCreateViewHolder : viewType : " + viewType);
         switch (viewType) {
             case 0:
                 Log.i("Image debugging", "image case");
@@ -128,7 +122,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         //Sets fields of a HistoryViewHolderText and sets an OnClickListener to expand the view
         if(holder instanceof HistoryViewHolderText){
             if(historyListNew != null){
-                Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: textHolder: historyListNew not null");
+                Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: textHolder: historyListNew not null");
 
                 final Event geofenceInfoContent = historyListNew[position];
                 ((HistoryViewHolderText) holder).setTxtSummary(geofenceInfoContent.getText().getHeadline());
@@ -156,7 +150,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             if(!isQuestProgress) {
                 if(historyListNew != null){
 
-                    Log.i(logMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: imageHolder: historyListNew not null");
+                    Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: imageHolder: historyListNew not null");
                     final Event geofenceInfoContent = historyListNew[position];
                     //((HistoryViewHolderImage) holder).setImageNew(position, geofenceInfoContent.getMedia().getUrl(), screenWidth, screenHeight);
                     Uri uri = Uri.parse(geofenceInfoContent.getMedia().getUrl());

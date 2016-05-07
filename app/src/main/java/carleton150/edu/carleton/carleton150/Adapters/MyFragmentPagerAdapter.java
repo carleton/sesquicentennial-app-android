@@ -2,7 +2,6 @@ package carleton150.edu.carleton.carleton150.Adapters;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.view.ViewGroup;
 
@@ -11,7 +10,7 @@ import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.MainFragments.EventsFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.HistoryFragment;
-import carleton150.edu.carleton.carleton150.MainFragments.InfoFragment;
+import carleton150.edu.carleton.carleton150.MainFragments.HomeFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.MainFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestInProgressFragment;
@@ -42,7 +41,7 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
         MainFragment fragment = null;
         switch(position){
             case 0:
-                fragment = new InfoFragment();
+                fragment = new HomeFragment();
 
                 break;
             case 1:

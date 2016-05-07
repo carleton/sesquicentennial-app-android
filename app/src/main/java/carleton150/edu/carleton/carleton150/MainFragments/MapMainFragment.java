@@ -17,6 +17,7 @@ import com.google.android.gms.maps.model.UrlTileProvider;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.R;
 
@@ -32,12 +33,12 @@ public class MapMainFragment extends MainFragment {
 
 
     //TileProvider for Carleton map tiling
-    public TileProvider baseTileProvider = new UrlTileProvider(constants.PROVIDER_NUMBER, constants.PROVIDER_NUMBER) {
+    public TileProvider baseTileProvider = new UrlTileProvider(Constants.PROVIDER_NUMBER, Constants.PROVIDER_NUMBER) {
         @Override
         public URL getTileUrl(int x, int y, int zoom) {
 
          /* Define the URL pattern for the tile images */
-            String s = String.format(constants.BASE_URL_STRING,
+            String s = String.format(Constants.BASE_URL_STRING,
                     zoom, x, y);
             try {
                 return new URL(s);
@@ -49,12 +50,12 @@ public class MapMainFragment extends MainFragment {
 
 
     //TileProvider for Carleton label tiling
-    public TileProvider labelTileProvider = new UrlTileProvider(constants.PROVIDER_NUMBER, constants.PROVIDER_NUMBER) {
+    public TileProvider labelTileProvider = new UrlTileProvider(Constants.PROVIDER_NUMBER, Constants.PROVIDER_NUMBER) {
         @Override
         public URL getTileUrl(int x, int y, int zoom) {
 
         /* Define the URL pattern for the tile images */
-            String s = String.format(constants.LABEL_URL_STRING,
+            String s = String.format(Constants.LABEL_URL_STRING,
                     zoom, x, y);
             try {
                 return new URL(s);
@@ -103,11 +104,11 @@ public class MapMainFragment extends MainFragment {
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
                 setCamera(location, zoomToUserLocation);
-                if (cameraPosition.zoom <= constants.DEFAULT_MAX_ZOOM) {
+                if (cameraPosition.zoom <= Constants.DEFAULT_MAX_ZOOM) {
                     if (cameraPosition.target == null) {
                         setCamera(location, zoomToUserLocation);
                     }
-                    mMap.animateCamera(CameraUpdateFactory.zoomTo(constants.DEFAULT_MAX_ZOOM));
+                    mMap.animateCamera(CameraUpdateFactory.zoomTo(Constants.DEFAULT_MAX_ZOOM));
                 }
 
                 //makes it so user can't scroll too far off campus
@@ -152,17 +153,17 @@ public class MapMainFragment extends MainFragment {
                 zoomCamera = false;
                 CameraPosition cameraPosition = new CameraPosition.Builder()
                         .target(new LatLng(location.getLatitude(), location.getLongitude()))
-                        .zoom(constants.DEFAULT_ZOOM)
-                        .bearing(constants.DEFAULT_BEARING)
+                        .zoom(Constants.DEFAULT_ZOOM)
+                        .bearing(Constants.DEFAULT_BEARING)
                         .build();
                 mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             }
             else if(zoomCamera) {
                 zoomCamera = false;
                 CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(new LatLng(constants.CENTER_CAMPUS.latitude, constants.CENTER_CAMPUS.longitude))
-                        .zoom(constants.DEFAULT_ZOOM)
-                        .bearing(constants.DEFAULT_BEARING)
+                        .target(new LatLng(Constants.CENTER_CAMPUS.latitude, Constants.CENTER_CAMPUS.longitude))
+                        .zoom(Constants.DEFAULT_ZOOM)
+                        .bearing(Constants.DEFAULT_BEARING)
                         .build();
                 mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             }

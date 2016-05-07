@@ -19,14 +19,14 @@ import carleton150.edu.carleton.carleton150.R;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class InfoFragment extends MainFragment {
+public class HomeFragment extends MainFragment {
 
     String curURL;
     View v;
     public static WebView myWebView;
 
 
-    public InfoFragment() {
+    public HomeFragment() {
         // Required empty public constructor
     }
 
@@ -37,11 +37,10 @@ public class InfoFragment extends MainFragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         v = inflater.inflate(R.layout.fragment_info, container, false);
-        Constants constants = new Constants();
 
-        curURL = constants.INFO_URL;
+        curURL = Constants.INFO_URL;
         myWebView = (WebView) v.findViewById(R.id.web_view);
-        myWebView.getSettings().setUserAgentString(constants.USER_AGENT_STRING);
+        myWebView.getSettings().setUserAgentString(Constants.USER_AGENT_STRING);
 
 
         myWebView.getSettings().setJavaScriptEnabled(true);

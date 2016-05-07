@@ -11,8 +11,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import carleton150.edu.carleton.carleton150.MainActivity;
-import carleton150.edu.carleton.carleton150.MainFragments.InfoFragment;
+import carleton150.edu.carleton.carleton150.MainFragments.HomeFragment;
 
 public class ConnectionBroadcastReceiver extends BroadcastReceiver {
 
@@ -25,8 +24,8 @@ public class ConnectionBroadcastReceiver extends BroadcastReceiver {
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
 
         if (netInfo != null && netInfo.isConnectedOrConnecting()) {
-            if(InfoFragment.myWebView != null) {
-                InfoFragment.myWebView.reload();
+            if(HomeFragment.myWebView != null) {
+                HomeFragment.myWebView.reload();
             }
         }
 

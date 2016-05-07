@@ -36,6 +36,7 @@ import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
+import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;
@@ -426,7 +427,7 @@ public class QuestInProgressFragment extends MapMainFragment {
                             new AlertDialog.Builder(mainActivity).create());
                 }
             } else {
-                Log.i(logMessages.LOCATION, "QuestInProgressFragment: checkIfClueFound: location is null");
+                Log.i(LogMessages.LOCATION, "QuestInProgressFragment: checkIfClueFound: location is null");
                 //: this shouln't happen. Handle it better...
             }
         }
@@ -471,7 +472,7 @@ public class QuestInProgressFragment extends MapMainFragment {
      */
     private void drawLocationMarker(Location newLocation) {
         if(mMap != null) {
-            Log.i(logMessages.LOCATION, "QuestInProgressFragment : drawLocationMarker : mMap is not null");
+            Log.i(LogMessages.LOCATION, "QuestInProgressFragment : drawLocationMarker : mMap is not null");
             if(curLocationMarker != null) {
                 curLocationMarker.remove();
             }
@@ -483,7 +484,7 @@ public class QuestInProgressFragment extends MapMainFragment {
                     .title("Current Location")
                     .icon(icon));
         }else{
-            Log.i(logMessages.LOCATION, "QuestInProgressFragment : drawLocationMarker : mMap is null");
+            Log.i(LogMessages.LOCATION, "QuestInProgressFragment : drawLocationMarker : mMap is null");
         }
     }
 
@@ -584,7 +585,7 @@ public class QuestInProgressFragment extends MapMainFragment {
         sharedPrefsEditor.putInt(quest.getName(), numClue);
         sharedPrefsEditor.commit();
 
-        Log.i(logMessages.GEOFENCE_MONITORING, "QuestInProgressFragment: clueCompleted");
+        Log.i(LogMessages.GEOFENCE_MONITORING, "QuestInProgressFragment: clueCompleted");
         boolean completedQuest = updateCurrentWaypoint();
         if (completedQuest){
             showCompletedQuestMessage();
@@ -638,11 +639,11 @@ public class QuestInProgressFragment extends MapMainFragment {
      */
     @Override
     public void fragmentInView() {
-        Log.i(logMessages.LOCATION, "QuestInProgressFragment : fragmentInView : called");
+        Log.i(LogMessages.LOCATION, "QuestInProgressFragment : fragmentInView : called");
         updateCurrentWaypoint();
         MainActivity mainActivity = (MainActivity) getActivity();
         if(mainActivity.mLastLocation != null){
-            Log.i(logMessages.LOCATION, "QuestInProgressFragment : fragmentInView : last location not null, drawing marker");
+            Log.i(LogMessages.LOCATION, "QuestInProgressFragment : fragmentInView : last location not null, drawing marker");
             drawLocationMarker(mainActivity.mLastLocation);
         }
         if(this.isResumed()) {
@@ -851,17 +852,16 @@ public class QuestInProgressFragment extends MapMainFragment {
      */
     private boolean onCampus(){
         MainActivity mainActivity = (MainActivity) getActivity();
-        Constants constants = new Constants();
         Location location = mainActivity.getLastLocation();
 
         if(location == null){
             return false;
         }
 
-        if(location.getLatitude() > constants.MIN_LATITUDE
-                && location.getLatitude() < constants.MAX_LATITUDE
-                && location.getLongitude() > constants.MIN_LONGITUDE
-                && location.getLongitude() < constants.MAX_LONGITUDE){
+        if(location.getLatitude() > Constants.MIN_LATITUDE
+                && location.getLatitude() < Constants.MAX_LATITUDE
+                && location.getLongitude() > Constants.MIN_LONGITUDE
+                && location.getLongitude() < Constants.MAX_LONGITUDE){
             return true;
         }
 
