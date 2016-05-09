@@ -22,7 +22,7 @@ import carleton150.edu.carleton.carleton150.R;
 public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements QuestStartedListener {
 
     private MainActivity mainActivity;
-    private Fragment currentFragment = new HistoryFragment();
+    private Fragment currentFragment = new HomeFragment();
     private FragmentManager fm;
     private MainFragment mFragmentAtPos2 = null;
 
@@ -42,7 +42,6 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
         switch(position){
             case 0:
                 fragment = new HomeFragment();
-
                 break;
             case 1:
                 fragment = new EventsFragment();

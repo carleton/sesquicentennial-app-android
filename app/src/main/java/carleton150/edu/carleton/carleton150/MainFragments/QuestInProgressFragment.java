@@ -613,7 +613,7 @@ public class QuestInProgressFragment extends MapMainFragment {
         TextView txtQuestCompleted = (TextView) v.findViewById(R.id.txt_completion_message);
         final RelativeLayout relLayoutQuestCompleted = (RelativeLayout) v.findViewById(R.id.rel_layout_quest_completed);
         Button btnDoneWithQuest = (Button) v.findViewById(R.id.btn_done_with_quest);
-        txtQuestCompleted.setText(getString(R.string.message_is) + quest.getWaypoints()[numClue].getCompletion().getText());
+        txtQuestCompleted.setText(quest.getWaypoints()[numClue].getCompletion().getText());
         txtQuestCompleted.setMovementMethod(new ScrollingMovementMethod());
 
         if(quest.getWaypoints()[numClue].getCompletion().getImage() != null){
