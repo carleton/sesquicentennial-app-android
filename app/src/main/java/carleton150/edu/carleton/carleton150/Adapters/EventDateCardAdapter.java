@@ -46,7 +46,6 @@ public class EventDateCardAdapter extends RecyclerView.Adapter<EventDateCardAdap
     @Override
     public void onBindViewHolder(EventDateCardViewHolder holder, int position) {
         holder.setDate(dateInfo.get(position));
-        holder.setWidth(screenWidth, dateInfo.get(position));
     }
 
     @Override
@@ -63,20 +62,6 @@ public class EventDateCardAdapter extends RecyclerView.Adapter<EventDateCardAdap
         public EventDateCardViewHolder(View itemView) {
             super(itemView);
 
-        }
-
-        /**
-         * @param screenWidth
-         * Does smaller width for the start and end blocks(that have no date) to make the SnapToCenterRecyclerView
-         * work even on the edges of scrolling
-         */
-        public void setWidth(int screenWidth, String date) {
-            if(date.equals("")){
-                int width = (int) ((screenWidth - ((int) screenWidth/2.5))/2);
-                itemView.setLayoutParams(new RecyclerView.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
-                return;
-            }
-            itemView.setLayoutParams(new RecyclerView.LayoutParams((int) (screenWidth / 2.5), RecyclerView.LayoutParams.MATCH_PARENT));
         }
 
         // Set date in event calendar date tabs
