@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.view.animation.OvershootInterpolator;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import java.util.ArrayList;
 import carleton150.edu.carleton.carleton150.Adapters.HistoryAdapter;
@@ -136,17 +135,6 @@ public class RecyclerViewPopoverFragment extends Fragment{
 
     }
 
-    /**
-     * Sets the color scheme. This method is only called if the RecyclerViewPopoverFragment
-     * is being used to display memories.
-     */
-    private void setMemoriesColorScheme(){
-        View line = view.findViewById(R.id.view_line);
-        RelativeLayout relLayoutHistPopoverBackground = (RelativeLayout) view.findViewById(R.id.rel_layout_history_popover_background);
-        relLayoutHistPopoverBackground.setBackgroundColor(getResources().getColor(R.color.windowBackground));
-        line.setVisibility(View.GONE);
-
-    }
 
     /**
      * Determines what the fragment is being used for and builds the appropriate RecyclerView

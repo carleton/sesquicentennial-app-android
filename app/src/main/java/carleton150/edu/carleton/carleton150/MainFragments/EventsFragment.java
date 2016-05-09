@@ -18,6 +18,8 @@ import java.util.Map;
 
 import carleton150.edu.carleton.carleton150.Adapters.EventDateCardAdapter;
 import carleton150.edu.carleton.carleton150.Adapters.EventsListAdapter;
+import com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager;
+
 import carleton150.edu.carleton.carleton150.LayoutManagers.SnapToCenterRecyclerView;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
@@ -43,7 +45,7 @@ public class EventsFragment extends MainFragment {
 
     // RecyclerView Pager
     private static View v;
-    private SnapToCenterRecyclerView dates;
+    private RecyclerViewPager dates;
     private LinkedHashMap<String, Integer> eventsMapByDate;
     private int screenWidth;
     private LinearLayoutManager dateLayoutManager;
@@ -107,8 +109,8 @@ public class EventsFragment extends MainFragment {
         DisplayMetrics metrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
         screenWidth = metrics.widthPixels;
-        dates = (SnapToCenterRecyclerView) v.findViewById(R.id.lst_event_dates);
-        dates.setScreenWidth(screenWidth);
+        dates = (RecyclerViewPager) v.findViewById(R.id.lst_event_dates);
+        //dates.setScreenWidth(screenWidth);
         dateLayoutManager = new LinearLayoutManager(getActivity());
 
         dateLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
@@ -128,8 +130,8 @@ public class EventsFragment extends MainFragment {
                     There is a blank view at position 0 that is the first completely visible item if the view is scrolled
                     all the way left. In this case, we want the date at position 1 to be the date we use
                      */
-                    if (pos == 0) {
-                        pos = 1;
+                    if (pos < 0) {
+                        pos = 0;
                     }
 
                     String dateByDayDateScroller = dateInfo.get(pos);
@@ -157,23 +159,7 @@ public class EventsFragment extends MainFragment {
             }
         });
 
-        if(dateInfo.size() >= 3){
-            showHighlightedDate();
-        }
-
         eventDateCardAdapter.notifyDataSetChanged();
-    }
-
-    private void showHighlightedDate(){
-        DisplayMetrics metrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        screenWidth = metrics.widthPixels;
-        View highlightView = v.findViewById(R.id.view_highlight);
-        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) highlightView.getLayoutParams();
-        layoutParams.width = (int) (screenWidth/2.5);
-        highlightView.setLayoutParams(layoutParams);
-        highlightView.setVisibility(View.VISIBLE);
-
     }
 
     private void buildEventRecyclerView(){
@@ -246,12 +232,7 @@ public class EventsFragment extends MainFragment {
             for (Map.Entry<String, Integer> entry : eventsMapByDate.entrySet()) {
                 dateInfo.add(entry.getKey());
             }
-            dateInfo.add(0, "");
-            dateInfo.add("");
 
-            if(dateInfo.size() >= 3){
-                showHighlightedDate();
-            }
             eventDateCardAdapter.notifyDataSetChanged();
             hideUnableToRetrieveEvents();
         }
@@ -268,8 +249,7 @@ public class EventsFragment extends MainFragment {
     }
 
     private void updateDateScroller(int pos){
-        int offset = (int) ((screenWidth - screenWidth/2.5)/2);
-        dateLayoutManager.scrollToPositionWithOffset(pos, offset);
+        dates.scrollToPosition(pos);
 
     }
 

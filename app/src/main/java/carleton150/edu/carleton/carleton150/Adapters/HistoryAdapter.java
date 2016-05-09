@@ -125,8 +125,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: textHolder: historyListNew not null");
 
                 final Event geofenceInfoContent = historyListNew[position];
-                ((HistoryViewHolderText) holder).setTxtSummary(geofenceInfoContent.getText().getHeadline());
-                ((HistoryViewHolderText) holder).setTxtDescription(geofenceInfoContent.getText().getText());
+                if(geofenceInfoContent.getText() != null) {
+                    ((HistoryViewHolderText) holder).setTxtSummary(geofenceInfoContent.getText().getHeadline());
+                    ((HistoryViewHolderText) holder).setTxtDescription(geofenceInfoContent.getText().getText());
+                }
                 ((HistoryViewHolderText) holder).setTxtDate(geofenceInfoContent.getStartDate().getYear());
                 ((HistoryViewHolderText) holder).setExpanded(geofenceInfoContent.isExpanded());
                 ImageView imgExpanded = ((HistoryViewHolderText) holder).getIconExpand();
@@ -152,15 +154,16 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
                     Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: imageHolder: historyListNew not null");
                     final Event geofenceInfoContent = historyListNew[position];
-                    //((HistoryViewHolderImage) holder).setImageNew(position, geofenceInfoContent.getMedia().getUrl(), screenWidth, screenHeight);
-                    Uri uri = Uri.parse(geofenceInfoContent.getMedia().getUrl());
-                    Context imgContext = ((HistoryViewHolderImage) holder).getImgMedia().getContext();
-                    Picasso.with(imgContext).load(uri).into(((HistoryViewHolderImage) holder).getImgMedia());
+                    if(geofenceInfoContent.getMedia() != null) {
+                        Uri uri = Uri.parse(geofenceInfoContent.getMedia().getUrl());
+                        Context imgContext = ((HistoryViewHolderImage) holder).getImgMedia().getContext();
+                        Picasso.with(imgContext).load(uri).into(((HistoryViewHolderImage) holder).getImgMedia());
+                        ((HistoryViewHolderImage) holder).setTxtCaption(geofenceInfoContent.getMedia().getCaption());
+                        ((HistoryViewHolderImage) holder).setTxtDescription(geofenceInfoContent.getMedia().getCredit());
+                        ((HistoryViewHolderImage) holder).setImgCredit(geofenceInfoContent.getMedia().getCredit());
+                    }
                     ((HistoryViewHolderImage) holder).setTxtDate(geofenceInfoContent.getStartDate().getYear());
-                    ((HistoryViewHolderImage) holder).setTxtCaption(geofenceInfoContent.getMedia().getCaption());
-                    ((HistoryViewHolderImage) holder).setTxtDescription(geofenceInfoContent.getMedia().getCredit());
                     ((HistoryViewHolderImage) holder).setText(geofenceInfoContent.getText());
-                    ((HistoryViewHolderImage) holder).setImgCredit(geofenceInfoContent.getMedia().getCredit());
                     ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
                     ImageView imgExpanded = ((HistoryViewHolderImage) holder).getIconExpand();
                     ((HistoryViewHolderImage) holder).setExpanded(geofenceInfoContent.isExpanded());
@@ -181,13 +184,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             final Waypoint waypoint = waypointList[position];
             ((ViewHolderQuestInProgress) holder).setVisibilities(waypoint);
             if(waypoint.getClue().getImage() != null) {
-                ((ViewHolderQuestInProgress) holder).setImageClue(position, waypoint.getClue().getImage().getImage(), screenWidth, screenHeight);
+                ((ViewHolderQuestInProgress) holder).setImageClue(waypoint.getClue().getImage().getImage());
             }
             if(waypoint.getHint().getImage() != null) {
-                ((ViewHolderQuestInProgress) holder).setImageHint(position, waypoint.getHint().getImage().getImage(), screenWidth, screenHeight);
+                ((ViewHolderQuestInProgress) holder).setImageHint(waypoint.getHint().getImage().getImage());
             }
             if(waypoint.getCompletion().getImage() != null){
-                ((ViewHolderQuestInProgress) holder).setImageComp(position, waypoint.getClue().getImage().getImage(), screenWidth, screenHeight);
+                ((ViewHolderQuestInProgress) holder).setImageComp(waypoint.getClue().getImage().getImage());
             }
             ((ViewHolderQuestInProgress) holder).setTxtCompMessage(waypoint.getCompletion().getText());
             ((ViewHolderQuestInProgress) holder).setTxtClue(waypoint.getClue().getText());
@@ -249,7 +252,9 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
 
         public void setTxtDescription(String txtDescription) {
-            this.txtDescription.setText(txtDescription);
+            if(txtDescription != null) {
+                this.txtDescription.setText(txtDescription);
+            }
         }
 
         public void setText(Text_ text){
@@ -263,11 +268,17 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
 
         public void setTxtDate(String txtDate) {
-            this.txtDate.setText(txtDate);
+
+            if(txtDate != null) {
+                this.txtDate.setText(txtDate);
+            }
         }
 
         public void setTxtCaption(String caption){
-            this.txtCaption.setText(caption);
+
+            if(caption != null){
+                this.txtCaption.setText(caption);
+            }
         }
 
         public void setImgCredit(String credit){
@@ -359,15 +370,22 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
 
         public void setTxtDescription(String txtDescription) {
-            this.txtDescription.setText(txtDescription);
+            if(txtDescription != null) {
+                this.txtDescription.setText(txtDescription);
+            }
         }
 
         public void setTxtSummary(String txtSummary) {
-            this.txtSummary.setText(txtSummary);
+            if(txtSummary != null) {
+                this.txtSummary.setText(txtSummary);
+            }
         }
 
         public void setTxtDate(String txtDate) {
-            this.txtDate.setText(txtDate);
+
+            if(txtDate != null){
+                this.txtDate.setText(txtDate);
+            }
         }
 
         /**
@@ -551,14 +569,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
          * Sets the image by downsizing and decoding the image string, then putting the image
          * into the recyclerView at the specified position in the imgClue space
          *
-         * @param resId position of image in RecyclerView
-         * @param encodedImage 64-bit encoded image
-         * @param screenWidth width of phone screen
-         * @param screenHeight height of phone screen
+         * @param url
          */
-        public void setImageClue(int resId, String encodedImage, int screenWidth, int screenHeight) {
+        public void setImageClue(String url) {
             if(hasClueImage) {
-                //TODO: load in image using picasso
+                Uri uri = Uri.parse(url);
+                Context imgContext = imgHint.getContext();
+                Picasso.with(imgContext).load(uri).into(imgHint);
             }
 
         }
@@ -567,14 +584,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
          * Sets the image by downsizing and decoding the image string, then putting the image
          * into the recyclerView at the specified position in the imgHint space
          *
-         * @param resId position of image in RecyclerView
-         * @param encodedImage 64-bit encoded image
-         * @param screenWidth width of phone screen
-         * @param screenHeight height of phone screen
+         * @param url
          */
-        public void setImageHint(int resId, String encodedImage, int screenWidth, int screenHeight) {
+        public void setImageHint(String url) {
             if(hasHintImage) {
-                //TODO: load in image using picasso
+                Uri uri = Uri.parse(url);
+                Context imgContext = imgHint.getContext();
+                Picasso.with(imgContext).load(uri).into(imgHint);
             }
         }
 
@@ -582,14 +598,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
          * Sets the image by downsizing and decoding the image string, then putting the image
          * into the recyclerView at the specified position in the imgComp space
          *
-         * @param resId position of image in RecyclerView
-         * @param encodedImage 64-bit encoded image
-         * @param screenWidth width of phone screen
-         * @param screenHeight height of phone screen
+         * @param url
          */
-        public void setImageComp(int resId, String encodedImage, int screenWidth, int screenHeight) {
+        public void setImageComp(String url) {
             if(hasCompImage) {
-                //TODO: load in image using picasso
+                Uri uri = Uri.parse(url);
+                Context imgContext = imgCompImage.getContext();
+                Picasso.with(imgContext).load(uri).into(imgCompImage);
             }
         }
 

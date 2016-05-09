@@ -1,8 +1,8 @@
-
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingTop="?attr/actionBarSize"
     tools:context="carleton150.edu.carleton.carleton150.MainFragments.EventsFragment">
 
@@ -23,20 +23,16 @@
 
 
             <!-- Scrollable date tabs -->
-            <carleton150.edu.carleton.carleton150.LayoutManagers.SnapToCenterRecyclerView
-                android:id="@+id/lst_event_dates"
-                android:layout_gravity="center_horizontal"
-                android:scrollbars="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
 
-                <View
-                    android:id="@+id/view_highlight"
-                    android:layout_width="0dp"
-                    android:background="@drawable/bg_highlight_date"
-                    android:visibility="gone"
-                    android:elevation="10dp"
-                    android:layout_centerHorizontal="true"
+
+                <com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager
+                    android:id="@+id/lst_event_dates"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:scrollbars="horizontal"
+                    app:rvp_triggerOffset="0.1"
+                    android:clipToPadding="false"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
 
 
