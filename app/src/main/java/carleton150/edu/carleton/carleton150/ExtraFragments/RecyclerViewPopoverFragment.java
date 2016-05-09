@@ -24,9 +24,8 @@ import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;
 import carleton150.edu.carleton.carleton150.R;
 
 /**
- * Class to manage a RecyclerViewPopoverFragment. This is used to show the popover for memories,
- * history, and quest progress. Memories has been disabled, so this will never be used to display
- * memories, but that functionality is being left in so it can possibly be used in the future
+ * Class to manage a RecyclerViewPopoverFragment. This is used to show the popover for
+ * history and quest progress.
  */
 public class RecyclerViewPopoverFragment extends Fragment{
 
@@ -37,7 +36,6 @@ public class RecyclerViewPopoverFragment extends Fragment{
     private Button btnClose;
     private int screenWidth;
     private int screenHeight;
-    private TextView txtErrorGettingMemories;
     private static boolean isQuestInProgress = false;
     private static String geofenceName;
     private static ArrayList<Event> geofenceInfoObjectNew;
@@ -91,7 +89,6 @@ public class RecyclerViewPopoverFragment extends Fragment{
         view = getActivity().getLayoutInflater().
                 inflate(R.layout.fragment_history_popover, new LinearLayout(getActivity()), false);
         TextView txtTitle = (TextView) view.findViewById(R.id.txt_title);
-        txtErrorGettingMemories = (TextView) view.findViewById(R.id.txt_error_getting_memories);
         btnClose = (Button) view.findViewById(R.id.btn_exit_popup);
 
 
@@ -113,7 +110,6 @@ public class RecyclerViewPopoverFragment extends Fragment{
             }
         }else if(isQuestInProgress){
             txtTitle.setText(getString(R.string.progress_through_quest_title));
-            txtErrorGettingMemories.setVisibility(View.GONE);
         }
 
         //builds RecyclerViews to display info
@@ -185,6 +181,7 @@ public class RecyclerViewPopoverFragment extends Fragment{
      * quest progress
      */
     private void buildQuestProgressRecyclerView(){
+        Log.i("QUEST PROGRESS POPUP", "building quest recycler views");
         Waypoint[] waypoints = quest.getWaypoints();
         Waypoint[] completedWaypoints = new Waypoint[progressThroughQuest];
         for(int i = 0; i<progressThroughQuest; i++){
@@ -206,6 +203,5 @@ public class RecyclerViewPopoverFragment extends Fragment{
         historyLayoutManager = null;
         historyAdapter = null;
         btnClose = null;
-        txtErrorGettingMemories = null;
     }
 }

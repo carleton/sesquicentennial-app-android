@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.SlidingDrawer;
 import android.widget.TextView;
 
@@ -32,12 +33,15 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+
 import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.MainActivity;
+import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Event;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;
 import carleton150.edu.carleton.carleton150.R;
@@ -175,6 +179,11 @@ public class QuestInProgressFragment extends MapMainFragment {
         SlidingDrawer slidingDrawerHint = (SlidingDrawer) v.findViewById(R.id.back_drawer);
         ImageView imgHint = (ImageView) v.findViewById(R.id.img_hint_image_back);
         ImageView imgClue = (ImageView) v.findViewById(R.id.img_clue_image_front);
+        final ScrollView scrollViewFront = (ScrollView) v.findViewById(R.id.scrollview_clue_view_front);
+        final ScrollView scrollViewBack = (ScrollView) v.findViewById(R.id.scrollview_clue_view_back);
+
+        scrollViewFront.post(new Runnable() { public void run() { scrollViewFront.fullScroll(View.FOCUS_UP); } });
+        scrollViewBack.post(new Runnable() { public void run() { scrollViewBack.fullScroll(View.FOCUS_UP); } });
 
         Waypoint[] waypoints = quest.getWaypoints();
         if(numClue != waypoints.length) {
@@ -615,6 +624,7 @@ public class QuestInProgressFragment extends MapMainFragment {
         Button btnDoneWithQuest = (Button) v.findViewById(R.id.btn_done_with_quest);
         txtQuestCompleted.setText(quest.getWaypoints()[numClue].getCompletion().getText());
         txtQuestCompleted.setMovementMethod(new ScrollingMovementMethod());
+        txtQuestCompleted.scrollTo(0, 0);
 
         if(quest.getWaypoints()[numClue].getCompletion().getImage() != null){
             setImage(quest.getWaypoints()[numClue].getCompletion().getImage().getImage(), imgQuestCompleted);
@@ -829,6 +839,8 @@ public class QuestInProgressFragment extends MapMainFragment {
      * @param
      */
     private void showProgressPopup(){
+
+        Log.i("QUEST PROGRESS POPUP", "function called");
 
         RelativeLayout relLayoutTutorial = (RelativeLayout) v.findViewById(R.id.tutorial);
         relLayoutTutorial.setVisibility(View.GONE);

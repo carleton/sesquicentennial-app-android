@@ -18,6 +18,7 @@
         android:layout_height="match_parent">
 
         <ScrollView
+            android:id="@+id/scrollview_clue_view_front"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent">
 
