@@ -853,9 +853,11 @@ public class QuestInProgressFragment extends MapMainFragment {
 
         fragmentTransaction.setCustomAnimations(R.anim.abc_slide_in_bottom, R.anim.abc_slide_out_bottom,
                 R.anim.abc_slide_in_bottom, R.anim.abc_slide_out_bottom);
-        fragmentTransaction.add(R.id.fragment_container, recyclerViewPopoverFragment, "QuestProgressPopoverFragment");
+        fragmentTransaction.add(R.id.fragment_container_quest, recyclerViewPopoverFragment, "QuestProgressPopoverFragment");
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
+        //MainActivity mainActivity = (MainActivity) getActivity();
+        //mainActivity.getMyFragmentPagerAdapter().notifyDataSetChanged();
     }
 
     /**

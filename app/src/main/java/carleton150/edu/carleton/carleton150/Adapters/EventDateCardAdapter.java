@@ -90,7 +90,7 @@ public class EventDateCardAdapter extends RecyclerView.Adapter<EventDateCardAdap
                 return;
             }
 
-            DateFormat dfCorrect = new SimpleDateFormat("EEE'\r\n'MMM dd',' yyyy", Locale.US);
+            DateFormat dfCorrect = new SimpleDateFormat("EEEE'\r' MMM dd',' yyyy", Locale.US);
 
             String[] dateArray = dateInfo.split("-");
 

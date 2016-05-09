@@ -204,4 +204,9 @@ public class RecyclerViewPopoverFragment extends Fragment{
         historyAdapter = null;
         btnClose = null;
     }
+
+
+
+
+
 }

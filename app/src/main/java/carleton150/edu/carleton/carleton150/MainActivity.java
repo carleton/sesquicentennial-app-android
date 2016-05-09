@@ -401,6 +401,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    public MyFragmentPagerAdapter getMyFragmentPagerAdapter(){
+        return this.adapter;
+    }
+
     /**
      * displays a dialog requesting that the user connect to a network
      */
