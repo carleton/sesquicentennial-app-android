@@ -3,11 +3,9 @@ package carleton150.edu.carleton.carleton150.MainFragments;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,15 +13,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager;
-
 import java.util.ArrayList;
-
 import carleton150.edu.carleton.carleton150.Adapters.QuestAdapter;
 import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.Interfaces.RecyclerViewClickListener;
-import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.R;
@@ -31,8 +25,7 @@ import carleton150.edu.carleton.carleton150.R;
 import static carleton150.edu.carleton.carleton150.R.id.txt_request_quests;
 
 /**
- * Class to display quests and allow a user to select a quest to view information about it
- * or start the quest
+ * Class to display quests and allow a user to select a quest to start or resume it
  */
 public class QuestFragment extends MainFragment implements RecyclerViewClickListener {
 
@@ -59,8 +52,6 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
         final Button btnTryAgain;
         view =  inflater.inflate(R.layout.fragment_quest, container, false);
         final MainActivity mainActivity = (MainActivity) getActivity();
-
-
 
         /*Button for user to try getting quests again if the app was unable
         to get them from the server
@@ -97,8 +88,8 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
             toggleTutorial();
         }
 
+        //requests quests if mainActivity doesn't already have them
         questInfo = mainActivity.getQuests();
-
         if(questInfo == null){
             mainActivity.requestQuests();
         }else if(questInfo.size() == 0){
@@ -116,22 +107,19 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
     }
 
     /**
-     * Handles when a quest was clicked by making the "Start Quest" button clickable
-     * and displaying info about the selected quest
+     * Handles when a quest was clicked beginning the quest
      * @param v
      * @param position
      */
     @Override
     public void recyclerViewListClicked(View v, final int position) {
-        Log.i("View", "QuestFragment : recyclerViewListClicked");
-
         beginQuest(questAdapter.getQuestList().get(position));
     }
 
     /**
-     * Begins a quest by creating a new QuestInProgressFragment and passing
-     * it info about the selected quest. Uses the FragmentChangeListener
-     * interface to communicate with the MainActivity
+     * If the quest was not already started at some point, starts it. Otherwise,
+     * checkIfQuestStarted() displays a dialog asking if the user wants to resume
+     * the quest or start over
      * @param quest quest to begin
      */
     private void beginQuest(Quest quest){
@@ -142,12 +130,12 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
             fr.initialize(quest, false);
             questStartedListener.questStarted(fr);
         }
-
     }
 
     /**
      * Checks if a quest was already started. If so, gives user the option of resuming
      * the quest or starting over
+     * @return true if quest was started, false otherwise
      */
     private boolean checkIfQuestStarted(Quest quest){
         MainActivity mainActivity = (MainActivity) getActivity();
@@ -206,7 +194,7 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
         questLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         quests.setLayoutManager(questLayoutManager);
         MainActivity mainActivity = (MainActivity) getActivity();
-        questAdapter = new QuestAdapter(questInfo, this, screenWidth, metrics.heightPixels,
+        questAdapter = new QuestAdapter(questInfo, this,
                 getResources(), mainActivity.getPersistentQuestStorage());
         quests.setAdapter(questAdapter);
     }
@@ -270,7 +258,6 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
                     questAdapter.updateQuestList(questInfo);
                     questAdapter.notifyDataSetChanged();
                     quests.setVisibility(View.VISIBLE);
-                    Log.i(LogMessages.VOLLEY, "QuestFragment: handleNewQuests : questAdapter contains : " + questAdapter.getItemCount());
                 }
                 if (questInfo == null) {
                     if (quests != null) {
@@ -284,7 +271,10 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
 
     }
 
-
+    /**
+     * shows text saying the app was unable to retrieve quests. Prompts user to connect
+     * to network and try again
+     */
     public void showUnableToRetrieveQuests(){
         final TextView txtRequestGeofences = (TextView) view.findViewById(txt_request_quests);
         final Button btnRequestGeofences = (Button) view.findViewById(R.id.btn_try_getting_quests);
@@ -293,6 +283,10 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
         btnRequestGeofences.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * hides text saying the app was unable to retrieve quests. Prompts user to connect
+     * to network and try again
+     */
     private void hideUnableToRetrieveQuests(){
         final TextView txtRequestGeofences = (TextView) view.findViewById(txt_request_quests);
         final Button btnRequestGeofences = (Button) view.findViewById(R.id.btn_try_getting_quests);
@@ -300,7 +294,11 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
         btnRequestGeofences.setVisibility(View.GONE);
     }
 
-
+    /**
+     * gets quests from MainActivity when fragment comes into view. If MainActivity
+     * has no quests, requests them
+     * @param isVisibleToUser
+     */
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);

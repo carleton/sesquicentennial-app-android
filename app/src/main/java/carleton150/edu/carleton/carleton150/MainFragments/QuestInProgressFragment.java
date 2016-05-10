@@ -2,7 +2,6 @@ package carleton150.edu.carleton.carleton150.MainFragments;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -12,7 +11,6 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.text.method.ScrollingMovementMethod;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,15 +31,12 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-
 import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.MainActivity;
-import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Event;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;
 import carleton150.edu.carleton.carleton150.R;
@@ -61,15 +56,10 @@ public class QuestInProgressFragment extends MapMainFragment {
     private boolean resume;
     private boolean inView = false;
     private Marker curLocationMarker;
-
     private boolean needToShowOnCampusDialog = true;
-
     private boolean locationUpdatesRequested = false;
-
     private SupportMapFragment mapFragment;
-
     QuestStartedListener questStartedListener;
-
 
     public QuestInProgressFragment() {
         // Required empty public constructor
@@ -77,7 +67,7 @@ public class QuestInProgressFragment extends MapMainFragment {
 
     /**
      * This must be called after creating the QuestInProgressFragment in order to pass
-     * it the current quest
+     * it the current quest and a boolean indicating if the user would like to resume the quest
      * @param quest quest to be completed by user
      */
     public void initialize(Quest quest, boolean resume){
@@ -86,10 +76,14 @@ public class QuestInProgressFragment extends MapMainFragment {
 
     }
 
+    /**
+     * Sets a listener to detect when quest is completed or when the user presses
+     * the back button to go back to quest selection screen
+     * @param questStartedListener
+     */
     public void setQuestStartedListener(QuestStartedListener questStartedListener){
         this.questStartedListener = questStartedListener;
     }
-
 
     /**
      * Manages UI.
@@ -114,12 +108,9 @@ public class QuestInProgressFragment extends MapMainFragment {
         final ImageButton btnReturnToCampus = (ImageButton) v.findViewById(R.id.btn_return_to_campus);
 
         final MainActivity mainActivity = (MainActivity) getActivity();
-
-
         if(quest == null){
             quest = mainActivity.getQuestInProgress();
         }
-
         ImageView imgQuestion = (ImageView) v.findViewById(R.id.img_question);
         /*
         Sets listeners to show the progress popover
@@ -134,10 +125,6 @@ public class QuestInProgressFragment extends MapMainFragment {
         monitorSlidingDrawers();
         monitorForCardFlips();
         setClueAndHintFields();
-        if(inView) {
-            //checkIfQuestStarted();
-            Log.i("CHECK QUEST", "onCreateView, checking if quest is started");
-        }
         btnFoundIt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -161,7 +148,6 @@ public class QuestInProgressFragment extends MapMainFragment {
         if (completedQuest){
             showCompletedQuestMessage();
         }
-
 
         btnReturnToUserLocation.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -197,7 +183,6 @@ public class QuestInProgressFragment extends MapMainFragment {
         ImageView imgClue = (ImageView) v.findViewById(R.id.img_clue_image_front);
         final ScrollView scrollViewFront = (ScrollView) v.findViewById(R.id.scrollview_clue_view_front);
         final ScrollView scrollViewBack = (ScrollView) v.findViewById(R.id.scrollview_clue_view_back);
-
         scrollViewFront.post(new Runnable() {
             public void run() {
                 scrollViewFront.fullScroll(View.FOCUS_UP);
@@ -208,11 +193,9 @@ public class QuestInProgressFragment extends MapMainFragment {
                 scrollViewBack.fullScroll(View.FOCUS_UP);
             }
         });
-
         Waypoint[] waypoints = quest.getWaypoints();
         if(numClue != waypoints.length) {
             String hint = waypoints[numClue].getHint().getText();
-
             String image = null;
             String hintImage = null;
             if (waypoints[numClue].getHint().getImage() != null) {
@@ -221,21 +204,20 @@ public class QuestInProgressFragment extends MapMainFragment {
             if (waypoints[numClue].getClue().getImage() != null) {
                 image = waypoints[numClue].getClue().getImage().getImage();
             }
-
-
             if (hint == null || hint.equals("")) {
                 txtHint.setText(getResources().getString(R.string.no_hint_available));
             } else {
                 txtHint.setText(waypoints[numClue].getHint().getText());
             }
-
             RelativeLayout relLayoutFoundItHint = (RelativeLayout) v.findViewById(rel_layout_found_it_hint);
             RelativeLayout relLayoutFoundItClue = (RelativeLayout) v.findViewById(R.id.rel_layout_found_it_clue);
 
+            //converts dp to pixels
             float scale = getResources().getDisplayMetrics().density;
             int dpAsPixelsSmallPadding = (int) (10*scale + 0.5f);
             int dpAsPixelsBigPadding = (int) (80*scale + 0.5f);
 
+            //sets padding so drawer and found it layout don't overlap
             if (image != null) {
                 slidingDrawerClue.setVisibility(View.VISIBLE);
                 relLayoutFoundItClue.setPadding(0, 0, 0, dpAsPixelsBigPadding);
@@ -244,7 +226,6 @@ public class QuestInProgressFragment extends MapMainFragment {
                 slidingDrawerClue.setVisibility(View.GONE);
                 relLayoutFoundItClue.setPadding(0, 0, 0, dpAsPixelsSmallPadding);
             }
-
             if (hintImage != null) {
                 slidingDrawerHint.setVisibility(View.VISIBLE);
                 relLayoutFoundItHint.setPadding(0, 0, 0, dpAsPixelsBigPadding);
@@ -264,22 +245,18 @@ public class QuestInProgressFragment extends MapMainFragment {
         TextView txtClueNumber = (TextView) v.findViewById(R.id.txt_clue_number);
         TextView txtClueNumberHint = (TextView) v.findViewById(R.id.txt_clue_number_hint);
         TextView txtClueNumberCompMessage= (TextView) v.findViewById(R.id.txt_clue_number_comp_window);
-
         txtClueNumber.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showProgressPopup();
             }
         });
-
         txtClueNumberHint.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showProgressPopup();
             }
         });
-
-        //if the progress popover is shown at the end of a quest, stops the animation to save memory
         txtClueNumberCompMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -296,7 +273,6 @@ public class QuestInProgressFragment extends MapMainFragment {
         SlidingDrawer slidingDrawerHint = (SlidingDrawer) v.findViewById(R.id.back_drawer);
         final ImageView imgExpandClue = (ImageView) v.findViewById(R.id.img_expand_clue);
         final ImageView imgExpandHint = (ImageView) v.findViewById(R.id.img_expand_hint);
-
         slidingDrawerClue.setOnDrawerOpenListener(new SlidingDrawer.OnDrawerOpenListener() {
             @Override
             public void onDrawerOpened() {
@@ -309,7 +285,6 @@ public class QuestInProgressFragment extends MapMainFragment {
                 imgExpandHint.setImageDrawable(getResources().getDrawable(R.drawable.ic_navigation_expand_more));
             }
         });
-
         slidingDrawerClue.setOnDrawerCloseListener(new SlidingDrawer.OnDrawerCloseListener() {
             @Override
             public void onDrawerClosed() {
@@ -361,12 +336,11 @@ public class QuestInProgressFragment extends MapMainFragment {
             mapFragment = SupportMapFragment.newInstance();
             fm.beginTransaction().replace(R.id.my_map, mapFragment).commit();
         }
-
     }
 
     /**
      * Lifecycle method overridden to set up the map if it
-     * is currently null
+     * is currently null and to start locatin updates if possible
      */
     @Override
     public void onResume() {
@@ -379,7 +353,6 @@ public class QuestInProgressFragment extends MapMainFragment {
             drawLocationMarker(mainActivity.mLastLocation);
         }
         drawTiles();
-
         if(!locationUpdatesRequested && getUserVisibleHint()) {
             if(mainActivity.checkIfGPSEnabled()){
                 mainActivity.startLocationUpdatesIfPossible();
@@ -390,14 +363,16 @@ public class QuestInProgressFragment extends MapMainFragment {
         }
     }
 
+    /**
+     * starts location updates if possible when fragment comes into view.
+     * @param isVisibleToUser
+     */
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         needToShowOnCampusDialog = true;
-
         if(isVisibleToUser && isResumed()) {
             MainActivity mainActivity = (MainActivity) getActivity();
-
             if(!locationUpdatesRequested) {
                 if(mainActivity.checkIfGPSEnabled()){
                     mainActivity.startLocationUpdatesIfPossible();
@@ -415,6 +390,9 @@ public class QuestInProgressFragment extends MapMainFragment {
         }
     }
 
+    /**
+     * stops location updates if possible when fragment is paused
+     */
     @Override
     public void onPause() {
         MainActivity mainActivity = (MainActivity) getActivity();
@@ -426,9 +404,9 @@ public class QuestInProgressFragment extends MapMainFragment {
     }
 
     /**
-             * Checks if the user's current location is within the radius of the waypoint
-             * (both the radius and waypoint are specified in the quest object)
-             */
+     * Checks if the user's current location is within the radius of the waypoint
+     * (both the radius and waypoint are specified in the quest object)
+     */
     private void checkIfClueFound(){
         MainActivity mainActivity = (MainActivity) getActivity();
         mainActivity.needToShowGPSAlert = true;
@@ -459,11 +437,11 @@ public class QuestInProgressFragment extends MapMainFragment {
                 }
             } else {
                 Log.i(LogMessages.LOCATION, "QuestInProgressFragment: checkIfClueFound: location is null");
-                //: this shouln't happen. Handle it better...
             }
+        }else{
+            mainActivity.buildAlertMessageNoGps();
         }
     }
-
 
     /**
      * Sets up the map
@@ -507,7 +485,6 @@ public class QuestInProgressFragment extends MapMainFragment {
      */
     private void drawLocationMarker(Location newLocation) {
         if(mMap != null) {
-            Log.i(LogMessages.LOCATION, "QuestInProgressFragment : drawLocationMarker : mMap is not null");
             if(curLocationMarker != null) {
                 curLocationMarker.remove();
             }
@@ -516,7 +493,7 @@ public class QuestInProgressFragment extends MapMainFragment {
             BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(knightIcon);
             curLocationMarker = mMap.addMarker(new MarkerOptions()
                     .position(position)
-                    .title("Current Location")
+                    .title(getString(R.string.current_loaction))
                     .icon(icon));
         }else{
             Log.i(LogMessages.LOCATION, "QuestInProgressFragment : drawLocationMarker : mMap is null");
@@ -545,6 +522,7 @@ public class QuestInProgressFragment extends MapMainFragment {
             RelativeLayout relLayoutFoundItHint = (RelativeLayout) v.findViewById(rel_layout_found_it_hint);
             RelativeLayout relLayoutFoundItClue = (RelativeLayout) v.findViewById(R.id.rel_layout_found_it_clue);
 
+            //converts dp to pixels
             float scale = getResources().getDisplayMetrics().density;
             int dpAsPixelsSmallPadding = (int) (10*scale + 0.5f);
             int dpAsPixelsBigPadding = (int) (80*scale + 0.5f);
@@ -575,6 +553,8 @@ public class QuestInProgressFragment extends MapMainFragment {
             }if(waypoints[numClue].getClue().getImage() != null){
                 image = waypoints[numClue].getClue().getImage().getImage();
             }
+
+            //sets padding so sliding drawer and rest of clue or hint view don't overlap
             if (image != null){
                 slidingDrawerClue.setVisibility(View.VISIBLE);
                 setImage(image, imgClue);
@@ -584,7 +564,6 @@ public class QuestInProgressFragment extends MapMainFragment {
                 relLayoutFoundItClue.setPadding(0, 0, 0, dpAsPixelsSmallPadding);
 
             }
-
             if (hintImage != null){
                 slidingDrawerHint.setVisibility(View.VISIBLE);
                 setImage(hintImage, imgHint);
@@ -619,8 +598,6 @@ public class QuestInProgressFragment extends MapMainFragment {
         SharedPreferences.Editor sharedPrefsEditor = mainActivity.getPersistentQuestStorage().edit();
         sharedPrefsEditor.putInt(quest.getName(), numClue);
         sharedPrefsEditor.commit();
-
-        Log.i(LogMessages.GEOFENCE_MONITORING, "QuestInProgressFragment: clueCompleted");
         boolean completedQuest = updateCurrentWaypoint();
         if (completedQuest){
             showCompletedQuestMessage();
@@ -673,19 +650,14 @@ public class QuestInProgressFragment extends MapMainFragment {
      * updates the waypoints
      * and sets the map camera if necessary
      */
-    @Override
     public void fragmentInView() {
-        Log.i(LogMessages.LOCATION, "QuestInProgressFragment : fragmentInView : called");
         updateCurrentWaypoint();
         MainActivity mainActivity = (MainActivity) getActivity();
         if(mainActivity.mLastLocation != null){
-            Log.i(LogMessages.LOCATION, "QuestInProgressFragment : fragmentInView : last location not null, drawing marker");
             drawLocationMarker(mainActivity.mLastLocation);
         }
         if (this.isResumed()) {
             if (!inView) {
-                Log.i("CHECK QUEST", "fragmentInView : fragment added to view, checking if quest is started");
-                //checkIfQuestStarted();
                 inView = true;
             }
             drawTiles();
@@ -727,7 +699,7 @@ public class QuestInProgressFragment extends MapMainFragment {
         super.onSaveInstanceState(outState);
     }
 
-   /**
+    /**
      * Starts fragment to show animation and message on quest completion
      */
     private void goToQuestCompletionScreen(){
@@ -745,29 +717,27 @@ public class QuestInProgressFragment extends MapMainFragment {
         if (cardFace.getVisibility() == View.GONE)
         {
             cardBack.setVisibility(View.GONE);
-            cardBack.animate().alpha(0f).setDuration(300);
+            cardBack.animate().alpha(0f).setDuration(Constants.FLIP_ANIMATION_DURATION);
             cardFace.bringToFront();
             cardFace.setVisibility(View.VISIBLE);
-            cardFace.animate().alpha(1f).setDuration(300);
+            cardFace.animate().alpha(1f).setDuration(Constants.FLIP_ANIMATION_DURATION);
 
         }else{
             cardFace.setVisibility(View.GONE);
-            cardFace.animate().alpha(0f).setDuration(300);
+            cardFace.animate().alpha(0f).setDuration(Constants.FLIP_ANIMATION_DURATION);
             cardBack.bringToFront();
             cardBack.setVisibility(View.VISIBLE);
-            cardBack.animate().alpha(1f).setDuration(300);
+            cardBack.animate().alpha(1f).setDuration(Constants.FLIP_ANIMATION_DURATION);
         }
     }
 
     /**
-     * Downsizes a 64-bit encoded image and sets it to be the image displayed
-     * in the imageView
+     *displays image from URL in the imageView
      *
      * @param imageURL the URL for the image
      * @param imageView image view to display image
      */
     public void setImage(String imageURL, ImageView imageView) {
-
         Uri uri = Uri.parse(imageURL);
         Context imgContext = imageView.getContext();
         Picasso.with(imgContext).load(uri).into(imageView);
@@ -782,7 +752,6 @@ public class QuestInProgressFragment extends MapMainFragment {
         if(curClue != 0){
             numClue = curClue;
         }
-
         boolean completedQuest = updateCurrentWaypoint();
         if (completedQuest){
             showCompletedQuestMessage();
@@ -868,7 +837,6 @@ public class QuestInProgressFragment extends MapMainFragment {
                 && location.getLongitude() < Constants.MAX_LONGITUDE){
             return true;
         }
-
         return false;
 
     }

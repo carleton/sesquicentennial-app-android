@@ -16,22 +16,15 @@ import carleton150.edu.carleton.carleton150.R;
 
 
 /**
- * Adapter for the RecyclerView that shows images in the bottom of the HistoryFragment
+ * Adapter for the Dates in the Events section of the app
  */
 public class EventDateCardAdapter extends RecyclerView.Adapter<EventDateCardAdapter.EventDateCardViewHolder> {
 
-    private int screenWidth;
     private ArrayList<String> dateInfo;
+    public EventDateCardAdapter(ArrayList<String> dateInfo) {
 
-
-    public EventDateCardAdapter(ArrayList<String> dateInfo,
-                                int screenWidth) {
-
-        this.screenWidth = screenWidth;
         this.dateInfo = dateInfo;
     }
-
-
 
     @Override
     public EventDateCardViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -42,12 +35,20 @@ public class EventDateCardAdapter extends RecyclerView.Adapter<EventDateCardAdap
     }
 
 
-    // Setting view for each card
+    /**
+     * Sets view for each card
+     * @param holder
+     * @param position
+     */
     @Override
     public void onBindViewHolder(EventDateCardViewHolder holder, int position) {
         holder.setDate(dateInfo.get(position));
     }
 
+    /**
+     * returns number of items in dateInfo
+     * @return
+     */
     @Override
     public int getItemCount() {
         if(dateInfo != null) {
@@ -57,6 +58,9 @@ public class EventDateCardAdapter extends RecyclerView.Adapter<EventDateCardAdap
         }
     }
 
+    /**
+     * ViewHolder for Event dates
+     */
     public static class EventDateCardViewHolder extends RecyclerView.ViewHolder {
 
         public EventDateCardViewHolder(View itemView) {
@@ -64,7 +68,10 @@ public class EventDateCardAdapter extends RecyclerView.Adapter<EventDateCardAdap
 
         }
 
-        // Set date in event calendar date tabs
+        /**
+         * Sets holder to display formatted date
+         * @param dateInfo
+         */
         public void setDate(String dateInfo) {
 
             TextView dateTitle = (TextView) itemView.findViewById(R.id.event_date_title);
@@ -76,14 +83,10 @@ public class EventDateCardAdapter extends RecyclerView.Adapter<EventDateCardAdap
             }
 
             DateFormat dfCorrect = new SimpleDateFormat("EEEE'\r' MMM dd',' yyyy", Locale.US);
-
             String[] dateArray = dateInfo.split("-");
-
             java.util.Calendar calendar = java.util.Calendar.getInstance();
             calendar.set(Integer.parseInt(dateArray[0]), Integer.parseInt(dateArray[1]) - 1, Integer.parseInt(dateArray[2]));
             Date curDate = calendar.getTime();
-
-
             dateTitle.setText(dfCorrect.format(curDate));
             dateTitle.setTag(dateInfo);
         }

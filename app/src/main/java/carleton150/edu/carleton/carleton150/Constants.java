@@ -4,6 +4,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 /**
  * Created by haleyhinze on 3/3/16.
+ * File that contains constants for the app
  */
 public class Constants {
 
@@ -13,6 +14,8 @@ public class Constants {
     public static int UPDATE_INTERVAL = 3000; // 3 sec
     public static int FASTEST_INTERVAL = 1000; // 1 sec
     public static int DISPLACEMENT = 3; // 3 meters
+
+    public static int GOOGLE_PLAY_CONNECTION_RETRY_DELAY = 1000; //1 sec
 
     //To see whether the user has already explored features so we can show tutorial if they haven't
     public static final String IS_FIRST_HISTORY_RUN_STRING = "isFirstHistoryRun";
@@ -55,5 +58,7 @@ public class Constants {
     //urls for map tiling
     public static final String BASE_URL_STRING = " https://www.carleton.edu/global_stock/images/campus_map/tiles/base/%d_%d_%d.png";
     public static final String LABEL_URL_STRING = " https://www.carleton.edu/global_stock/images/campus_map/tiles/labels/%d_%d_%d.png";
+
+    public static final int FLIP_ANIMATION_DURATION = 300;
 
 }

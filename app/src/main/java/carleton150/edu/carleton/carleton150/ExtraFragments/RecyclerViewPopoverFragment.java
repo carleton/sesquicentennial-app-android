@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import carleton150.edu.carleton.carleton150.Adapters.HistoryAdapter;
 import carleton150.edu.carleton.carleton150.Adapters.MyScaleInAnimationAdapter;
 import carleton150.edu.carleton.carleton150.LogMessages;
-import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Event;
+import carleton150.edu.carleton.carleton150.POJO.GeofenceInfo.Event;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;
 import carleton150.edu.carleton.carleton150.R;
@@ -102,7 +102,6 @@ public class RecyclerViewPopoverFragment extends Fragment{
 
         if(!isQuestInProgress) {
             //If this is being used to show the history, sets the title to the name of the geofence
-
             if(geofenceName != null) {
                 txtTitle.setText(geofenceName);
             }else{
@@ -111,7 +110,6 @@ public class RecyclerViewPopoverFragment extends Fragment{
         }else if(isQuestInProgress){
             txtTitle.setText(getString(R.string.progress_through_quest_title));
         }
-
         //builds RecyclerViews to display info
         buildRecyclerViews();
 
@@ -158,10 +156,6 @@ public class RecyclerViewPopoverFragment extends Fragment{
      * history info
      */
     private void buildNewHistoryRecyclerView(){
-
-        Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, "RecyclerViewPopoverFragment: buildNewHistoryRecyclerView");
-        Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, "RecyclerViewPopoverFragment: buildNewHistoryRecyclerView : length of geofenceInfoObjectNew is: " + geofenceInfoObjectNew.size());
-
         Event[] events = new Event[geofenceInfoObjectNew.size()];
         for(int i = 0 ; i<geofenceInfoObjectNew.size(); i++){
             events[i] = geofenceInfoObjectNew.get(i);
@@ -181,7 +175,6 @@ public class RecyclerViewPopoverFragment extends Fragment{
      * quest progress
      */
     private void buildQuestProgressRecyclerView(){
-        Log.i("QUEST PROGRESS POPUP", "building quest recycler views");
         Waypoint[] waypoints = quest.getWaypoints();
         Waypoint[] completedWaypoints = new Waypoint[progressThroughQuest];
         for(int i = 0; i<progressThroughQuest; i++){
@@ -204,9 +197,5 @@ public class RecyclerViewPopoverFragment extends Fragment{
         historyAdapter = null;
         btnClose = null;
     }
-
-
-
-
 
 }

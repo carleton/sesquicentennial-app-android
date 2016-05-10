@@ -81,6 +81,13 @@
     <string name="no_events_listed">There are currently no events listed. Please try again soon.</string>
     <string name="more_information">More Information:</string>
     <string name="click_here_for_more_information">Click here for more information</string>
+    <string name="connection_to_google_client_failed_with_message">Connection to play services failed with message: </string>
+    <string name="google_play_code">Code: </string>
+    <string name="current_loaction">Current Location</string>
+    <string name="no_rating">No Rating</string>
+    <string name="easy">Easy</string>
+    <string name="medium">Medium</string>
+    <string name="hard">Hard</string>
 
 
 </resources>

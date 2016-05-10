@@ -1,24 +1,20 @@
 package carleton150.edu.carleton.carleton150;
 
-import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
-
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 /**
  * Created by haleyhinze on 5/6/16.
+ *
+ * Class to log exceptions that aren't caught in the app code. For debugging.
+ * It might be good to expand this to save the report in a file and then if the
+ * app crashes, give the user the option of emailing the file to the developer.
  */
 public class TopExceptionHandler implements Thread.UncaughtExceptionHandler {
 
     private Thread.UncaughtExceptionHandler defaultUEH;
 
-    private Activity app = null;
-
-    public TopExceptionHandler(Activity app) {
+    public TopExceptionHandler() {
         this.defaultUEH = Thread.getDefaultUncaughtExceptionHandler();
-        this.app = app;
     }
 
     public void uncaughtException(Thread t, Throwable e)
@@ -45,9 +41,7 @@ public class TopExceptionHandler implements Thread.UncaughtExceptionHandler {
             }
         }
         report += "-------------------------------\n\n";
-
-        Log.i(LogMessages.OVERALL_ERROR, report);
-
+        Log.e(LogMessages.OVERALL_ERROR, report);
         defaultUEH.uncaughtException(t, e);
     }
 }

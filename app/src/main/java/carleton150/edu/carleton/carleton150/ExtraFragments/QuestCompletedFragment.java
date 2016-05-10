@@ -4,7 +4,6 @@ package carleton150.edu.carleton.carleton150.ExtraFragments;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -19,12 +18,11 @@ import android.widget.TextView;
 import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.MainFragments.MainFragment;
-import carleton150.edu.carleton.carleton150.MainFragments.QuestFragment;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.R;
 
 /**
- * A simple {@link Fragment} subclass.
+ * Fragment to display quest completed animation and message
  */
 public class QuestCompletedFragment extends MainFragment {
 
@@ -44,8 +42,13 @@ public class QuestCompletedFragment extends MainFragment {
         this.questStartedListener = questStartedListener;
     }
 
-
-
+    /**
+     * manages UI
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -53,7 +56,6 @@ public class QuestCompletedFragment extends MainFragment {
         System.gc();
         // Inflate the layout for this fragment
         v = inflater.inflate(R.layout.fragment_quest_completed, container, false);
-
         ImageView imgQuestCompletedAnim = (ImageView) v.findViewById(R.id.img_animation_quest_completed);
         Button btnDone = (Button) v.findViewById(R.id.btn_done_with_quest);
         TextView txtNumCompleted = (TextView) v.findViewById(R.id.txt_clue_number_comp_window);
@@ -110,20 +112,15 @@ public class QuestCompletedFragment extends MainFragment {
     private void showProgressPopup(){
 
         ImageView imgQuestCompleted = (ImageView) v.findViewById(R.id.img_animation_quest_completed);
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             imgQuestCompleted.setBackground(getResources().getDrawable(R.drawable.bg_transparent));
         }
         imgQuestCompleted.setImageDrawable(getResources().getDrawable(R.drawable.qanim25));
-
         System.gc();
-
         FragmentManager fm = getActivity().getSupportFragmentManager();
         RecyclerViewPopoverFragment recyclerViewPopoverFragment = RecyclerViewPopoverFragment.newInstance(quest, quest.getWaypoints().length);
-
         // Transaction start
         FragmentTransaction fragmentTransaction = fm.beginTransaction();
-
         fragmentTransaction.setCustomAnimations(R.anim.abc_slide_in_bottom, R.anim.abc_slide_out_bottom,
                 R.anim.abc_slide_in_bottom, R.anim.abc_slide_out_bottom);
         fragmentTransaction.add(R.id.fragment_container_quest_completed, recyclerViewPopoverFragment, "QuestProgressPopoverFragment");
@@ -131,24 +128,6 @@ public class QuestCompletedFragment extends MainFragment {
         fragmentTransaction.commit();
     }
 
-    /*private void goBackToQuestSelectionScreen(){
-        System.gc();
-        QuestFragment fr=new QuestFragment();
-        FragmentChangeListener fc=(FragmentChangeListener)getActivity();
-        fc.replaceFragment(fr);
-    }*/
-
-
-    @Override
-    public void fragmentOutOfView() {
-        super.fragmentOutOfView();
-        ImageView imgQuestCompleted = (ImageView) v.findViewById(R.id.img_animation_quest_completed);
-        imgQuestCompleted.setImageDrawable(null);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            imgQuestCompleted.setBackground(getResources().getDrawable(R.drawable.bg_transparent));
-        }
-    }
 
     @Override
     public void onDestroyView() {
@@ -159,7 +138,6 @@ public class QuestCompletedFragment extends MainFragment {
         }else{
             imgQuestCompleted.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.bg_transparent));
         }
-        imgQuestCompleted = null;
         super.onDestroyView();
     }
 }

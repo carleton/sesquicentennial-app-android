@@ -7,7 +7,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import carleton150.edu.carleton.carleton150.Constants;
@@ -21,8 +20,6 @@ import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
  * without checking which type of fragment is currently in view
  */
 public class MainFragment extends Fragment{
-
-    public boolean isVisible = false;
 
     /**
      * Required empty constructor
@@ -75,19 +72,11 @@ public class MainFragment extends Fragment{
     }
 
     /**
-     * handles new events from server, called by VolleyRequester
+     * handles new events
      * @param eventsMapByDate
      */
     public void handleNewEvents(LinkedHashMap<String, Integer> eventsMapByDate, ArrayList<EventContent> events){
 
-    }
-
-    public void fragmentOutOfView(){
-        isVisible = false;
-    }
-
-    public void fragmentInView(){
-        isVisible = true;
     }
 
     public void handleNewQuests(ArrayList<Quest> newQuests){

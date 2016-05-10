@@ -1,11 +1,7 @@
 package carleton150.edu.carleton.carleton150.MainFragments;
 
-
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,66 +13,43 @@ import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.R;
 
 /**
- * A simple {@link Fragment} subclass.
+ * Fragment to display a webview that contains information about the app
  */
 public class HomeFragment extends MainFragment {
 
     String curURL;
     View v;
     public static WebView myWebView;
-
-
     public HomeFragment() {
         // Required empty public constructor
     }
 
-
-
+    /**
+     * opens the WebView
+     *
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         v = inflater.inflate(R.layout.fragment_info, container, false);
-
         curURL = Constants.INFO_URL;
         myWebView = (WebView) v.findViewById(R.id.web_view);
         myWebView.getSettings().setUserAgentString(Constants.USER_AGENT_STRING);
-
-
         myWebView.getSettings().setJavaScriptEnabled(true);
-
         myWebView.setWebViewClient(new WebClient());
-
         myWebView.loadUrl(curURL);
-
-
-        /*//when a link is clicked, instead of opening the page in the webview, launches a browser
-        //and opens page in browser
-        final WebViewClient webViewClient= new WebViewClient(){
-            private boolean pageFinished = false;
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView  view, String  url){
-                if(pageFinished){
-                    Log.i("Home debugging", "curURL: " + curURL + "   url : " + url);
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    startActivity(browserIntent);
-                    return true;
-                }
-                return false;
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                pageFinished = true;
-            }
-        };*/
-
-       // myWebView.setWebViewClient(webViewClient);
-
         return v;
     }
 
+    /**
+     * When fragment is resumed, checks if it is connected to network. If not
+     * shows alert dialog prompting user to connect
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -88,6 +61,10 @@ public class HomeFragment extends MainFragment {
         }
     }
 
+    /**
+     * When fragment comes into view, checks if it is connected to network. If not
+     * shows alert dialog prompting user to connect
+     */
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
@@ -99,6 +76,10 @@ public class HomeFragment extends MainFragment {
         }
     }
 
+    /**
+     * Goes back in webview if it is possible to do so
+     * @return true if web view was able to go back, false otherwise
+     */
     public boolean backPressed(){
         if(myWebView != null){
             if(myWebView.canGoBack()){
@@ -113,9 +94,7 @@ public class HomeFragment extends MainFragment {
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-
             return false;
-
         }
 
     }

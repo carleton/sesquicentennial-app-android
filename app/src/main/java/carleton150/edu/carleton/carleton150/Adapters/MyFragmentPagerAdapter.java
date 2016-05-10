@@ -18,6 +18,7 @@ import carleton150.edu.carleton.carleton150.R;
 
 /**
  * Created by haleyhinze on 4/27/16.
+ * FragmentStatePagerAdapter for main app fragments
  */
 public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements QuestStartedListener {
 
@@ -53,10 +54,7 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
                 if(mFragmentAtPos2 == null) {
                     mFragmentAtPos2 = new QuestFragment();
                     ((QuestFragment) mFragmentAtPos2).initialize(this);
-                }/*if(mFragmentAtPos2 instanceof  QuestInProgressFragment){
-                mFragmentAtPos2 = new QuestInProgressFragment();
-                ((QuestInProgressFragment) mFragmentAtPos2).setQuestStartedListener(this);*/
-           // }
+                }
                 return mFragmentAtPos2;
 
         }
@@ -114,11 +112,18 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
         return title;
     }
 
+    /**
+     * @return fragment currently in view
+     */
     public Fragment getCurrentFragment(){
         return this.currentFragment;
     }
 
 
+    /**
+     * When quest is started, changes QuestFragment to QuestInProgressFragment
+     * @param newFragment
+     */
     @Override
     public void questStarted(MainFragment newFragment) {
         fm.beginTransaction().remove(mFragmentAtPos2).commit();
@@ -127,6 +132,10 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
         notifyDataSetChanged();
     }
 
+    /**
+     * If back button is pressed while QuestInProgressFragment is in view,
+     * goes back to QuestFragment
+     */
     public void backButtonPressed(){
         if(mFragmentAtPos2 instanceof QuestInProgressFragment || mFragmentAtPos2 instanceof QuestCompletedFragment){
             fm.beginTransaction().remove(mFragmentAtPos2).commit();
@@ -136,11 +145,18 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
         }
     }
 
+    /**
+     * Goes back to QuestFragment from QuestInProgressFragment
+     */
     @Override
     public void goBackToQuestScreen() {
         backButtonPressed();
     }
 
+    /**
+     * Switches to QuestCompletedFragment if quest is completed
+     * @param fragment
+     */
     @Override
     public void questCompleted(MainFragment fragment) {
         if(mFragmentAtPos2 instanceof QuestInProgressFragment){

@@ -3,8 +3,6 @@ package carleton150.edu.carleton.carleton150.Adapters;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
@@ -32,16 +30,12 @@ public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.QuestViewHol
 
     private ArrayList<Quest> questList = new ArrayList<>();
     public static RecyclerViewClickListener clickListener;
-    private int screenWidth;
-    private int screenHeight;
     private Resources resources;
     private SharedPreferences sharedPreferences;
 
-    public QuestAdapter(ArrayList<Quest> questList, RecyclerViewClickListener clickListener, int screenWidth, int screenHeight, Resources resources, SharedPreferences sharedPreferences) {
+    public QuestAdapter(ArrayList<Quest> questList, RecyclerViewClickListener clickListener, Resources resources, SharedPreferences sharedPreferences) {
         this.questList = questList;
         this.clickListener = clickListener;
-        this.screenWidth = screenWidth;
-        this.screenHeight = screenHeight;
         this.resources = resources;
         this.sharedPreferences = sharedPreferences;
     }
@@ -70,7 +64,6 @@ public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.QuestViewHol
     public void onBindViewHolder(QuestViewHolder holder, int position) {
         Quest qi = questList.get(position);
         holder.setTitle(qi.getName());
-        holder.setWidth(screenWidth);
         holder.setDescription(qi.getDesc());
         holder.setDifficulty(qi.getDifficulty(), resources);
         holder.setCreator(qi.getCreator());
@@ -169,16 +162,16 @@ public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.QuestViewHol
         public void setDifficulty(String difficulty, Resources resources) {
             int difficultyInt = 0;
             difficultyInt = Integer.parseInt(difficulty);
-            String difficultyString = "No Rating";
+            String difficultyString = resources.getString(R.string.no_rating);
             int colorInt = resources.getColor(R.color.windowBackground);
             if(difficultyInt == 0){
-                difficultyString = "Easy";
+                difficultyString = resources.getString(R.string.easy);
                 colorInt = resources.getColor(R.color.green);
             }if(difficultyInt == 1){
-                difficultyString = "Medium";
+                difficultyString = resources.getString(R.string.medium);
                 colorInt = resources.getColor(R.color.orange);
             }if(difficultyInt == 2){
-                difficultyString = "Hard";
+                difficultyString = resources.getString(R.string.hard);
                 colorInt = resources.getColor(R.color.red);
             }if(difficultyInt > 2){
                 difficultyInt = 2;
@@ -260,7 +253,5 @@ public class QuestAdapter extends RecyclerView.Adapter<QuestAdapter.QuestViewHol
             clickListener.recyclerViewListClicked(v, getLayoutPosition());
         }
     }
-
-
 
 }

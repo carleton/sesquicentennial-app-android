@@ -27,7 +27,7 @@ import static carleton150.edu.carleton.carleton150.R.id.txt_request_events;
 
 /**
  * The main fragment for the Events portion of the app. Displays
- * and events calendar
+ * an events calendar
  *
  */
 public class EventsFragment extends MainFragment {
@@ -83,17 +83,12 @@ public class EventsFragment extends MainFragment {
         });
 
         // Build RecyclerViews to display date tabs
-        buildRecyclerViews();
-        buildEventRecyclerView();
+        buildRecyclerViewsDates();
+        buildRecyclerViewEvents();
 
-        //TODO: can have zero events
         if(eventsMapByDate == null){
-            Log.i("EVENTS DEBUGGING", "EventsFragment : onCreateView: eventsMapByDate is null, requesting events");
             mainActivity.requestEvents();
         }else{
-            Log.i("EVENTS DEBUGGING", "EventsFragment : onCreateView: eventsMapByDate is not null, handling new events");
-            Log.i("EVENT DEBUGGING",
-                    "EventsFragment: onCreateView : eventsList size is: "+ eventsList.size());
             handleNewEvents(eventsMapByDate, eventContents);
         }
 
@@ -101,39 +96,27 @@ public class EventsFragment extends MainFragment {
     }
 
     /**
-     * Builds the views for the dates
+     * Builds the recycler view for the dates
      */
-    private void buildRecyclerViews(){
-        DisplayMetrics metrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        screenWidth = metrics.widthPixels;
+    private void buildRecyclerViewsDates(){
         dates = (RecyclerViewPager) v.findViewById(R.id.lst_event_dates);
-        //dates.setScreenWidth(screenWidth);
         dateLayoutManager = new LinearLayoutManager(getActivity());
-
         dateLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         dates.setLayoutManager(dateLayoutManager);
-
-        eventDateCardAdapter = new EventDateCardAdapter(dateInfo, screenWidth);
+        eventDateCardAdapter = new EventDateCardAdapter(dateInfo);
         dates.setAdapter(eventDateCardAdapter);
-
         /*
-        updates the events to show from the date of the middle day selected on
+        updates the events to show from the date of the day selected on
          */
         dates.addOnScrollListener(new RecyclerView.OnScrollListener() {
             public void onScrollStateChanged(RecyclerView rv, int state) {
                 if (state == RecyclerView.SCROLL_STATE_IDLE) {
                     int pos = dateLayoutManager.findFirstCompletelyVisibleItemPosition();
-                    /*
-                    There is a blank view at position 0 that is the first completely visible item if the view is scrolled
-                    all the way left. In this case, we want the date at position 1 to be the date we use
-                     */
+                    //if user over-scrolls, correct to index 0
                     if (pos < 0) {
                         pos = 0;
                     }
-
                     String dateByDayDateScroller = dateInfo.get(pos);
-
                     String startTimeString = eventsList.get(eventsLayoutManager.findFirstCompletelyVisibleItemPosition()).getStartTime();
                     String[] completeDateArray = startTimeString.split("T");
                     String dateByDay = completeDateArray[0];
@@ -148,19 +131,18 @@ public class EventsFragment extends MainFragment {
                                 break;
                             }
                         }
-
                         updateEventsList(index);
-
                     }
-
                 }
             }
         });
-
         eventDateCardAdapter.notifyDataSetChanged();
     }
 
-    private void buildEventRecyclerView(){
+    /**
+     * Builds the recycler view to display events
+     */
+    private void buildRecyclerViewEvents(){
         eventsListView = (RecyclerView) v.findViewById(R.id.lst_events);
         eventsLayoutManager = new LinearLayoutManager(getActivity());
         eventsLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -168,14 +150,15 @@ public class EventsFragment extends MainFragment {
         eventsListAdapter = new EventsListAdapter(((MainActivity)getActivity()), eventsList);
         eventsListView.setAdapter(eventsListAdapter);
 
+        //if events are scrolled to a new day, updates the date recyclerview to display that day
         eventsListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 int pos = eventsLayoutManager.findFirstCompletelyVisibleItemPosition();
                 int datePos = dateLayoutManager.findFirstCompletelyVisibleItemPosition();
-                if (datePos <= 0) {
-                    datePos = 1;
+                if (datePos < 0) {
+                    datePos = 0;
                 }
 
                 String startTimeString = eventsList.get(pos).getStartTime();
@@ -189,48 +172,34 @@ public class EventsFragment extends MainFragment {
                             break;
                         }
                     }
-
                     updateDateScroller(index);
-
                 }
             }
         });
-
         eventsListAdapter.notifyDataSetChanged();
     }
 
 
     /**
-     * Called from VolleyRequester. Handles new events from server
+     * Handles new events
      * @param eventsMapByDate
      */
     @Override
     public void handleNewEvents(LinkedHashMap<String, Integer> eventsMapByDate, ArrayList<EventContent> events) {
-        Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents");
         this.eventsMapByDate = eventsMapByDate;
         if(eventsMapByDate == null) {
-            Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : eventsMapByDate is null");
             showUnableToRetrieveEvents();
         }else if(eventsMapByDate.size() == 0){
-            Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : eventsMapByDate size is 0");
             showNoEventsHappening();
         }else {
             this.eventsList.clear();
-
-            Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : events size is : " + events.size());
-
             for(int i = 0; i< events.size(); i++){
                 this.eventsList.add(events.get(i));
             }
             dateInfo.clear();
-            Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : eventsMapByDate size is : " + eventsMapByDate.entrySet().size());
-            Log.i("EVENTS DEBUGGING", "EventsFragment : handleNewEvents : eventsList size is : " + eventsList.size());
-
-
             for (Map.Entry<String, Integer> entry : eventsMapByDate.entrySet()) {
                 dateInfo.add(entry.getKey());
             }
-
             eventDateCardAdapter.notifyDataSetChanged();
             hideUnableToRetrieveEvents();
         }
@@ -246,12 +215,20 @@ public class EventsFragment extends MainFragment {
         eventsLayoutManager.scrollToPositionWithOffset(pos, 0);
     }
 
+    /**
+     * When an event on a new day is scrolled to, updates date scroller to
+     * show that day
+     * @param pos
+     */
     private void updateDateScroller(int pos){
         dates.scrollToPosition(pos);
 
     }
 
-
+    /**
+     * shows a message saying the app couldn't retrieve events. Prompts user
+     * to connect to internet and try again
+     */
     public void showUnableToRetrieveEvents(){
         final TextView txtRequestGeofences = (TextView) v.findViewById(txt_request_events);
         final Button btnRequestGeofences = (Button) v.findViewById(R.id.btn_try_getting_events);
@@ -261,6 +238,10 @@ public class EventsFragment extends MainFragment {
         eventsListView.setVisibility(View.GONE);
     }
 
+    /**
+     * Shows a message telling the user there are no future events happening for whatever
+     * event the app is being used for
+     */
     private void showNoEventsHappening(){
         final TextView txtRequestGeofences = (TextView) v.findViewById(txt_request_events);
         final Button btnRequestGeofences = (Button) v.findViewById(R.id.btn_try_getting_events);
@@ -270,6 +251,9 @@ public class EventsFragment extends MainFragment {
         eventsListView.setVisibility(View.GONE);
     }
 
+    /**
+     * hides the message and button that display the unable to retrieve events button
+     */
     private void hideUnableToRetrieveEvents(){
         eventsListView.setVisibility(View.VISIBLE);
         final TextView txtRequestGeofences = (TextView) v.findViewById(txt_request_events);
@@ -278,6 +262,10 @@ public class EventsFragment extends MainFragment {
         btnRequestGeofences.setVisibility(View.GONE);
     }
 
+    /**
+     * requests events if there are no events when the fragment comes into view
+     * @param isVisibleToUser
+     */
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
@@ -288,8 +276,6 @@ public class EventsFragment extends MainFragment {
             if (eventsMapByDate == null || eventsList == null) {
                 mainActivity.requestEvents();
             } else {
-                Log.i("EVENT DEBUGGING",
-                        "EventsFragment: setUserVisibleHint : eventsList size is: "+ eventsList.size());
                 handleNewEvents(eventsMapByDate, eventsArray);
             }
         }

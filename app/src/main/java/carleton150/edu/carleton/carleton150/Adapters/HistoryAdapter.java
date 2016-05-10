@@ -14,15 +14,14 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import carleton150.edu.carleton.carleton150.LogMessages;
-import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Event;
-import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.Text_;
+import carleton150.edu.carleton.carleton150.POJO.GeofenceInfo.Event;
+import carleton150.edu.carleton.carleton150.POJO.GeofenceInfo.Text_;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;
 import carleton150.edu.carleton.carleton150.R;
 
 /**
  * Adapter for the RecyclerView in the HistoryInfoPopup
- *
- * This is also used for displaying memories, but that functionality is no longer in use
+ * Also used for showing progress through quest
  */
 public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
@@ -73,13 +72,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
-
-
-
     /**
      * Depending on the type, creates a ViewHolder from either the
      * history_info_card_image, the history_info_card_text,
-     * history_info_card_memories, or the info_card_quest_in_progress
+     * or the info_card_quest_in_progress
      *
      *
      * @param parent
@@ -88,16 +84,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
      */
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onCreateViewHolder : viewType : " + viewType);
         switch (viewType) {
             case 0:
-                Log.i("Image debugging", "image case");
                 View itemView = LayoutInflater.
                         from(parent.getContext()).
                         inflate(R.layout.history_info_card_image, parent, false);
                 return new HistoryViewHolderImage(itemView);
             case 1:
-                Log.i("Image debugging", "text case");
                 View view = LayoutInflater.
                         from(parent.getContext()).
                         inflate(R.layout.history_info_card_text, parent, false);
@@ -122,8 +115,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         //Sets fields of a HistoryViewHolderText and sets an OnClickListener to expand the view
         if(holder instanceof HistoryViewHolderText){
             if(historyListNew != null){
-                Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: textHolder: historyListNew not null");
-
                 final Event geofenceInfoContent = historyListNew[position];
                 if(geofenceInfoContent.getText() != null) {
                     ((HistoryViewHolderText) holder).setTxtSummary(geofenceInfoContent.getText().getHeadline());
@@ -151,8 +142,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             //Sets fields of a HistoryViewHolderImage and sets an OnClickListener to expand the view
             if(!isQuestProgress) {
                 if(historyListNew != null){
-
-                    Log.i(LogMessages.NEW_GEOPOINTS_DEBUGGING, "HistoryAdapter: onBindViewHolder: imageHolder: historyListNew not null");
                     final Event geofenceInfoContent = historyListNew[position];
                     if(geofenceInfoContent.getMedia() != null) {
                         Uri uri = Uri.parse(geofenceInfoContent.getMedia().getUrl());

@@ -91,109 +91,66 @@ public class MapMainFragment extends MainFragment {
 
     /**
      * Sets up the map (should only be called if mMap is null)
-     * Monitors the zoom and target of the camera and changes them
-     * if the user zooms out too much or scrolls map too far off campus.
      */
     protected void setUpMap() {
-
         MainActivity mainActivity = (MainActivity) getActivity();
         final android.location.Location location = mainActivity.getLastLocation();
-
-        //Makes it so user can't zoom out very far
-        mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
-            @Override
-            public void onCameraChange(CameraPosition cameraPosition) {
-                setCamera(location, zoomToUserLocation);
-                if (cameraPosition.zoom <= Constants.DEFAULT_MAX_ZOOM) {
-                    if (cameraPosition.target == null) {
-                        setCamera(location, zoomToUserLocation);
-                    }
-                    mMap.animateCamera(CameraUpdateFactory.zoomTo(Constants.DEFAULT_MAX_ZOOM));
-                }
-
-                //makes it so user can't scroll too far off campus
-                /*double latitude = cameraPosition.target.latitude;
-                double longitude = cameraPosition.target.longitude;*/
-                /*if (cameraPosition.target.longitude > constants.MAX_LONGITUDE) {
-                    longitude = constants.MAX_LONGITUDE;
-                }
-                if (cameraPosition.target.longitude < constants.MIN_LONGITUDE) {
-                    longitude = constants.MIN_LONGITUDE;
-                }
-                if (cameraPosition.target.latitude > constants.MAX_LATITUDE) {
-                    latitude = constants.MAX_LATITUDE;
-                }
-                if (cameraPosition.target.latitude < constants.MIN_LATITUDE) {
-                    latitude = constants.MIN_LATITUDE;
-                }*/
-
-               /* CameraPosition newCameraPosition = new CameraPosition.Builder()
-                        .target(new LatLng(latitude, longitude))
-                        .zoom(cameraPosition.zoom)
-                        .bearing(cameraPosition.bearing)
-                        .build();
-                if(mMap != null) {
-                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition));
-                }*/
-
-            }
-        });
-
-       setCamera(location, zoomToUserLocation);
+        setCamera(location, zoomToUserLocation);
     }
 
 
-   /* /**
+    /**
      * Sets the camera for the map.
-     * The camera target is the center of campus.
+     * The initial camera target is the center of campus.
      */
     protected void setCamera(android.location.Location location, boolean zoomOnUserLocation){
 
-            if (location != null && zoomCamera && zoomOnUserLocation) {
-                zoomCamera = false;
-                CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(new LatLng(location.getLatitude(), location.getLongitude()))
-                        .zoom(Constants.DEFAULT_ZOOM)
-                        .bearing(Constants.DEFAULT_BEARING)
-                        .build();
-                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            }
-            else if(zoomCamera) {
-                zoomCamera = false;
-                CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(new LatLng(Constants.CENTER_CAMPUS.latitude, Constants.CENTER_CAMPUS.longitude))
-                        .zoom(Constants.DEFAULT_ZOOM)
-                        .bearing(Constants.DEFAULT_BEARING)
-                        .build();
-                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            }
-
+        if (location != null && zoomCamera && zoomOnUserLocation) {
+            zoomCamera = false;
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(location.getLatitude(), location.getLongitude()))
+                    .zoom(Constants.DEFAULT_ZOOM)
+                    .bearing(Constants.DEFAULT_BEARING)
+                    .build();
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        }
+        else if(zoomCamera) {
+            zoomCamera = false;
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(Constants.CENTER_CAMPUS.latitude, Constants.CENTER_CAMPUS.longitude))
+                    .zoom(Constants.DEFAULT_ZOOM)
+                    .bearing(Constants.DEFAULT_BEARING)
+                    .build();
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        }
     }
 
+    /**
+     * draws map tiling
+     * @param view
+     * @param savedInstanceState
+     */
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-       drawTiles();
+        drawTiles();
 
     }
 
-   /* /**
+    /**
      * Draws map tiling for campus
      */
     public void drawTiles(){
-        MainActivity mainActivity = (MainActivity) getActivity();
-        if(mainActivity.getMemoryClass() > 80) {
-            if (mMap != null) {
-                setUpMap();
-            }
-            setUpMapIfNeeded();
-            if (mMap != null) {
-                TileOverlay baseTileOverlay = mMap.addTileOverlay(new TileOverlayOptions()
-                        .tileProvider(baseTileProvider));
-                baseTileOverlay.setZIndex(0);
-                TileOverlay labelTileOverlay = mMap.addTileOverlay(new TileOverlayOptions()
-                        .tileProvider(labelTileProvider));
-                labelTileOverlay.setZIndex(2);
-            }
+        if (mMap != null) {
+            setUpMap();
+        }
+        setUpMapIfNeeded();
+        if (mMap != null) {
+            TileOverlay baseTileOverlay = mMap.addTileOverlay(new TileOverlayOptions()
+                    .tileProvider(baseTileProvider));
+            baseTileOverlay.setZIndex(0);
+            TileOverlay labelTileOverlay = mMap.addTileOverlay(new TileOverlayOptions()
+                    .tileProvider(labelTileProvider));
+            labelTileOverlay.setZIndex(2);
         }
     }
 

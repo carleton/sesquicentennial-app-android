@@ -1,4 +1,4 @@
-package carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo;
+package carleton150.edu.carleton.carleton150.POJO.GeofenceInfo;
 
 
 import com.google.gson.annotations.Expose;

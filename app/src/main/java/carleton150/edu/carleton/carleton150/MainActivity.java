@@ -1,6 +1,5 @@
 package carleton150.edu.carleton.carleton150;
 
-import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -23,8 +22,6 @@ import android.view.MenuItem;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -66,63 +63,60 @@ import carleton150.edu.carleton.carleton150.MainFragments.MainFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestInProgressFragment;
 import carleton150.edu.carleton.carleton150.Models.DownloadFileFromURL;
-import carleton150.edu.carleton.carleton150.Models.GeofenceErrorMessages;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
-import carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo.AllGeofences;
+import carleton150.edu.carleton.carleton150.POJO.GeofenceInfo.AllGeofences;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 
 /**
- * Monitors location and geofence information and calls methods in the main view fragments
- * to handle geofence and location changes. Also controls which fragment is in view. Requests events
- * and quests using VolleyRequester and stores them for the fragments.
+ * Monitors location information and calls methods in the main view fragments
+ * to handle location changes. Controls which fragment is in view. Requests all the events,
+ * history information, and quests and stores them for the fragments.
  */
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, LocationListener, ResultCallback<Status>,
+        GoogleApiClient.OnConnectionFailedListener, LocationListener,
         RetrievedFileListener {
 
     //things for location
-
     public Location mLastLocation = null;
     // Google client to interact with Google API
     public GoogleApiClient mGoogleApiClient;
-
     // boolean flag to toggle periodic location updates
     private boolean mRequestingLocationUpdates = false;
     private boolean shouldBeRequestingLocationUpdates = false;
-
     private LocationRequest mLocationRequest;
     public boolean needToShowGPSAlert = true;
-
-    private Quest questInProgress;
-
-    MyFragmentPagerAdapter adapter;
-
     private Handler handler = new Handler();
-
+    //runnable to try connecting to google API client. Used if the connection fails
     private Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            Log.i(LogMessages.GEOFENCE_MONITORING, "MainActivity: trying to connect mGoogleApiClient");
             mGoogleApiClient.connect();
         }
     };
 
-    AlertDialog.Builder networkAlertDialogBuilder;
-    AlertDialog.Builder playServicesConnectivityAlertDialogBuilder;
-    AlertDialog.Builder noGpsAlertDialogBuilder;
-    AlertDialog.Builder onCampusFeatureAlertDialogBuilder;
-
+    private Quest questInProgress;
     private boolean requestingQuests = false;
     private ArrayList<Quest> questInfo = null;
     private java.util.Date lastQuestUpdate;
 
+    //For retrieving and handling event info
     private LinkedHashMap<String, Integer> eventsMapByDate;
     private ArrayList<EventContent> eventContentList;
     private boolean requestingEvents = false;
     private java.util.Date lastEventsUpdate;
+
+    //For retrieving and handling point of interest info
     private AllGeofences allGeofencesNew = null;
     private boolean requestingAllGeofencesNew = false;
     private java.util.Date lastGeofenceUpdate;
+
+    MyFragmentPagerAdapter adapter;
+
+    //Alert Dialog builders for different app alerts
+    AlertDialog.Builder networkAlertDialogBuilder;
+    AlertDialog.Builder playServicesConnectivityAlertDialogBuilder;
+    AlertDialog.Builder noGpsAlertDialogBuilder;
+    AlertDialog.Builder onCampusFeatureAlertDialogBuilder;
 
 
 
@@ -136,16 +130,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Thread.setDefaultUncaughtExceptionHandler(new TopExceptionHandler(this));
-        Log.i("GEOFENCE MONITORING", "onCreate in MainActivity called");
+        //Sets exception handler to log exceptions not caught by app
+        Thread.setDefaultUncaughtExceptionHandler(new TopExceptionHandler());
 
+        //Builds AlertDialog builders
         networkAlertDialogBuilder = new AlertDialog.Builder(this);
         playServicesConnectivityAlertDialogBuilder = new AlertDialog.Builder(this);
         noGpsAlertDialogBuilder = new AlertDialog.Builder(this);
         onCampusFeatureAlertDialogBuilder = new AlertDialog.Builder(this);
 
-        // check availability of play services for location data and geofencing
+        //check availability of play services for location data
         if (checkPlayServices()) {
+            //Builds and connect google API client. Creates a location request
+            //for the client
             buildGoogleApiClient();
             createLocationRequest();
             mGoogleApiClient.connect();
@@ -157,23 +154,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         final FragmentManager manager=getSupportFragmentManager();
         adapter=new MyFragmentPagerAdapter(manager);
         adapter.initialize(this, manager);
-
         final NoSwipeViewPager viewPager = (NoSwipeViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(adapter);
-
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.setupWithViewPager(viewPager);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.setTabsFromPagerAdapter(adapter);
 
-
-
+        //Requests information
         if(isConnectedToNetwork()) {
-            requestGeofencesNewer();
+            requestGeofences();
             requestEvents();
             requestQuests();
         }
-
     }
 
     @Override
@@ -203,18 +196,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (mGoogleApiClient.isConnected()) {
             startLocationUpdates();
         } else {
-                // check availability of play services for location data and geofencing
-                if (checkPlayServices()) {
-                    mGoogleApiClient.connect();
-                } else {
-                    showGooglePlayServicesUnavailableDialog();
-                }
+            // check availability of play services for location data and geofencing
+            if (checkPlayServices()) {
+                mGoogleApiClient.connect();
+            } else {
+                showGooglePlayServicesUnavailableDialog();
+            }
         }
     }
 
 
     /**
      * Method that is called when google API Client is connected
+     * Checks if GPS is enabled and starts location updates if necessary
+     * and possible
      *
      * @param bundle
      */
@@ -233,25 +228,27 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     /**
      * If google api client connection was suspended, keeps trying to connect
+     * using a constant delay time between attempts
      *
      * @param i
      */
     @Override
     public void onConnectionSuspended(int i) {
-        handler.postDelayed(runnable, 1000);
+        handler.postDelayed(runnable, Constants.GOOGLE_PLAY_CONNECTION_RETRY_DELAY);
     }
 
     /**
      * Displays an alert dialog if unable to connect to the GoogleApiClient
      *
-     * @param connectionResult
+     * @param connectionResult ConnectionResult that contains the connection error
      */
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         AlertDialog dialog = playServicesConnectivityAlertDialogBuilder.create();
         if(!dialog.isShowing()) {
-            showAlertDialog("Connection to play services failed with message: " +
-                            connectionResult.getErrorMessage() + "\nCode: " + connectionResult.getErrorCode(),
+            showAlertDialog(getString(R.string.connection_to_google_client_failed_with_message) +
+                            connectionResult.getErrorMessage() + "\n" + getString(R.string.google_play_code)
+                            + connectionResult.getErrorCode(),
                     dialog);
         }
     }
@@ -268,6 +265,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     /**
      * Method to verify google play services on the device
+     *
+     * @return true if play services is available, false otherwise
      */
     public boolean checkPlayServices() {
         int resultCode = GooglePlayServicesUtil
@@ -290,13 +289,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * location changes. Records the location and passes the new
      * location information to the fragment
      *
-     * @param location
+     * @param location new location
      */
     @Override
     public void onLocationChanged(Location location) {
-
-        Log.i("GEOFENCE MONITORING", "onLocationChanged ");
-
         // Assign the new location
         mLastLocation = location;
         tellFragmentLocationChanged();
@@ -366,12 +362,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    /**
+     * Starts location updates if it is possible to do so (if Google API client
+     * is connected and GPS is turned on)
+     */
     public void startLocationUpdatesIfPossible(){
         Log.i(LogMessages.LOCATION, "starting location updates if possible");
         shouldBeRequestingLocationUpdates = true;
         startLocationUpdates();
     }
 
+    /**
+     * Stops location updates if it is possible to do so (if location updates
+     * are currently being requested)
+     */
     public void stopLocationUpdatesIfPossible(){
         Log.i(LogMessages.LOCATION, "stopping location updates if possible");
         shouldBeRequestingLocationUpdates = false;
@@ -380,10 +384,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
     /**
-     * checks whether phone has network connection. If not, displays a dialog
-     * requesting that the user connects to a network.
+     * checks whether phone has network connection.
      *
-     * @return
+     * @return true if connected, false otherwise
      */
     public boolean isConnectedToNetwork() {
         ConnectivityManager connectivityManager
@@ -398,10 +401,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         } else {
             return false;
         }
-    }
-
-    public MyFragmentPagerAdapter getMyFragmentPagerAdapter(){
-        return this.adapter;
     }
 
     /**
@@ -425,6 +424,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    /**
+     * Shows a dialog alerting the user that the feature they are attempting to use
+     * is intended to be used on campus
+     */
     public void showOnCampusFeatureAlertDialogQuestInProgress() {
         AlertDialog dialog = onCampusFeatureAlertDialogBuilder.create();
         if(!dialog.isShowing()){
@@ -433,9 +436,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     /**
-     * shows an alert dialog with the specified message
+     * shows an alert dialog with a specified message
      *
-     * @param message
+     * @param message String with the message to display
+     * @param dialog AlertDialog to display
      */
     public void showAlertDialog(String message, AlertDialog dialog) {
         if (!dialog.isShowing()) {
@@ -457,7 +461,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     /**
      * An alternative method to show an alert dialog without a neutral button
      * as the previous method adds a neutral button before displaying the dialog
-     * @param dialog
+     * @param dialog AlertDialog to display
      */
     public void showAlertDialogNoNeutralButton(AlertDialog dialog) {
         if (!dialog.isShowing()) {
@@ -466,31 +470,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
-
-
-    /**
-     * Runs when the result of calling addGeofences() and removeGeofences() becomes available.
-     * Either method can complete successfully or with an error.
-     * The activity implements ResultCallback, so this is a required method
-     *
-     * @param status The Status returned through a PendingIntent when addGeofences() or
-     *               removeGeofences() get called.
-     */
-    public void onResult(Status status) {
-        if (status.isSuccess()) {
-        } else {
-            // Get the status code and log it.
-            String errorMessage = GeofenceErrorMessages.getErrorString(this,
-                    status.getStatusCode());
-            Log.e(LogMessages.GEOFENCE_MONITORING, "onResult error: " + errorMessage);
-        }
-    }
-
-
     /**
      * If QuestInProgressFragment or QuestCompletedFragment is the current fragment,
      * overrides back button to replaces the QuestInProgressFragment
-     * with a new QuestFragment
+     * with a new QuestFragment. If HomeFragment is the current fragment, goes back
+     * in webview if possible, otherwise does default back behavior
      */
     @Override
     public void onBackPressed() {
@@ -498,7 +482,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 adapter.getCurrentFragment() instanceof QuestCompletedFragment) {
             adapter.backButtonPressed();
         }else if(adapter.getCurrentFragment() instanceof HomeFragment){
-
             boolean wentBack = ((HomeFragment)adapter.getCurrentFragment()).backPressed();
             if(!wentBack){
                 super.onBackPressed();
@@ -514,6 +497,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * Reterns the Preferences for the information stored about the user's
      * progress in a quest. This method is so the user can resume quests even
      * after killing the app or going back to the quest selection screen
+     *
+     * @return SharedPreferences for the quest preferences
      */
     public SharedPreferences getPersistentQuestStorage() {
         return getSharedPreferences(Constants.QUEST_PREFERENCES_KEY, 0);
@@ -521,17 +506,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     /**
-     * gets the memory class of the device
-     *
-     * @return
+     * Opens a url in the browser. Used to display events in browser
+     * if user clicks on the link
+     * @param url String of the url to display in the browser
      */
-    public int getMemoryClass() {
-        ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-        int memoryClass = am.getMemoryClass();
-        Log.v(LogMessages.MEMORY_MONITORING, "memoryClass:" + Integer.toString(memoryClass));
-        return memoryClass;
-    }
-
     public void showEventInfoInBrowser(String url){
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(browserIntent);
@@ -552,20 +530,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * Alerts the user that their GPS is not enabled and gives them option to enable it
      */
     public void buildAlertMessageNoGps() {
-            needToShowGPSAlert = false;
-            noGpsAlertDialogBuilder.setMessage(getString(R.string.feature_requires_gps))
-                    .setCancelable(false)
-                    .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
-                        public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-                            startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                        }
-                    })
-                    .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
-                        public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-                            dialog.cancel();
-                        }
-                    });
-            final AlertDialog alert = noGpsAlertDialogBuilder.create();
+        needToShowGPSAlert = false;
+        noGpsAlertDialogBuilder.setMessage(getString(R.string.feature_requires_gps))
+                .setCancelable(false)
+                .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alert = noGpsAlertDialogBuilder.create();
 
         if(!alert.isShowing()) {
             alert.show();
@@ -573,31 +551,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     /**
-     * Called by VolleyRequester, handles new quests from the server
-     * @param newQuests
+     * Registers that app is no longer requesting quests, records the last quest update,
+     * and passes quests to current fragment if it is a QuestFragment
+     * @param newQuests ArrayList of Quests retrieved
+     * @param newInfo boolean flag where true means the info was retrieved from the
+     *                web, false means it was retrieved from phone's internal storage
      */
     public void handleNewQuests(ArrayList<Quest> newQuests, boolean newInfo) {
-        /*This is a call from the VolleyRequester, so this check prevents the app from
-        crashing if the user leaves the tab while the app is trying
-        to get quests from the server
-         */
-
         requestingQuests = false;
-
         if(newQuests != null && newInfo) {
             lastQuestUpdate = Calendar.getInstance().getTime();
         }
-
         if(newQuests != null) {
             questInfo = newQuests;
         }
-
         if(adapter.getCurrentFragment() instanceof QuestFragment){
             ((QuestFragment)adapter.getCurrentFragment()).handleNewQuests(questInfo);
         }
-
     }
-
 
 
     /**
@@ -624,25 +595,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * Saves the geofences.
      * @param geofences
      */
-    public void handleGeofencesNewMethod(AllGeofences geofences, boolean isNewInfo){
+    public void handleGeofences(AllGeofences geofences, boolean isNewInfo){
         requestingAllGeofencesNew = false;
-        Log.i("GEOFENCE MONITORING", "MainActivity: handleGeofencesNEwMethod: called");
-
-
         if(geofences != null && isNewInfo) {
             lastGeofenceUpdate = Calendar.getInstance().getTime();
         }
-
         if(adapter.getCurrentFragment() instanceof HistoryFragment){
-            Log.i("GEOFENCE MONITORING", "MainActivity: handleGeofencesNewMethod: current fragment is historyfragment");
-
             ((HistoryFragment) adapter.getCurrentFragment()).addNewGeofenceInfoNew(geofences);
-        }else if(adapter.getCurrentFragment() == null) {
-            Log.i("GEOFENCE MONITORING", "MainActivity: handleGeofencesNewMethod: current fragment is null");
-
-        }else{
-                Log.i("GEOFENCE MONITORING", "MainActivity: handleGeofencesNewMethod: current fragment is NOT historyfragment");
-
         }
         this.allGeofencesNew = geofences;
     }
@@ -655,47 +614,43 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return this.allGeofencesNew;
     }
 
-    public void requestGeofencesNewer(){
+    /**
+     * Requests geofences if it is possible to do so. Updates the hours since the last
+     * geofence update. If there is no internet, retrieves geofences from storage and parses
+     * them
+     */
+    public void requestGeofences(){
         if(isConnectedToNetwork()) {
             if (!requestingAllGeofencesNew && lastGeofenceUpdate == null) {
-                Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: not requesting new geofences, last update null. About to request");
                 DownloadFileFromURL downloadFileFromURLGeofences = new DownloadFileFromURL(this, Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, this);
                 downloadFileFromURLGeofences.execute(Constants.NEW_GEOFENCES_ENDPOINT);
                 requestingAllGeofencesNew = true;
             } else if (!requestingAllGeofencesNew && lastGeofenceUpdate != null) {
-                Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: not requesting new geofences, last update not null");
-
                 long hoursSinceUpdate = checkElapsedTime(lastGeofenceUpdate.getTime());
                 if (hoursSinceUpdate > 5) {
-                    Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: more than five hours since last update, requesting...");
                     DownloadFileFromURL downloadFileFromURLGeofences = new DownloadFileFromURL(this, Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, this);
                     downloadFileFromURLGeofences.execute(Constants.NEW_GEOFENCES_ENDPOINT);
                     requestingAllGeofencesNew = true;
                 }
             }
         }else if(fileExists(Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)){
-            Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: no internet, parsing existing data");
-            Log.i("INTERNAL STORAGE DEBUG", "MainActivity: requestGeofencesNewer: file does NOT exist, returning false");
-
             parseGeofences(Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, false);
         }else{
             showNetworkNotConnectedDialog();
             if(adapter.getCurrentFragment() instanceof HistoryFragment) {
-                Log.i("GEOFENCE MONITORING", "MainActivity: requestGeofencesNewer: no internet, no existing info");
-
                 ((HistoryFragment) adapter.getCurrentFragment()).addNewGeofenceInfoNew(null);
             }
         }
     }
 
     /**
-     * Gets ical feed from Constants.ICAL_FEED_URL
+     * Gets ical feed from Constants.ICAL_FEED_URL. If there is no internet,
+     * gets the feed from app internal storage and parses it
      */
     public void requestEvents(){
         if(isConnectedToNetwork()) {
             if (!requestingEvents && lastEventsUpdate == null) {
                 String url = buildEventsRequestURL();
-                Log.i("EVENTS", "MainActivity: requestEvents: url is: " + url);
                 DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, Constants.ICAL_FILE_NAME_WITH_EXTENSION, this);
                 downloadFileFromURL.execute(url);
                 requestingEvents = true;
@@ -710,7 +665,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }else{
             if(fileExists(Constants.ICAL_FILE_NAME_WITH_EXTENSION)){
-                Log.i("INTERNAL STORAGE DEBUG", "MainActivity: requestEvents: file does exist");
                 parseIcalFeed(Constants.ICAL_FILE_NAME_WITH_EXTENSION, false);
             }else{
                 showNetworkNotConnectedDialog();
@@ -723,17 +677,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     /**
      *
-     * @param previousTime
+     * @param previousTime long representation of a time
      * @return elapsed time between previousTime and current time in hours
      */
     private long checkElapsedTime(long previousTime){
         Calendar currentTime = Calendar.getInstance();
         java.util.Date currentDate = currentTime.getTime();
         long time = currentDate.getTime();
+        //converting ms to hours
         long hoursSinceUpdate = (time - previousTime) / (1000 * 60 * 60);
         return hoursSinceUpdate;
     }
 
+    /**
+     * builds the URL for requesting events because it uses the date
+     * @return
+     */
     private String buildEventsRequestURL(){
         String url = Constants.ICAL_FEED_URL;
         Calendar c = Calendar.getInstance();
@@ -745,8 +704,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     /**
-     * uses the volleyRequester to retrieve all quests from the server. Results are handled
-     * in handleNewQuests()
+     * requests Quests if connected to network. Otherwise, parses quests stored in app
+     * internal storage
      */
     public void requestQuests(){
         if(isConnectedToNetwork()) {
@@ -778,16 +737,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    /**
+     * Checks if a file exists in internal storage
+     * @param fileNameWithExtension name of file
+     * @return true if file exists, false otherwise
+     */
     private boolean fileExists(String fileNameWithExtension){
         try {
-            InputStream inputStream = openFileInput(fileNameWithExtension);
-            Log.i("INTERNAL STORAGE DEBUG", "MainActivity: fileExists: file does exist, returning true");
-
+            openFileInput(fileNameWithExtension);
             return true;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            Log.i("INTERNAL STORAGE DEBUG", "MainActivity: fileExists: file does NOT exist, returning false");
-
             return false;
         }
     }
@@ -823,11 +783,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }
         if (calendar != null) {
-            Log.i("EVENTS", "MainActivity: parseIcalFeed : calendar not null ");
-            PropertyList plist = calendar.getProperties();
             buildEventContent(calendar, newInfo);
         }
-
         if(fin != null){
             try {
                 fin.close();
@@ -838,53 +795,43 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     }
 
+    /**
+     * Parses JSON that contains geofences into AllGeofences object
+     * @param fileNameWithExtension name of file where JSON is stored
+     * @param isNewInfo true if info was retrieved from internet, false if it was
+     *                  retrieved from app's internal storage
+     */
     private void parseGeofences(String fileNameWithExtension, boolean isNewInfo){
 
         String jsonString = readFromFile(fileNameWithExtension);
-
-        Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : " + jsonString);
-
-        Log.i("GEOFENCE MONITORING", "MainActivity: parseGeofences");
-
-
         final Gson gson = new Gson();
-
         allGeofencesNew = gson.fromJson(jsonString, AllGeofences.class);
-
-        handleGeofencesNewMethod(allGeofencesNew, isNewInfo);
-
+        handleGeofences(allGeofencesNew, isNewInfo);
     }
 
+    /**
+     * Parses quest JSONS into an array of Quest objects
+     * @param fileNameWithExtension file where JSON is located in internal storage
+     * @param isNewInfo true if JSON was retrieved from URL, false if JSON
+     *                  was retrieved from app's internal storage
+     */
     private void parseQuests(String fileNameWithExtension, boolean isNewInfo){
-
         questInfo = new ArrayList<>();
-
         if(isNewInfo){
             lastQuestUpdate = Calendar.getInstance().getTime();
         }
-
         String jsonString = readFromFile(fileNameWithExtension);
-
-        Log.i("NEWGEOFENCES", "MainActivity : parseQuests : " + jsonString);
         final Gson gson = new Gson();
         try {
             JSONObject questsObject = new JSONObject(jsonString);
             JSONArray responseArr = questsObject.getJSONArray("content");
 
             for (int i = 0; i < responseArr.length(); i++) {
-                Log.i("NEWGEOFENCES", "MainActivity : parseQuests : i = " + i);
-
                 try {
-                    Log.i("NEWGEOFENCES", "MainActivity : parseQuests : in inner try block ");
-
                     Quest responseQuest = gson.fromJson(responseArr.getString(i), Quest.class);
-                    Log.i(LogMessages.VOLLEY, "requestQuests : quest response string = : " + responseArr.getString(i));
                     questInfo.add(responseQuest);
                 }
                 catch (Exception e) {
-                    Log.i("NEWGEOFENCES", "MainActivity : parseQuests : unable to parse: " + responseArr.getString(i));
-                    Log.i("NEWGEOFENCES", "MainActivity : parseQuests : unable to parse: error message: " + e.getMessage());
-
                     e.getMessage();
                     e.printStackTrace();
                 }
@@ -897,6 +844,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         handleNewQuests(questInfo, isNewInfo);
     }
 
+    /**
+     * Reads a string from a file
+     * @param fileNameWithExtension the name of the file to read from in app internal storage
+     * @return the String representing the file contents
+     */
     private String readFromFile(String fileNameWithExtension) {
 
         String ret = "";
@@ -1214,11 +1166,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }
         catch (FileNotFoundException e) {
-            Log.i("NEWGEOFENCES", "readFromFile: File not found: " + e.toString());
+            Log.e("NEWGEOFENCES", "readFromFile: File not found: " + e.toString());
         } catch (IOException e) {
             Log.e("NEWGEOFENCES", "readFromFile: " + e.toString());
         }
-
         return ret;
     }
 
@@ -1245,7 +1196,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 eventContent.setUrl(propertyList.getProperty(Property.URL).getValue());
             }
             if(propertyList.getProperty(Property.SUMMARY) != null) {
-                    eventContent.setTitle(propertyList.getProperty(Property.SUMMARY).getValue());
+                eventContent.setTitle(propertyList.getProperty(Property.SUMMARY).getValue());
             }else{
                 eventContent.setTitle(getResources().getString(R.string.no_title));
             }if(propertyList.getProperty(Property.DTSTART) != null) {
@@ -1258,9 +1209,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }else {
                 addComponent = false;
             }if(propertyList.getProperty(Property.DESCRIPTION) != null) {
-                    eventContent.setDescription(propertyList.getProperty(Property.DESCRIPTION).getValue());
+                eventContent.setDescription(propertyList.getProperty(Property.DESCRIPTION).getValue());
             }else{
-                    eventContent.setDescription(getResources().getString(R.string.no_description));
+                eventContent.setDescription(getResources().getString(R.string.no_description));
             }
             if(propertyList.getProperty(Property.DURATION) != null) {
                 eventContent.setDuration(propertyList.getProperty(Property.DURATION).getValue());
@@ -1273,7 +1224,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }
 
-       handleNewEvents(eventContents, isNewInfo);
+        handleNewEvents(eventContents, isNewInfo);
     }
 
 
@@ -1281,27 +1232,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * Called from BuildEventContent, adds events to a hashmap where the key is the date
      * and the value is an ArrayList of EventContent for events happening that day.
      * Notifies the fragment of the new events if the fragment in view is the EventsFragment
-     * @param events
+     * @param events events to add to hashMap
+     * @param isNewInfo true if the info was retrieved from a URL, false if the info
+     *                  was retrieved from internal app storage
      */
     public void handleNewEvents(ArrayList<EventContent> events, boolean isNewInfo) {
-
-        Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents");
 
         requestingEvents = false;
         String completeDate;
         String[] completeDateArray;
         String dateByDay;
-
-
-
         if(events == null){
             if(adapter.getCurrentFragment()instanceof EventsFragment){
-                Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents : current fragment is eventsfragment, events are null");
                 ((EventsFragment)adapter.getCurrentFragment()).handleNewEvents(null, null);
             }
         }else {
-            Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents : events are not null");
-
             if(eventsMapByDate == null) {
                 eventsMapByDate = new LinkedHashMap<>();
             }
@@ -1311,12 +1256,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 eventContentList = new ArrayList<>();
             }
             eventContentList.clear();
-
-
             Calendar c = Calendar.getInstance();
-
             for (int i = 0; i < events.size(); i++) {
-
                 // Add new date values to hashmap if not already there
                 completeDate = events.get(i).getStartTime();
                 completeDateArray = completeDate.split("T");
@@ -1328,12 +1269,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 eventCalendar.set(Integer.parseInt(dateArray[0]), Integer.parseInt(dateArray[1]) - 1, Integer.parseInt(dateArray[2]), 23, 59, 59);
 
                 if (eventCalendar.getTimeInMillis() >= c.getTimeInMillis()) {
-
                     eventContentList.add(events.get(i));
-                    Log.i("EVENT DEBUGGING", "adding item to eventContentList from events");
-                    Log.i("EVENT DEBUGGING", "item is: " + events.get(i).getDescription());
-
-
                     // If key already there, add + update new values
                     if (!eventsMapByDate.containsKey(dateByDay)) {
                         eventsMapByDate.put(dateByDay, i);
@@ -1341,38 +1277,29 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 }
             }
-
-            Log.i("EVENT DEBUGGING",
-                    "MainActivity: handleNewEvents : about to check current fragment : eventsMapByDate size is: "+eventsMapByDate.size());
-
-            Log.i("EVENT DEBUGGING",
-                    "MainActivity: handleNewEvents : eventContentList size is: "+eventContentList.size());
-
-            Log.i("EVENT DEBUGGING",
-                    "MainActivity: handleNewEvents : events size is: "+events.size());
-
-
             if (adapter.getCurrentFragment() instanceof EventsFragment) {
-                Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents : current fragment is events fragment");
                 ((EventsFragment)adapter.getCurrentFragment()).handleNewEvents(eventsMapByDate, eventContentList);
             }
         }
-
         if(events.size() != 0 && isNewInfo) {
             lastEventsUpdate = Calendar.getInstance().getTime();
         }
     }
 
+    /**
+     *
+     * @return eventContentList
+     */
     public ArrayList<EventContent> getAllEvents(){
         return this.eventContentList;
     }
 
 
     /**
-     * Called by DownloadFileFromURL when the events are retrieved. If the
-     * retrieval was successful, calls a function to parse the ical feed that
-     * was retrieved into a calendar
-     * @param retrievalSucceeded
+     * Called by DownloadFileFromURL when a file is retrieved. If the
+     * retrieval was successful, calls a function to parse the data the was
+     * retrieved. If no data was retrieved, passes null to fragment in view
+     * @param retrievalSucceeded true if retrieval was successful, false otherwise
      */
     @Override
     public void retrievedFile(boolean retrievalSucceeded, String fileNameWithExtension) {
@@ -1389,7 +1316,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 handleNewEvents(null, false);
                 requestingEvents = false;
             }if(fileNameWithExtension.equals(Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)){
-                handleGeofencesNewMethod(null, false);
+                handleGeofences(null, false);
                 requestingAllGeofencesNew = false;
             }if(fileNameWithExtension.equals(Constants.QUESTS_FILE_NAME_WITH_EXTENSION)){
                 handleNewQuests(null, false);
@@ -1398,18 +1325,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    /**
+     *
+     * @return the quest the user is currently working on
+     */
     public Quest getQuestInProgress() {
         return questInProgress;
     }
 
+    /**
+     *
+     * @param questInProgress quest user is currently working on
+     */
     public void setQuestInProgress(Quest questInProgress) {
         this.questInProgress = questInProgress;
     }
 
+    /**
+     * Overridden lifecycle method to stop location updates when the activity is paused
+     */
     @Override
     protected void onPause() {
         stopLocationUpdates();
         super.onPause();
     }
-
 }

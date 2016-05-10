@@ -1,54 +1,29 @@
-/*
-package carleton150.edu.carleton.carleton150.Adapters;
-
-import android.app.Activity;
-import android.content.Context;
-import android.graphics.Typeface;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseExpandableListAdapter;
-import android.widget.TextView;
-
-import java.util.List;
-import java.util.Map;
-
-import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
-import carleton150.edu.carleton.carleton150.R;
-
-*//**
- * Created by nayelymartinez on 2/4/16.
- *
- */
 
 package carleton150.edu.carleton.carleton150.Adapters;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import carleton150.edu.carleton.carleton150.MainActivity;
-import carleton150.edu.carleton.carleton150.POJO.Event;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
 import carleton150.edu.carleton.carleton150.R;
+
+/**
+ * Created by nayelymartinez on 2/4/16.
+ * Adapter for displaying Events
+ */
 
 // Adapter for the events list view
 public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -61,14 +36,14 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
         this.context = context;
     }
 
-    // Format date tabs to display day of the week
+    /**
+     * format date tabs to display readable date format
+     * @param event
+     * @return
+     */
     private String formatStartTime(EventContent event) {
         String startTime = event.getStartTime();
         String[] dateArray = startTime.split("(-)|(T)|(:)");
-
-
-
-
         // Check if hours/minutes/seconds included
         SimpleDateFormat df;
         Calendar newStartTime;
@@ -88,8 +63,6 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
         }
 
         String formattedEventTime = df.format(newStartTime.getTime());
-
-
         String duration = event.getDuration();
         String formatDuration;
         int eventDurationHours;
@@ -110,15 +83,24 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
             formattedEventTime += " - " +formattedEndTime;
 
         }
-        // Set display to new formatted startTime
         return formattedEventTime;
     }
 
+    /**
+     * sets events list for adapter
+     * @param events
+     */
     public void setEvents(List<EventContent> events){
         this.events = events;
         notifyDataSetChanged();
     }
 
+    /**
+     * inflates view holder
+     * @param parent
+     * @param viewType
+     * @return
+     */
     @Override
     public EventViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.
@@ -127,6 +109,10 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
         return new EventViewHolder(itemView, context);
     }
 
+    /**
+     * returns number of items being displayed
+     * @return
+     */
     @Override
     public int getItemCount() {
         if(events != null) {
@@ -136,6 +122,11 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
+    /**
+     * sets viewholder display items
+     * @param holder
+     * @param position
+     */
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         final EventViewHolder myHolder = (EventViewHolder) holder;
@@ -164,6 +155,9 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
 
     }
 
+    /**
+     * ViewHolder to display events
+     */
     public static class EventViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private boolean expanded = false;
@@ -202,6 +196,10 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
             itemView.setLayoutParams(new RecyclerView.LayoutParams(width, RecyclerView.LayoutParams.MATCH_PARENT));
         }
 
+        /**
+         * expands cell and swaps expanded icon
+         * @param v
+         */
         @Override
         public void onClick(View v) {
 

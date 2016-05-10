@@ -1,9 +1,9 @@
-package carleton150.edu.carleton.carleton150.POJO.NewGeofenceInfo;
+package carleton150.edu.carleton.carleton150.POJO.GeofenceInfo;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Text_ {
+public class Text {
 
     @SerializedName("headline")
     @Expose

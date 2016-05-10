@@ -7,6 +7,8 @@ import android.view.MotionEvent;
 
 /**
  * Created by haleyhinze on 4/27/16.
+ * Custom ViewPager class that doesn't allow user to swipe between tabs
+ * Used for the main tabbed view of the app
  */
 public class NoSwipeViewPager extends ViewPager {
     public NoSwipeViewPager(Context context) {
