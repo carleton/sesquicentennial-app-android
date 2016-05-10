@@ -61,4 +61,44 @@ public class Constants {
 
     public static final int FLIP_ANIMATION_DURATION = 300;
 
+    public static final String NO_INTERNET_HTML = "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
+            "<head>\n" +
+            "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n" +
+            "<title>No Connection</title>\n" +
+            "<meta name=\"viewport\" content=\"width=device-width, minimum-scale=1.0, maximum-scale=1.0\" />\n" +
+            "<style>\n" +
+            "body {\n" +
+            "\tbackground:#fff;\n" +
+            "\tcolor:#222;\n" +
+            "\tpadding:0;\n" +
+            "\tmargin:0;\n" +
+            "\ttext-align:center;\n" +
+            "}\n" +
+            ".wrap {\n" +
+            "\tposition: fixed;\n" +
+            "\twidth:75%;\n" +
+            "\ttop: 50%;\n" +
+            "\tleft: 50%;\n" +
+            "\t-webkit-transform: translate(-50%, -50%);\n" +
+            "\ttransform: translate(-50%, -50%);\n" +
+            "\tfont-family: Roboto, \"San Francisco\", \"Helvetica Neue\", Helvetica, sans-serif;\n" +
+            "}\n" +
+            "h1 {\n" +
+            "\topacity:0.5;\n" +
+            "\tline-height:1;\n" +
+            "}\n" +
+            "body.dark {\n" +
+            "\tbackground:#444;\n" +
+            "\tcolor:#fff;\n" +
+            "}\n" +
+            "</style>\n" +
+            "</head>\n" +
+            "<body class=\"dark\"><!-- change body class to \"light\" for a white background -->\n" +
+            "<div class=\"wrap\">\n" +
+            "<h1>No Connection</h1>\n" +
+            "<p>This part of the app requires an internet connection. Please connect to a wifi or mobile network and try again.</p>\n" +
+            "</div>\n" +
+            "<body>\n" +
+            "</html>";
+
 }

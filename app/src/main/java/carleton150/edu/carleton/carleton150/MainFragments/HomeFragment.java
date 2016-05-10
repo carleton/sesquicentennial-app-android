@@ -42,8 +42,18 @@ public class HomeFragment extends MainFragment {
         myWebView.getSettings().setUserAgentString(Constants.USER_AGENT_STRING);
         myWebView.getSettings().setJavaScriptEnabled(true);
         myWebView.setWebViewClient(new WebClient());
-        myWebView.loadUrl(curURL);
+        MainActivity mainActivity = (MainActivity) getActivity();
+        if(mainActivity.isConnectedToNetwork()) {
+            myWebView.loadUrl(curURL);
+        }else{
+            myWebView.loadData(Constants.NO_INTERNET_HTML, "text/html", null);
+        }
         return v;
+    }
+
+
+    public static void loadWebContent(){
+        myWebView.loadUrl(Constants.INFO_URL);
     }
 
     /**
