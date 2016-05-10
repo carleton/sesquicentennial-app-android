@@ -10,9 +10,9 @@ public class Constants {
     //Constants to control frequency and accuracy of location updates
     public final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
     // Location updates intervals in milliseconds
-    public static int UPDATE_INTERVAL = 5000; // 5 sec
+    public static int UPDATE_INTERVAL = 3000; // 3 sec
     public static int FASTEST_INTERVAL = 1000; // 1 sec
-    public static int DISPLACEMENT = 5; // 5 meters
+    public static int DISPLACEMENT = 3; // 3 meters
 
     //To see whether the user has already explored features so we can show tutorial if they haven't
     public static final String IS_FIRST_HISTORY_RUN_STRING = "isFirstHistoryRun";
