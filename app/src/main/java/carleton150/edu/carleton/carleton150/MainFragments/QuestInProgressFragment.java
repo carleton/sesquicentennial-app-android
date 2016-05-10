@@ -58,8 +58,11 @@ public class QuestInProgressFragment extends MapMainFragment {
     private View cardFace;
     private View cardBack;
     private View v;
+    private boolean resume;
     private boolean inView = false;
     private Marker curLocationMarker;
+
+    private boolean needToShowOnCampusDialog = true;
 
     private boolean locationUpdatesRequested = false;
 
@@ -77,8 +80,10 @@ public class QuestInProgressFragment extends MapMainFragment {
      * it the current quest
      * @param quest quest to be completed by user
      */
-    public void initialize(Quest quest){
+    public void initialize(Quest quest, boolean resume){
         this.quest = quest;
+        this.resume = resume;
+
     }
 
     public void setQuestStartedListener(QuestStartedListener questStartedListener){
@@ -99,6 +104,7 @@ public class QuestInProgressFragment extends MapMainFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        needToShowOnCampusDialog = true;
         v = inflater.inflate(R.layout.fragment_quest_in_progress, container, false);
         Button btnFoundIt = (Button) v.findViewById(R.id.btn_found_location);
         Button btnFoundItHint = (Button) v.findViewById(R.id.btn_found_location_hint);
@@ -129,7 +135,7 @@ public class QuestInProgressFragment extends MapMainFragment {
         monitorForCardFlips();
         setClueAndHintFields();
         if(inView) {
-            checkIfQuestStarted();
+            //checkIfQuestStarted();
             Log.i("CHECK QUEST", "onCreateView, checking if quest is started");
         }
         btnFoundIt.setOnClickListener(new View.OnClickListener() {
@@ -173,6 +179,10 @@ public class QuestInProgressFragment extends MapMainFragment {
             }
         });
 
+        if(resume){
+            resumeQuest();
+        }
+
         return v;
     }
 
@@ -188,8 +198,16 @@ public class QuestInProgressFragment extends MapMainFragment {
         final ScrollView scrollViewFront = (ScrollView) v.findViewById(R.id.scrollview_clue_view_front);
         final ScrollView scrollViewBack = (ScrollView) v.findViewById(R.id.scrollview_clue_view_back);
 
-        scrollViewFront.post(new Runnable() { public void run() { scrollViewFront.fullScroll(View.FOCUS_UP); } });
-        scrollViewBack.post(new Runnable() { public void run() { scrollViewBack.fullScroll(View.FOCUS_UP); } });
+        scrollViewFront.post(new Runnable() {
+            public void run() {
+                scrollViewFront.fullScroll(View.FOCUS_UP);
+            }
+        });
+        scrollViewBack.post(new Runnable() {
+            public void run() {
+                scrollViewBack.fullScroll(View.FOCUS_UP);
+            }
+        });
 
         Waypoint[] waypoints = quest.getWaypoints();
         if(numClue != waypoints.length) {
@@ -356,6 +374,7 @@ public class QuestInProgressFragment extends MapMainFragment {
         MainActivity mainActivity = (MainActivity) getActivity();
         setUpMapIfNeeded();
         fragmentInView();
+        needToShowOnCampusDialog = true;
         if(mainActivity.mLastLocation != null){
             drawLocationMarker(mainActivity.mLastLocation);
         }
@@ -367,8 +386,6 @@ public class QuestInProgressFragment extends MapMainFragment {
                 locationUpdatesRequested = true;
             }if(!mainActivity.checkIfGPSEnabled()){
                 mainActivity.buildAlertMessageNoGps();
-            }else if(!onCampus()){
-               mainActivity.showOnCampusFeatureAlertDialogQuestInProgress();
             }
         }
     }
@@ -376,6 +393,7 @@ public class QuestInProgressFragment extends MapMainFragment {
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
+        needToShowOnCampusDialog = true;
 
         if(isVisibleToUser && isResumed()) {
             MainActivity mainActivity = (MainActivity) getActivity();
@@ -386,8 +404,6 @@ public class QuestInProgressFragment extends MapMainFragment {
                     locationUpdatesRequested = true;
                 }if(!mainActivity.checkIfGPSEnabled()){
                     mainActivity.buildAlertMessageNoGps();
-                }else if(!onCampus()){
-                   mainActivity.showOnCampusFeatureAlertDialogQuestInProgress();
                 }
             }
         }else if(!isVisibleToUser){
@@ -477,6 +493,10 @@ public class QuestInProgressFragment extends MapMainFragment {
         if(mainActivity != null) {
             if (mainActivity.mLastLocation != null) {
                 setUpMapIfNeeded();
+                if(!onCampus() && needToShowOnCampusDialog){
+                    mainActivity.showOnCampusFeatureAlertDialogQuestInProgress();
+                    needToShowOnCampusDialog = false;
+                }
             }
         }
     }
@@ -662,10 +682,10 @@ public class QuestInProgressFragment extends MapMainFragment {
             Log.i(LogMessages.LOCATION, "QuestInProgressFragment : fragmentInView : last location not null, drawing marker");
             drawLocationMarker(mainActivity.mLastLocation);
         }
-        if(this.isResumed()) {
-            if(!inView) {
+        if (this.isResumed()) {
+            if (!inView) {
                 Log.i("CHECK QUEST", "fragmentInView : fragment added to view, checking if quest is started");
-                checkIfQuestStarted();
+                //checkIfQuestStarted();
                 inView = true;
             }
             drawTiles();
@@ -751,42 +771,6 @@ public class QuestInProgressFragment extends MapMainFragment {
         Uri uri = Uri.parse(imageURL);
         Context imgContext = imageView.getContext();
         Picasso.with(imgContext).load(uri).into(imageView);
-    }
-
-    /**
-     * Checks if a quest was already started. If so, gives user the option of resuming
-     * the quest or starting over
-     */
-    private void checkIfQuestStarted(){
-        MainActivity mainActivity = (MainActivity) getActivity();
-        SharedPreferences sharedPreferences = mainActivity.getPersistentQuestStorage();
-        int curClue = sharedPreferences.getInt(quest.getName(), 0);
-        if(curClue != 0){
-            showOptionToResumeQuest();
-        }
-    }
-
-    /**
-     * Shows user a dialog asking if they want to start over or resume the current quest.
-     * If they choose to resume, calls a method to resume the quest. Otherwise, starts quest over
-     */
-    private void showOptionToResumeQuest(){
-        MainActivity mainActivity = (MainActivity) getActivity();
-        mainActivity.showAlertDialogNoNeutralButton(new AlertDialog.Builder(mainActivity)
-                .setMessage(getString(R.string.quest_started))
-                .setPositiveButton(getString(R.string.resume), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        resumeQuest();
-                    }
-                })
-                .setNegativeButton(getString(R.string.start_over), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                })
-                .create());
     }
 
     /**

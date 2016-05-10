@@ -15,20 +15,6 @@
         <item name="colorAccent">#D3BB39</item>
         <item name="android:windowBackground">@color/windowBackground</item>
         <item name="android:navigationBarColor">@color/black</item>
-        <item name="android:alertDialogStyle">@style/CustomDialogTheme</item>
-    </style>
-
-    <style name="CustomDialogTheme" parent="@android:style/Theme.Dialog">
-        <item name="android:bottomBright">@color/windowBackground</item>
-        <item name="android:bottomDark">@color/colorPrimaryDark</item>
-        <item name="android:bottomMedium">@color/colorPrimaryDark</item>
-        <item name="android:centerBright">@color/windowBackground</item>
-        <item name="android:centerDark">@color/colorPrimaryDark</item>
-        <item name="android:centerMedium">@color/colorPrimaryDark</item>
-        <item name="android:fullBright">@color/colorAccent</item>
-        <item name="android:fullDark">@color/colorAccent</item>
-        <item name="android:topBright">@color/windowBackground</item>
-        <item name="android:topDark">@color/windowBackground</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

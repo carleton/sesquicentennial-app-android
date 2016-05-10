@@ -1,6 +1,8 @@
 package carleton150.edu.carleton.carleton150.MainFragments;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -133,11 +135,63 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
      * @param quest quest to begin
      */
     private void beginQuest(Quest quest){
+        if(!checkIfQuestStarted(quest)){
+            MainActivity mainActivity = (MainActivity) getActivity();
+            mainActivity.setQuestInProgress(quest);
+            QuestInProgressFragment fr=new QuestInProgressFragment();
+            fr.initialize(quest, false);
+            questStartedListener.questStarted(fr);
+        }
+
+    }
+
+    /**
+     * Checks if a quest was already started. If so, gives user the option of resuming
+     * the quest or starting over
+     */
+    private boolean checkIfQuestStarted(Quest quest){
         MainActivity mainActivity = (MainActivity) getActivity();
-        mainActivity.setQuestInProgress(quest);
-        QuestInProgressFragment fr=new QuestInProgressFragment();
-        fr.initialize(quest);
-        questStartedListener.questStarted(fr);
+        SharedPreferences sharedPreferences = mainActivity.getPersistentQuestStorage();
+        int curClue = sharedPreferences.getInt(quest.getName(), 0);
+        if(curClue != 0){
+            showOptionToResumeQuest(quest);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * Shows user a dialog asking if they want to start over or resume the current quest.
+     * If they choose to resume, calls a method to resume the quest. Otherwise, starts quest over
+     */
+    private void showOptionToResumeQuest(final Quest quest){
+        MainActivity mainActivity = (MainActivity) getActivity();
+        mainActivity.showAlertDialogNoNeutralButton(new AlertDialog.Builder(mainActivity)
+                .setMessage(getString(R.string.quest_started))
+                .setPositiveButton(getString(R.string.resume), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.setQuestInProgress(quest);
+                        QuestInProgressFragment fr=new QuestInProgressFragment();
+                        fr.initialize(quest, true);
+                        questStartedListener.questStarted(fr);
+                        dialog.cancel();
+                    }
+                })
+                .setNegativeButton(getString(R.string.start_over), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.setQuestInProgress(quest);
+                        QuestInProgressFragment fr=new QuestInProgressFragment();
+                        fr.initialize(quest, false);
+                        questStartedListener.questStarted(fr);
+                        dialog.cancel();
+                    }
+                })
+                .create());
     }
 
     /**
