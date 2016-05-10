@@ -51,8 +51,7 @@
 
     <string name="tutorial_quest_in_progress">"You are on a quest! If you think you've reached the location the clue is referring to, click the 'Am I There?' button and the GPS on your phone will let you know if you've reached the correct location and give you the next clue! If you’re stuck, click on "HINT" to help you out!"</string>
 
-    <string name="tutorial_history_view">"Explore Carleton’s history! Markers represent points of interest on the Carleton campus. Tap on a marker to view more information about the point.
-        \nTo see stories and images others have uploaded about Carleton or to upload your own, tap on 'Read and Share Carleton Stories'."</string>
+    <string name="tutorial_history_view">"Explore Carleton’s history! Markers represent points of interest on the Carleton campus. Tap on a marker to view more information about the point."</string>
 
     <string name="tutorial_quests">"Ready for a Carleton adventure? Embark on a quest using the clues provided! After figuring out what location on campus each clue refers to, walk to that location. When you think you've found the correct location, tap 'Am I There?' to receive the next clue. If you’re stuck, use the Hints provided to help you out!"</string>
 

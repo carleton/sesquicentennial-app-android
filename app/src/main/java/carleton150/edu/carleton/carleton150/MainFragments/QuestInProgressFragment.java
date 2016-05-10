@@ -135,6 +135,9 @@ public class QuestInProgressFragment extends MapMainFragment {
         btnFoundIt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(!mainActivity.checkIfGPSEnabled()){
+                    mainActivity.buildAlertMessageNoGps();
+                }
                 checkIfClueFound();
 
             }
@@ -142,6 +145,9 @@ public class QuestInProgressFragment extends MapMainFragment {
         btnFoundItHint.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(!mainActivity.checkIfGPSEnabled()){
+                    mainActivity.buildAlertMessageNoGps();
+                }
                 checkIfClueFound();
             }
         });
