@@ -56,6 +56,7 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
         final TextView txtInfo;
         final Button btnTryAgain;
         view =  inflater.inflate(R.layout.fragment_quest, container, false);
+        final MainActivity mainActivity = (MainActivity) getActivity();
 
 
 
@@ -69,7 +70,12 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
             public void onClick(View v) {
                 btnTryAgain.setVisibility(View.GONE);
                 txtInfo.setText(getString(R.string.retrieving_quests));
-                fragmentInView();
+                if(mainActivity.getQuests() == null){
+                    mainActivity.requestQuests();
+                }else{
+                    handleNewQuests(mainActivity.getQuests());
+                }
+
             }
         });
 
@@ -83,14 +89,12 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
 
         //builds RecyclerViews to display quests
         buildRecyclerViews();
-        fragmentInView();
 
         // Toggle tutorial if first time using app
         if (checkFirstQuestRun()) {
             toggleTutorial();
         }
 
-        MainActivity mainActivity = (MainActivity) getActivity();
         questInfo = mainActivity.getQuests();
 
         if(questInfo == null){
