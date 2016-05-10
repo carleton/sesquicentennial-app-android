@@ -368,7 +368,7 @@ public class QuestInProgressFragment extends MapMainFragment {
             }if(!mainActivity.checkIfGPSEnabled()){
                 mainActivity.buildAlertMessageNoGps();
             }else if(!onCampus()){
-                mainActivity.showOnCampusFeatureAlertDialogQuestInProgress();
+               mainActivity.showOnCampusFeatureAlertDialogQuestInProgress();
             }
         }
     }
@@ -387,7 +387,7 @@ public class QuestInProgressFragment extends MapMainFragment {
                 }if(!mainActivity.checkIfGPSEnabled()){
                     mainActivity.buildAlertMessageNoGps();
                 }else if(!onCampus()){
-                    mainActivity.showOnCampusFeatureAlertDialogQuestInProgress();
+                   mainActivity.showOnCampusFeatureAlertDialogQuestInProgress();
                 }
             }
         }else if(!isVisibleToUser){
@@ -875,7 +875,7 @@ public class QuestInProgressFragment extends MapMainFragment {
         Location location = mainActivity.getLastLocation();
 
         if(location == null){
-            return false;
+            return true;
         }
 
         if(location.getLatitude() > Constants.MIN_LATITUDE

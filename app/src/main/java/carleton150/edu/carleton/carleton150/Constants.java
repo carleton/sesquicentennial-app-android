@@ -10,9 +10,9 @@ public class Constants {
     //Constants to control frequency and accuracy of location updates
     public final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
     // Location updates intervals in milliseconds
-    public static int UPDATE_INTERVAL = 30000; // 30 sec
-    public static int FASTEST_INTERVAL = 10000; // 10 sec
-    public static int DISPLACEMENT = 10; // 10 meters
+    public static int UPDATE_INTERVAL = 5000; // 5 sec
+    public static int FASTEST_INTERVAL = 1000; // 1 sec
+    public static int DISPLACEMENT = 5; // 5 meters
 
     //To see whether the user has already explored features so we can show tutorial if they haven't
     public static final String IS_FIRST_HISTORY_RUN_STRING = "isFirstHistoryRun";
@@ -33,14 +33,10 @@ public class Constants {
     public static final int DEFAULT_ZOOM = 15;
     public static final int DEFAULT_BEARING = 0;
     public static final int DEFAULT_MAX_ZOOM = 13;
-    //Dimension for a placeholder image in RecyclerViews
-    public static final int PLACEHOLDER_IMAGE_DIMENSIONS = 10;
+
     //Used in MyScaleInAnimationAdapter to set the size the image is scaled from
     public static final float DEFAULT_SCALE_FROM = .5f;
 
-    //Endpoints for server requests
-    public static final String MEMORIES_ENDPOINT = "https://carl150.carleton.edu/memories_fetch";
-    public static final String ADD_MEMORY_ENDPOINT = "https://carl150.carleton.edu/memories_add";
 
     public static final String NEW_GEOFENCES_ENDPOINT = "https://go.carleton.edu/apphistory";
     public static final String QUESTS_FEED_URL = "https://go.carleton.edu/appquests";
@@ -56,24 +52,8 @@ public class Constants {
     public static final String GEOFENCES_FILE_NAME_WITH_EXTENSION = "carleton150Geofences.txt";
     public static final String QUESTS_FILE_NAME_WITH_EXTENSION = "carleton150Quests.txt";
 
-    //Prefixes and suffixes for the Camera class to use when the user uploads images
-    public static final String JPEG_FILE_PREFIX = "IMG_";
-    public static final String JPEG_FILE_SUFFIX = ".jpg";
-
-    public static final String STORIES_URL = "https://go.carleton.edu/appstories";
-
-    //Tag for the broadcastReciever
-    public static final String TAG = "GeofenceTransitionsIS";
-
     //urls for map tiling
     public static final String BASE_URL_STRING = " https://www.carleton.edu/global_stock/images/campus_map/tiles/base/%d_%d_%d.png";
     public static final String LABEL_URL_STRING = " https://www.carleton.edu/global_stock/images/campus_map/tiles/labels/%d_%d_%d.png";
-
-    //distance in meters
-    public static final int DISTANCE_OFF_CAMPUS_TO_INCREASE_MEMORIES_RADIUS = 7000;
-
-    //radius in kilometers
-    public static final float NEAR_CAMPUS_MEMORIES_RADIUS = .2f;
-    public static final float AWAY_FROM_CAMPUS_MEMORIES_RADIUS = 5f;
 
 }

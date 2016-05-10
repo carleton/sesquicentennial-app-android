@@ -285,7 +285,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
-    //TODO: only need to listen to location for QuestInProgress fragment.
     /**
      * Method called by the google location client when the user's
      * location changes. Records the location and passes the new
@@ -423,13 +422,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         AlertDialog dialog = playServicesConnectivityAlertDialogBuilder.create();
         if(!dialog.isShowing()) {
             showAlertDialog(getResources().getString(R.string.no_google_services), dialog);
-        }
-    }
-
-    public void showOnCampusFeatureAlertDialogQuests() {
-        AlertDialog dialog = onCampusFeatureAlertDialogBuilder.create();
-        if(!dialog.isShowing()){
-            showAlertDialog(getString(R.string.quests_unuseable_off_campus), dialog);
         }
     }
 
@@ -998,10 +990,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     public void handleNewEvents(ArrayList<EventContent> events, boolean isNewInfo) {
 
-
-        //TODO: events same for every day now. Hashmap should now contain the positions of
-        //the start of the new dates (although doing a linear search is probably fine...)
-
         Log.i("EVENT DEBUGGING", "MainActivity: handleNewEvents");
 
         requestingEvents = false;
@@ -1128,11 +1116,5 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         stopLocationUpdates();
         super.onPause();
     }
-
-
-
-    //TODO: now that we no longer need a location sent in to request geofences, call that request
-    //TODO: earlier, before getting location updates, then we only need to get location updates
-    //TODO: for the quest in progress screen
 
 }
