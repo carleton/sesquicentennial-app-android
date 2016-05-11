@@ -29,6 +29,5 @@ public class ConnectionBroadcastReceiver extends BroadcastReceiver {
                 HomeFragment.loadWebContent();
             }
         }
-
     }
 }
