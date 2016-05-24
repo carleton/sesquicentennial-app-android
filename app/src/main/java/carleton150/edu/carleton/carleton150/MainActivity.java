@@ -161,8 +161,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         final NoSwipeViewPager viewPager = (NoSwipeViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(adapter);
         final TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        //tabLayout.setupWithViewPager(viewPager);
 
-        if (ViewCompat.isLaidOut(tabLayout)) {
+       /* if (ViewCompat.isLaidOut(tabLayout)) {
             tabLayout.setupWithViewPager(viewPager);
         } else {
             tabLayout.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
@@ -173,9 +174,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     tabLayout.removeOnLayoutChangeListener(this);
                 }
             });
-        }
+        }*/
 
-        tabLayout.setupWithViewPager(viewPager);
+        tabLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                tabLayout.setupWithViewPager(viewPager);
+            }
+        });
+
+
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.setTabsFromPagerAdapter(adapter);
 

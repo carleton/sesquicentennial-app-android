@@ -3,7 +3,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:paddingTop="?attr/actionBarSize"
     tools:context="carleton150.edu.carleton.carleton150.MainFragments.EventsFragment">
 
         <!-- Vertical Layout for date tabs + event item list -->
@@ -16,7 +15,7 @@
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_weight="11"
+                android:layout_weight="13"
                 android:layout_gravity="center_horizontal"
                 android:layout_height="0dp">
 
@@ -26,6 +25,7 @@
 
 
                 <com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager
+                    android:layout_marginTop="5dp"
                     android:id="@+id/lst_event_dates"
                     android:paddingLeft="15dp"
                     android:paddingRight="15dp"
@@ -43,7 +43,7 @@
                 android:paddingTop="5dp"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="89"
+                android:layout_weight="87"
                 android:id="@+id/lst_events">
             </android.support.v7.widget.RecyclerView>
 

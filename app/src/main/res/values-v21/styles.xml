@@ -15,8 +15,8 @@
         <item name="colorAccent">#D3BB39</item>
         <item name="android:windowBackground">@color/windowBackground</item>
         <item name="android:navigationBarColor">@color/black</item>
-        <item name="android:windowActionBar">false</item>
-        <item name="android:windowActionBarOverlay">false</item>
+        <item name="android:windowActionBar">true</item>
+        <item name="android:windowActionBarOverlay">true</item>
         <item name="android:windowNoTitle">true</item>
     </style>
 

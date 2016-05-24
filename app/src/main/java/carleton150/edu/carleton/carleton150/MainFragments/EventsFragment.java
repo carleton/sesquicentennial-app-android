@@ -114,8 +114,13 @@ public class EventsFragment extends MainFragment {
                     if (pos < 0) {
                         pos = 0;
                     }
+
+                    int firstCompleteleyVisibleItemPos = eventsLayoutManager.findFirstCompletelyVisibleItemPosition();
+                    if(firstCompleteleyVisibleItemPos < 0){
+                        firstCompleteleyVisibleItemPos = 0;
+                    }
                     String dateByDayDateScroller = dateInfo.get(pos);
-                    String startTimeString = eventsList.get(eventsLayoutManager.findFirstCompletelyVisibleItemPosition()).getStartTime();
+                    String startTimeString = eventsList.get(firstCompleteleyVisibleItemPos).getStartTime();
                     String[] completeDateArray = startTimeString.split("T");
                     String dateByDay = completeDateArray[0];
                     if (!dateByDay.equals(dateByDayDateScroller)) {
@@ -157,6 +162,9 @@ public class EventsFragment extends MainFragment {
                 int datePos = dateLayoutManager.findFirstCompletelyVisibleItemPosition();
                 if (datePos < 0) {
                     datePos = 0;
+                }
+                if(pos < 0){
+                    pos = 0;
                 }
 
                 String startTimeString = eventsList.get(pos).getStartTime();

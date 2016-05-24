@@ -7,10 +7,10 @@
     android:layout_height="match_parent"
     android:focusable="true"
     android:clickable="true"
-    android:layout_marginBottom="5dp"
     card_view:cardElevation="3dp"
-    card_view:cardCornerRadius="0dp"
-    card_view:contentPaddingRight="1dp">
+    card_view:cardCornerRadius="4dp"
+    android:layout_marginRight="3dp"
+    card_view:contentPaddingRight="0dp">
 
     <TextView
         android:id="@+id/event_date_title"
