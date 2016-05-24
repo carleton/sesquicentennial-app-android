@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="Base.AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
 
         <!--   your app branding color for the app bar -->
         <item name="colorPrimary">#1D294B</item>
@@ -9,13 +9,21 @@
         <item name="colorPrimaryDark">#121831</item>
         <!--   theme UI controls like checkboxes and text fields -->
         <item name="colorAccent">#D3BB39</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowActionBarOverlay">false</item>
+        <item name="android:windowNoTitle">true</item>
         <item name="android:windowBackground">@color/windowBackground</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="Base.AppTheme.NoActionBar" parent="Base.AppTheme">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
 
-    <style name="HistoryPopoverDialogFragmentStyle" parent="@android:style/Theme.Dialog">
+    <style name="Base.AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Base.AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="HistoryPopoverDialogFragmentStyle" parent="Theme.AppCompat.Light.Dialog">
         <item name="android:windowFrame">@null</item>
         <item name="android:windowBackground">@color/colorPrimarySemiTransparent</item>
         <item name="android:windowIsFloating">false</item>
@@ -28,7 +36,7 @@
     </style>
 
 
-        <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+        <style name="Base.SplashTheme" parent="Theme.AppCompat.NoActionBar">
             <item name="android:windowBackground">@drawable/splash_screen_layer</item>
         </style>
 

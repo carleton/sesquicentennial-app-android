@@ -54,6 +54,12 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
                 if(mFragmentAtPos2 == null) {
                     mFragmentAtPos2 = new QuestFragment();
                     ((QuestFragment) mFragmentAtPos2).initialize(this);
+                }else if(mFragmentAtPos2 instanceof QuestInProgressFragment){
+                    mFragmentAtPos2 = new QuestInProgressFragment();
+                    ((QuestInProgressFragment) mFragmentAtPos2).initialize(mainActivity.getQuestInProgress(), mainActivity.getResumed());
+                }else if (mFragmentAtPos2 instanceof QuestCompletedFragment){
+                    mFragmentAtPos2 = new QuestCompletedFragment();
+                    ((QuestCompletedFragment) mFragmentAtPos2).initialize(mainActivity.getQuestInProgress());
                 }
                 return mFragmentAtPos2;
 

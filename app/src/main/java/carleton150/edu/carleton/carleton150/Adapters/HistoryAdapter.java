@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +12,6 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfo.Event;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfo.Text_;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;

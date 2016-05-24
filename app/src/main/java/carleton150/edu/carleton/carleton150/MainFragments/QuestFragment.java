@@ -13,8 +13,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager;
+
 import java.util.ArrayList;
+
 import carleton150.edu.carleton.carleton150.Adapters.QuestAdapter;
 import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.Interfaces.RecyclerViewClickListener;
@@ -128,7 +131,12 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
             mainActivity.setQuestInProgress(quest);
             QuestInProgressFragment fr=new QuestInProgressFragment();
             fr.initialize(quest, false);
-            questStartedListener.questStarted(fr);
+            if(questStartedListener != null) {
+                questStartedListener.questStarted(fr);
+            }else{
+                questStartedListener = mainActivity.getQuestStartedListener();
+                questStartedListener.questStarted(fr);
+            }
         }
     }
 
@@ -162,8 +170,12 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
                     public void onClick(DialogInterface dialog, int which) {
                         MainActivity mainActivity = (MainActivity) getActivity();
                         mainActivity.setQuestInProgress(quest);
+                        mainActivity.setResume(true);
                         QuestInProgressFragment fr=new QuestInProgressFragment();
                         fr.initialize(quest, true);
+                        if(questStartedListener == null){
+                            questStartedListener = mainActivity.getQuestStartedListener();
+                        }
                         questStartedListener.questStarted(fr);
                         dialog.cancel();
                     }
@@ -173,8 +185,12 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
                     public void onClick(DialogInterface dialog, int which) {
                         MainActivity mainActivity = (MainActivity) getActivity();
                         mainActivity.setQuestInProgress(quest);
-                        QuestInProgressFragment fr=new QuestInProgressFragment();
+                        mainActivity.setResume(false);
+                        QuestInProgressFragment fr = new QuestInProgressFragment();
                         fr.initialize(quest, false);
+                        if (questStartedListener == null) {
+                            questStartedListener = mainActivity.getQuestStartedListener();
+                        }
                         questStartedListener.questStarted(fr);
                         dialog.cancel();
                     }

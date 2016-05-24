@@ -3,13 +3,13 @@ package carleton150.edu.carleton.carleton150.MainFragments;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -17,8 +17,6 @@ import java.util.Map;
 
 import carleton150.edu.carleton.carleton150.Adapters.EventDateCardAdapter;
 import carleton150.edu.carleton.carleton150.Adapters.EventsListAdapter;
-import com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager;
-
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
 import carleton150.edu.carleton.carleton150.R;

@@ -35,6 +35,7 @@
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
 
+
         <carleton150.edu.carleton.carleton150.NoSwipeViewPager
             android:id="@+id/pager"
             android:layout_width="match_parent"

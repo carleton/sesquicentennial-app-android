@@ -45,7 +45,9 @@ dependencies {
 
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.2.1'
-    compile 'com.google.android.gms:play-services:8.1.0'
+    compile 'com.android.support:support-v4:22.2.0'
+    compile 'com.google.android.gms:play-services-location:8.1.0'
+    compile 'com.google.android.gms:play-services-maps:8.1.0'
     compile 'jp.wasabeef:recyclerview-animators:1.3.0'
     compile 'com.android.support:recyclerview-v7:22.0.0'
     compile 'com.github.lsjwzh.RecyclerViewPager:lib:v1.1.0-beta5'

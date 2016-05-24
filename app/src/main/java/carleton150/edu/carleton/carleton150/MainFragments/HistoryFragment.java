@@ -7,7 +7,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
-import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfo.AllGeofences;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfo.Event;

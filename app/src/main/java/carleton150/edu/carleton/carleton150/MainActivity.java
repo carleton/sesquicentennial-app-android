@@ -14,10 +14,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -55,6 +57,7 @@ import java.util.Locale;
 
 import carleton150.edu.carleton.carleton150.Adapters.MyFragmentPagerAdapter;
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
+import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.Interfaces.RetrievedFileListener;
 import carleton150.edu.carleton.carleton150.MainFragments.EventsFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.HistoryFragment;
@@ -98,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private boolean requestingQuests = false;
     private ArrayList<Quest> questInfo = null;
     private java.util.Date lastQuestUpdate;
+    private boolean resumeQuest = false;
 
     //For retrieving and handling event info
     private LinkedHashMap<String, Integer> eventsMapByDate;
@@ -156,7 +160,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         adapter.initialize(this, manager);
         final NoSwipeViewPager viewPager = (NoSwipeViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(adapter);
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        final TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+
+        if (ViewCompat.isLaidOut(tabLayout)) {
+            tabLayout.setupWithViewPager(viewPager);
+        } else {
+            tabLayout.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    tabLayout.setupWithViewPager(viewPager);
+
+                    tabLayout.removeOnLayoutChangeListener(this);
+                }
+            });
+        }
+
         tabLayout.setupWithViewPager(viewPager);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.setTabsFromPagerAdapter(adapter);
@@ -193,6 +211,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onResume() {
         super.onResume();
         // Resuming the periodic location updates
+
+        if(mGoogleApiClient == null){
+            buildGoogleApiClient();
+        }
         if (mGoogleApiClient.isConnected()) {
             startLocationUpdates();
         } else {
@@ -203,6 +225,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 showGooglePlayServicesUnavailableDialog();
             }
         }
+    }
+
+    public QuestStartedListener getQuestStartedListener(){
+        return adapter;
     }
 
 
@@ -257,10 +283,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * Builds a GoogleApiClient
      */
     protected synchronized void buildGoogleApiClient() {
+        Log.i("GOOGLE API CLIENT", "building...");
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API).build();
+        Log.i("GOOGLE API CLIENT", "built");
+
     }
 
     /**
@@ -490,7 +519,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }else{
             super.onBackPressed();
         }
-
     }
 
     /**
@@ -1040,10 +1068,26 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     /**
      *
+     * @return true if the quest should be resumed, false otherwise
+     */
+    public boolean getResumed(){
+        return resumeQuest;
+    }
+
+    /**
+     *
      * @param questInProgress quest user is currently working on
      */
     public void setQuestInProgress(Quest questInProgress) {
         this.questInProgress = questInProgress;
+    }
+
+    /**
+     * Sets boolean to indicate if questInProgress is resumed or started over
+     * @param resume
+     */
+    public void setResume(boolean resume){
+        this.resumeQuest = resume;
     }
 
     /**

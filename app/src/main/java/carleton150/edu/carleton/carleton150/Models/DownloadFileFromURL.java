@@ -3,11 +3,13 @@ package carleton150.edu.carleton.carleton150.Models;
 
 import android.content.Context;
 import android.os.AsyncTask;
+
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+
 import carleton150.edu.carleton.carleton150.Interfaces.RetrievedFileListener;
 
 /**
