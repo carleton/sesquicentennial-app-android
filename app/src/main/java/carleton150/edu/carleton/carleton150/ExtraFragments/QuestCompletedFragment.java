@@ -68,6 +68,9 @@ public class QuestCompletedFragment extends MainFragment {
         if(quest == null){
             quest = mainActivity.getQuestInProgress();
         }
+        if(quest == null){
+            mainActivity.questInProgressGoBack();
+        }
 
         txtCompMsg.setText(quest.getCompMsg());
         txtNumCompleted.setText(quest.getWaypoints().length + "/" + quest.getWaypoints().length);
@@ -139,5 +142,30 @@ public class QuestCompletedFragment extends MainFragment {
             imgQuestCompleted.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.bg_transparent));
         }
         super.onDestroyView();
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        MainActivity mainActivity = (MainActivity) getActivity();
+        if(quest == null && isVisibleToUser && isResumed()){
+            mainActivity.onBackPressed();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        MainActivity mainActivity = (MainActivity) getActivity();
+        if(getUserVisibleHint() && quest == null){
+            mainActivity.onBackPressed();
+        }
+    }
+
+    public void inView(){
+        MainActivity mainActivity = (MainActivity) getActivity();
+        if(quest == null && getUserVisibleHint() && isResumed()){
+            mainActivity.onBackPressed();
+        }
     }
 }

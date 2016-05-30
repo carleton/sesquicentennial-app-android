@@ -30,7 +30,6 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:orientation="vertical"
-                android:layout_above="@+id/btn_get_nearby_memories"
                 android:layout_height="fill_parent">
 
 

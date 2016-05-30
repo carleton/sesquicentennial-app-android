@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -161,20 +162,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         final NoSwipeViewPager viewPager = (NoSwipeViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(adapter);
         final TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-        //tabLayout.setupWithViewPager(viewPager);
-
-       /* if (ViewCompat.isLaidOut(tabLayout)) {
-            tabLayout.setupWithViewPager(viewPager);
-        } else {
-            tabLayout.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-                @Override
-                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    tabLayout.setupWithViewPager(viewPager);
-
-                    tabLayout.removeOnLayoutChangeListener(this);
-                }
-            });
-        }*/
 
         tabLayout.post(new Runnable() {
             @Override
@@ -183,9 +170,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
+        tabLayout.setOnTabSelectedListener(
+                new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
+                    @Override
+                    public void onTabSelected(TabLayout.Tab tab) {
+                        super.onTabSelected(tab);
+                        Fragment selected = adapter.getItem(tab.getPosition());
+                        if(selected instanceof QuestInProgressFragment){
+                            ((QuestInProgressFragment) selected).inView();
+                        }else if(selected instanceof QuestCompletedFragment){
+                            ((QuestCompletedFragment) selected).inView();
+                        }
+                    }
+                });
+
 
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-        tabLayout.setTabsFromPagerAdapter(adapter);
+
+        //TODO: is this needed for old phones?
+        //tabLayout.setTabsFromPagerAdapter(adapter);
 
         //Requests information
         if(isConnectedToNetwork()) {
@@ -503,6 +506,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void showAlertDialogNoNeutralButton(AlertDialog dialog) {
         if (!dialog.isShowing()) {
             dialog.show();
+        }
+    }
+
+    public void questInProgressGoBack(){
+        if(adapter.getCurrentFragment() instanceof QuestInProgressFragment ||
+                adapter.getCurrentFragment() instanceof QuestCompletedFragment){
+            adapter.backButtonPressed();
         }
     }
 

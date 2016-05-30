@@ -1,11 +1,25 @@
 package carleton150.edu.carleton.carleton150.MainFragments;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import org.xml.sax.XMLReader;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.MainActivity;
@@ -17,6 +31,7 @@ import carleton150.edu.carleton.carleton150.R;
 public class HomeFragment extends MainFragment {
 
     String curURL;
+    URL secondURL = null;
     View v;
     public static WebView myWebView;
     public HomeFragment() {
@@ -37,10 +52,15 @@ public class HomeFragment extends MainFragment {
         // Inflate the layout for this fragment
         v = inflater.inflate(R.layout.fragment_info, container, false);
         curURL = Constants.INFO_URL;
+
+        CheckRedirectURLAsyncTask runner = new CheckRedirectURLAsyncTask();
+
+        runner.execute(curURL);
+
         myWebView = (WebView) v.findViewById(R.id.web_view);
         myWebView.getSettings().setUserAgentString(Constants.USER_AGENT_STRING);
         myWebView.getSettings().setJavaScriptEnabled(true);
-        myWebView.setWebViewClient(new WebClient());
+        myWebView.setWebViewClient(new WebViewClient());
         MainActivity mainActivity = (MainActivity) getActivity();
         if(mainActivity.isConnectedToNetwork()) {
             myWebView.loadUrl(curURL);
@@ -48,6 +68,29 @@ public class HomeFragment extends MainFragment {
             myWebView.loadData(Constants.NO_INTERNET_HTML, "text/html", null);
         }
         return v;
+    }
+
+    /**
+     * Function that monitors link clicks on the WebView and opens anything but the home page
+     * in a separate browser window. This method is to be called from the OnPostExecute() method
+     * of the CheckRedirectURLAsyncTask, because it is necessary to get the redirected URL so
+     * that the app doesn't open the home page in a browser window as well.
+     */
+    private void startMonitoringLinkClicks(){
+        myWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if(secondURL != null){
+                    if(url.equals(secondURL.toString())) {
+                        return false;
+                    }
+                }
+
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(browserIntent);
+                return true;
+            }
+        });
     }
 
 
@@ -99,13 +142,45 @@ public class HomeFragment extends MainFragment {
         return false;
     }
 
-    private class WebClient extends WebViewClient {
+
+
+    /**
+     * Class to find the redirected URL of a URL. Then calls a method to monitor link clicks
+     * in the webview
+     */
+    private class CheckRedirectURLAsyncTask extends AsyncTask<String, String, String> {
 
         @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            return false;
+        protected String doInBackground(String... params) {
+            try {
+                URL redirectUrl = new URL(Constants.INFO_URL);
+                HttpURLConnection ucon = null;
+                try {
+                    ucon = (HttpURLConnection) redirectUrl.openConnection();
+                    ucon.setInstanceFollowRedirects(false);
+                    secondURL = new URL(ucon.getHeaderField("Location"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+
+            if(secondURL == null){
+                return null;
+            }
+            return secondURL.toString();
         }
 
+        /**
+         * Starts monitoring for link clicks on the webview
+         * @param result
+         */
+        @Override
+        protected void onPostExecute(String result) {
+            startMonitoringLinkClicks();
+        }
     }
 
 }

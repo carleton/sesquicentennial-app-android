@@ -3,6 +3,7 @@ package carleton150.edu.carleton.carleton150.MainFragments;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -97,6 +98,8 @@ public class EventsFragment extends MainFragment {
      * Builds the recycler view for the dates
      */
     private void buildRecyclerViewsDates(){
+        Log.i("EVENTS BUG", "Building date recycler views");
+
         dates = (RecyclerViewPager) v.findViewById(R.id.lst_event_dates);
         dateLayoutManager = new LinearLayoutManager(getActivity());
         dateLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
@@ -108,22 +111,32 @@ public class EventsFragment extends MainFragment {
          */
         dates.addOnScrollListener(new RecyclerView.OnScrollListener() {
             public void onScrollStateChanged(RecyclerView rv, int state) {
+                Log.i("EVENTS BUG", "scroll state changed, state = " + state + ", scroll state idle = " + RecyclerView.SCROLL_STATE_IDLE);
                 if (state == RecyclerView.SCROLL_STATE_IDLE) {
-                    int pos = dateLayoutManager.findFirstCompletelyVisibleItemPosition();
+                    int pos = dateLayoutManager.findFirstVisibleItemPosition();
+                    Log.i("EVENTS BUG", "uncorrected pos is : " + pos);
                     //if user over-scrolls, correct to index 0
                     if (pos < 0) {
                         pos = 0;
                     }
 
-                    int firstCompleteleyVisibleItemPos = eventsLayoutManager.findFirstCompletelyVisibleItemPosition();
-                    if(firstCompleteleyVisibleItemPos < 0){
+                    int firstCompleteleyVisibleItemPos = eventsLayoutManager.findFirstVisibleItemPosition();
+                    if (firstCompleteleyVisibleItemPos < 0) {
                         firstCompleteleyVisibleItemPos = 0;
                     }
+
+                    Log.i("EVENTS BUG", "pos = " + pos + "firstCompletelyVisibleItemPos = " + firstCompleteleyVisibleItemPos);
+
                     String dateByDayDateScroller = dateInfo.get(pos);
                     String startTimeString = eventsList.get(firstCompleteleyVisibleItemPos).getStartTime();
                     String[] completeDateArray = startTimeString.split("T");
                     String dateByDay = completeDateArray[0];
+                    Log.i("EVENTS BUG", "check if date is right");
+                    Log.i("EVENTS BUG", "dateByDay is : " + dateByDay + " dateByDayDateScrollerIs : " + dateByDayDateScroller);
+
                     if (!dateByDay.equals(dateByDayDateScroller)) {
+                        Log.i("EVENTS BUG", "date not right");
+
                         int index = 0;
                         for (int i = 0; i < eventsList.size(); i++) {
                             startTimeString = eventsList.get(i).getStartTime();
@@ -134,7 +147,12 @@ public class EventsFragment extends MainFragment {
                                 break;
                             }
                         }
+                        Log.i("EVENTS BUG", "updating events list to index : " + index);
                         updateEventsList(index);
+                    }
+                    else{
+                        Log.i("EVENTS BUG", "date is right");
+
                     }
                 }
             }
@@ -158,8 +176,8 @@ public class EventsFragment extends MainFragment {
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                int pos = eventsLayoutManager.findFirstCompletelyVisibleItemPosition();
-                int datePos = dateLayoutManager.findFirstCompletelyVisibleItemPosition();
+                int pos = eventsLayoutManager.findFirstVisibleItemPosition();
+                int datePos = dateLayoutManager.findFirstVisibleItemPosition();
                 if (datePos < 0) {
                     datePos = 0;
                 }
@@ -219,6 +237,7 @@ public class EventsFragment extends MainFragment {
      */
     private void updateEventsList(int pos){
         eventsLayoutManager.scrollToPositionWithOffset(pos, 0);
+        eventsListAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -228,6 +247,7 @@ public class EventsFragment extends MainFragment {
      */
     private void updateDateScroller(int pos){
         dates.scrollToPosition(pos);
+        eventDateCardAdapter.notifyDataSetChanged();
 
     }
 

@@ -1,7 +1,9 @@
 package carleton150.edu.carleton.carleton150.Adapters;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -110,6 +112,9 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
 
+        Drawable placeholderImage = ContextCompat.getDrawable(context, R.drawable.ic_loadingtransparent);
+        Drawable errorImage = ContextCompat.getDrawable(context, R.drawable.ic_failed_loading_transparent);
+
         //Sets fields of a HistoryViewHolderText and sets an OnClickListener to expand the view
         if(holder instanceof HistoryViewHolderText){
             if(historyListNew != null){
@@ -144,7 +149,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     if(geofenceInfoContent.getMedia() != null) {
                         Uri uri = Uri.parse(geofenceInfoContent.getMedia().getUrl());
                         Context imgContext = ((HistoryViewHolderImage) holder).getImgMedia().getContext();
-                        Picasso.with(imgContext).load(uri).into(((HistoryViewHolderImage) holder).getImgMedia());
+                        Picasso.with(imgContext).load(uri).placeholder(placeholderImage).error(errorImage).into(((HistoryViewHolderImage) holder).getImgMedia());
                         ((HistoryViewHolderImage) holder).setTxtCaption(geofenceInfoContent.getMedia().getCaption());
                         ((HistoryViewHolderImage) holder).setTxtDescription(geofenceInfoContent.getMedia().getCredit());
                         ((HistoryViewHolderImage) holder).setImgCredit(geofenceInfoContent.getMedia().getCredit());
@@ -171,13 +176,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             final Waypoint waypoint = waypointList[position];
             ((ViewHolderQuestInProgress) holder).setVisibilities(waypoint);
             if(waypoint.getClue().getImage() != null) {
-                ((ViewHolderQuestInProgress) holder).setImageClue(waypoint.getClue().getImage().getImage());
+                ((ViewHolderQuestInProgress) holder).setImageClue(waypoint.getClue().getImage().getImage(), placeholderImage, errorImage);
             }
             if(waypoint.getHint().getImage() != null) {
-                ((ViewHolderQuestInProgress) holder).setImageHint(waypoint.getHint().getImage().getImage());
+                ((ViewHolderQuestInProgress) holder).setImageHint(waypoint.getHint().getImage().getImage(), placeholderImage, errorImage);
             }
             if(waypoint.getCompletion().getImage() != null){
-                ((ViewHolderQuestInProgress) holder).setImageComp(waypoint.getClue().getImage().getImage());
+                ((ViewHolderQuestInProgress) holder).setImageComp(waypoint.getClue().getImage().getImage(), placeholderImage, errorImage);
             }
             ((ViewHolderQuestInProgress) holder).setTxtCompMessage(waypoint.getCompletion().getText());
             ((ViewHolderQuestInProgress) holder).setTxtClue(waypoint.getClue().getText());
@@ -558,11 +563,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
          *
          * @param url
          */
-        public void setImageClue(String url) {
+        public void setImageClue(String url, Drawable placeholderImage, Drawable errorImage) {
             if(hasClueImage) {
                 Uri uri = Uri.parse(url);
-                Context imgContext = imgHint.getContext();
-                Picasso.with(imgContext).load(uri).into(imgHint);
+                Context imgContext = imgClue.getContext();
+                Picasso.with(imgContext).load(uri).placeholder(placeholderImage).error(errorImage).into(imgClue);
             }
 
         }
@@ -573,11 +578,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
          *
          * @param url
          */
-        public void setImageHint(String url) {
+        public void setImageHint(String url, Drawable placeholderImage, Drawable errorImage) {
             if(hasHintImage) {
                 Uri uri = Uri.parse(url);
                 Context imgContext = imgHint.getContext();
-                Picasso.with(imgContext).load(uri).into(imgHint);
+                Picasso.with(imgContext).load(uri).placeholder(placeholderImage).error(errorImage).into(imgHint);
             }
         }
 
@@ -587,11 +592,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
          *
          * @param url
          */
-        public void setImageComp(String url) {
+        public void setImageComp(String url, Drawable placeholderImage, Drawable errorImage) {
             if(hasCompImage) {
                 Uri uri = Uri.parse(url);
                 Context imgContext = imgCompImage.getContext();
-                Picasso.with(imgContext).load(uri).into(imgCompImage);
+                Picasso.with(imgContext).load(uri).placeholder(placeholderImage).error(errorImage).into(imgCompImage);
             }
         }
 

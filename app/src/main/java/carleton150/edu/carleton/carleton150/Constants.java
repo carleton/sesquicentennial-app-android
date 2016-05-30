@@ -35,7 +35,6 @@ public class Constants {
     //Default zoom and bearing for camera on map
     public static final int DEFAULT_ZOOM = 15;
     public static final int DEFAULT_BEARING = 0;
-    public static final int DEFAULT_MAX_ZOOM = 13;
 
     //Used in MyScaleInAnimationAdapter to set the size the image is scaled from
     public static final float DEFAULT_SCALE_FROM = .5f;
@@ -48,7 +47,7 @@ public class Constants {
     public static final String ICAL_FEED_URL = "https://go.carleton.edu/appevents";
     public static final String ICAL_FEED_DATE_REQUEST = "/?start_date=";
     public static final String ICAL_FEED_FORMAT_REQUEST = "&format=ical";
-    public static final String INFO_URL = "https://go.carleton.edu/appinfo";
+    public static final String INFO_URL = "http://go.carleton.edu/appinfo";
     public static final String USER_AGENT_STRING = "CarletonSesquicentennialApp 1.0";
 
     public static final String ICAL_FILE_NAME_WITH_EXTENSION = "carleton150Events.ics";

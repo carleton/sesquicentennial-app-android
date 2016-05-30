@@ -5,11 +5,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -82,7 +84,7 @@ public class QuestInProgressFragment extends MapMainFragment {
         if(viewCreated){
             if(quest == null && getUserVisibleHint()){
                MainActivity mainActivity = (MainActivity) getActivity();
-                mainActivity.onBackPressed();
+                mainActivity.questInProgressGoBack();
             }else if (quest == null){
                 goBack = true;
             }
@@ -166,7 +168,7 @@ public class QuestInProgressFragment extends MapMainFragment {
             quest = mainActivity.getQuestInProgress();
         }
         if(quest == null && getUserVisibleHint()){
-            mainActivity.onBackPressed();
+            mainActivity.questInProgressGoBack();
         }else if(quest == null){
             goBack = true;
         }
@@ -378,7 +380,7 @@ public class QuestInProgressFragment extends MapMainFragment {
     public void onResume() {
         super.onResume();
         MainActivity mainActivity = (MainActivity) getActivity();
-        if(getUserVisibleHint() && goBack){
+        if(getUserVisibleHint() && quest == null){
             mainActivity.onBackPressed();
         }
         setUpMapIfNeeded();
@@ -406,7 +408,7 @@ public class QuestInProgressFragment extends MapMainFragment {
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         MainActivity mainActivity = (MainActivity) getActivity();
-        if(isResumed() && goBack && isVisibleToUser){
+        if(quest == null && isVisibleToUser && isResumed()){
             mainActivity.onBackPressed();
         }
         needToShowOnCampusDialog = true;
@@ -556,7 +558,7 @@ public class QuestInProgressFragment extends MapMainFragment {
         }
 
         if(quest == null && getUserVisibleHint()){
-            mainActivity.onBackPressed();
+            mainActivity.questInProgressGoBack();
         }else if(quest == null){
             goBack = true;
         }
@@ -732,7 +734,7 @@ public class QuestInProgressFragment extends MapMainFragment {
             }
 
             if(quest == null && getUserVisibleHint()){
-                mainActivity.onBackPressed();
+                mainActivity.questInProgressGoBack();
             }else if(quest == null){
                 goBack = true;
             }
@@ -817,7 +819,9 @@ public class QuestInProgressFragment extends MapMainFragment {
     public void setImage(String imageURL, ImageView imageView) {
         Uri uri = Uri.parse(imageURL);
         Context imgContext = imageView.getContext();
-        Picasso.with(imgContext).load(uri).into(imageView);
+        Drawable placeholderImage = ContextCompat.getDrawable(getContext(), R.drawable.ic_loadingtransparent);
+        Drawable errorImage = ContextCompat.getDrawable(getContext(), R.drawable.ic_failed_loading_transparent);
+        Picasso.with(imgContext).load(uri).placeholder(placeholderImage).error(errorImage).into(imageView);
     }
 
     /**
@@ -886,8 +890,7 @@ public class QuestInProgressFragment extends MapMainFragment {
         fragmentTransaction.add(R.id.fragment_container_quest, recyclerViewPopoverFragment, "QuestProgressPopoverFragment");
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
-        //MainActivity mainActivity = (MainActivity) getActivity();
-        //mainActivity.getMyFragmentPagerAdapter().notifyDataSetChanged();
+
     }
 
     /**
@@ -909,8 +912,12 @@ public class QuestInProgressFragment extends MapMainFragment {
             return true;
         }
         return false;
-
     }
 
-
+    public void inView(){
+        MainActivity mainActivity = (MainActivity) getActivity();
+        if(quest == null && getUserVisibleHint() && isResumed()){
+            mainActivity.onBackPressed();
+        }
+    }
 }
