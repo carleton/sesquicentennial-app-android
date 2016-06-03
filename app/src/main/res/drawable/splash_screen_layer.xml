@@ -7,7 +7,7 @@
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/ic_sesquicentenniallogo"/>
+            android:src="@drawable/ic_carleton_app_logo"/>
     </item>
 
 </layer-list>

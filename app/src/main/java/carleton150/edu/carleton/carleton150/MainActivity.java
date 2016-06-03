@@ -187,8 +187,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 
-        //TODO: is this needed for old phones?
-        //tabLayout.setTabsFromPagerAdapter(adapter);
+
+        tabLayout.setTabsFromPagerAdapter(adapter);
 
         //Requests information
         if(isConnectedToNetwork()) {

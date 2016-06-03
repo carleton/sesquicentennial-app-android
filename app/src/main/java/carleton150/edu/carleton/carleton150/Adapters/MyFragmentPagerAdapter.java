@@ -51,7 +51,7 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
                 fragment = new HistoryFragment();
                 break;
             case 3:
-                if(mFragmentAtPos2 == null) {
+                if(mFragmentAtPos2 == null || mainActivity.getQuestInProgress() == null) {
                     mFragmentAtPos2 = new QuestFragment();
                     ((QuestFragment) mFragmentAtPos2).initialize(this);
                 }else if(mFragmentAtPos2 instanceof QuestInProgressFragment){
@@ -144,6 +144,12 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
      */
     public void backButtonPressed(){
         if(mFragmentAtPos2 instanceof QuestInProgressFragment || mFragmentAtPos2 instanceof QuestCompletedFragment){
+            fm.beginTransaction().remove(mFragmentAtPos2).commit();
+            mFragmentAtPos2 = new QuestFragment();
+            ((QuestFragment) mFragmentAtPos2).initialize(this);
+            notifyDataSetChanged();
+        }else if(currentFragment instanceof QuestInProgressFragment || currentFragment instanceof QuestCompletedFragment){
+            mFragmentAtPos2 = (MainFragment) currentFragment;
             fm.beginTransaction().remove(mFragmentAtPos2).commit();
             mFragmentAtPos2 = new QuestFragment();
             ((QuestFragment) mFragmentAtPos2).initialize(this);

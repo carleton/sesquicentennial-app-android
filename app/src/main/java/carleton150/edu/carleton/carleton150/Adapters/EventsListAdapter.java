@@ -232,7 +232,16 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
         }
 
         public void setLocation(String location) {
-            txtLocation.setText(location);
+            if(location == null){
+                txtLocation.setVisibility(View.GONE);
+            }else if(location.equals("")){
+                txtLocation.setVisibility(View.GONE);
+            }else if(location.equals("No Location")){
+                txtLocation.setVisibility(View.GONE);
+            } else {
+                txtLocation.setVisibility(View.VISIBLE);
+                txtLocation.setText(location);
+            }
         }
 
         public void setDescription(String description) {

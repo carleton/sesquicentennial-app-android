@@ -6,7 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 
 /**
  * Splash Activity
- * Basic activity to show up while app loads. Displays a simple Sesquicentennial logo
+ * Basic activity to show up while app loads. Displays a simple Carleton logo
  */
 public class SplashActivity extends AppCompatActivity {
 
