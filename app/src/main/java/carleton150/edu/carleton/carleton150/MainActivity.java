@@ -675,7 +675,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 requestingAllGeofencesNew = true;
             } else if (!requestingAllGeofencesNew && lastGeofenceUpdate != null) {
                 long minutesSinceUpdate = checkElapsedTime(lastGeofenceUpdate.getTime());
-                if (minutesSinceUpdate > 30) {
+                if (minutesSinceUpdate > Constants.MINUTES_BETWEEN_REFRESH) {
                     DownloadFileFromURL downloadFileFromURLGeofences = new DownloadFileFromURL(this, Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, this);
                     downloadFileFromURLGeofences.execute(Constants.NEW_GEOFENCES_ENDPOINT);
                     requestingAllGeofencesNew = true;
@@ -704,7 +704,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 requestingEvents = true;
             }else if(!requestingEvents && lastEventsUpdate !=null){
                 long minutesSinceUpdate = checkElapsedTime(lastEventsUpdate.getTime());
-                if (minutesSinceUpdate > 30) {
+                if (minutesSinceUpdate > Constants.MINUTES_BETWEEN_REFRESH) {
                     String url = buildEventsRequestURL();
                     DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, Constants.ICAL_FILE_NAME_WITH_EXTENSION, this);
                     downloadFileFromURL.execute(url);
@@ -764,7 +764,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 requestingQuests = true;
             }else if(!requestingQuests && lastQuestUpdate != null){
                 long minutesSinceLastUpdate = checkElapsedTime(lastQuestUpdate.getTime());
-                if(minutesSinceLastUpdate > 30){
+                if(minutesSinceLastUpdate > Constants.MINUTES_BETWEEN_REFRESH){
                     DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, Constants.QUESTS_FILE_NAME_WITH_EXTENSION, this);
                     downloadFileFromURL.execute(Constants.QUESTS_FEED_URL);
                     requestingQuests = true;

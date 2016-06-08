@@ -54,6 +54,8 @@ public class Constants {
     public static final String GEOFENCES_FILE_NAME_WITH_EXTENSION = "carleton150Geofences.txt";
     public static final String QUESTS_FILE_NAME_WITH_EXTENSION = "carleton150Quests.txt";
 
+    public static final int MINUTES_BETWEEN_REFRESH = 30;
+
     //urls for map tiling
     public static final String BASE_URL_STRING = " https://www.carleton.edu/global_stock/images/campus_map/tiles/base/%d_%d_%d.png";
     public static final String LABEL_URL_STRING = " https://www.carleton.edu/global_stock/images/campus_map/tiles/labels/%d_%d_%d.png";
