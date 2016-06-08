@@ -171,7 +171,7 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
      */
     @Override
     public void questCompleted(MainFragment fragment) {
-        if(mFragmentAtPos2 instanceof QuestInProgressFragment){
+        if(mFragmentAtPos2 instanceof QuestInProgressFragment || mFragmentAtPos2 instanceof QuestFragment){
             fm.beginTransaction().remove(mFragmentAtPos2).commit();
             mFragmentAtPos2 = fragment;
             ((QuestCompletedFragment)fragment).setQuestStartedListener(this);

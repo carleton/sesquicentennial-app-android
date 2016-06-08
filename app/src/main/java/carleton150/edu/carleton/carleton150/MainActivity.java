@@ -778,7 +778,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 parseQuests(Constants.QUESTS_FILE_NAME_WITH_EXTENSION, false);
             }else{
                 showNetworkNotConnectedDialog();
-                Log.i("NEWQUESTS", "MainActivity: requestQuests : file does not exist");
                 if(adapter.getCurrentFragment()instanceof QuestFragment){
                     ((QuestFragment)adapter.getCurrentFragment()).handleNewQuests(null);
                 }

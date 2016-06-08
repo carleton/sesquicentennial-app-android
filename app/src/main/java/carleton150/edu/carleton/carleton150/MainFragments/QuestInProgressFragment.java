@@ -386,9 +386,6 @@ public class QuestInProgressFragment extends MapMainFragment {
         setUpMapIfNeeded();
         fragmentInView();
         needToShowOnCampusDialog = true;
-        if(mainActivity.mLastLocation != null){
-            drawLocationMarker(mainActivity.mLastLocation);
-        }
         drawTiles();
         if(!locationUpdatesRequested && getUserVisibleHint()) {
             if(mainActivity.checkIfGPSEnabled()){
@@ -493,8 +490,10 @@ public class QuestInProgressFragment extends MapMainFragment {
     protected void setUpMap() {
 
         super.setUpMap();
+
+        MainActivity mainActivity = (MainActivity) getActivity();
         // to get rid of blue dot showing user's location
-        mMap.setMyLocationEnabled(false);
+        mMap.setMyLocationEnabled(mainActivity.checkIfGPSEnabled());
     }
 
 
@@ -507,7 +506,6 @@ public class QuestInProgressFragment extends MapMainFragment {
     public void handleLocationChange(Location newLocation) {
         super.handleLocationChange(newLocation);
         setCamera(newLocation, zoomToUserLocation);
-        drawLocationMarker(newLocation);
         MainActivity mainActivity = (MainActivity) getActivity();
         if(mainActivity != null) {
             if (mainActivity.mLastLocation != null) {
@@ -520,26 +518,6 @@ public class QuestInProgressFragment extends MapMainFragment {
         }
     }
 
-    /**
-     * draws a custom location marker for the user's current location
-     * @param newLocation
-     */
-    private void drawLocationMarker(Location newLocation) {
-        if(mMap != null) {
-            if(curLocationMarker != null) {
-                curLocationMarker.remove();
-            }
-            Bitmap knightIcon = BitmapFactory.decodeResource(getResources(), R.drawable.knight_horse_icon);
-            LatLng position = new LatLng(newLocation.getLatitude(), newLocation.getLongitude());
-            BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(knightIcon);
-            curLocationMarker = mMap.addMarker(new MarkerOptions()
-                    .position(position)
-                    .title(getString(R.string.current_loaction))
-                    .icon(icon));
-        }else{
-            Log.i(LogMessages.LOCATION, "QuestInProgressFragment : drawLocationMarker : mMap is null");
-        }
-    }
 
 
 
@@ -688,15 +666,21 @@ public class QuestInProgressFragment extends MapMainFragment {
         TextView txtQuestCompleted = (TextView) v.findViewById(R.id.txt_completion_message);
         final RelativeLayout relLayoutQuestCompleted = (RelativeLayout) v.findViewById(R.id.rel_layout_quest_completed);
         Button btnDoneWithQuest = (Button) v.findViewById(R.id.btn_done_with_quest);
-        txtQuestCompleted.setText(quest.getWaypoints()[numClue].getCompletion().getText());
+        if(quest.getWaypoints()[numClue].getCompletion() != null) {
+            txtQuestCompleted.setText(quest.getWaypoints()[numClue].getCompletion().getText());
+            if(quest.getWaypoints()[numClue].getCompletion().getImage() != null){
+                setImage(quest.getWaypoints()[numClue].getCompletion().getImage().getImage(), imgQuestCompleted);
+            }else{
+                imgQuestCompleted.setVisibility(View.GONE);
+            }
+        }else{
+            txtQuestCompleted.setText(getString(R.string.default_clue_completion_message));
+            imgQuestCompleted.setVisibility(View.GONE);
+        }
         txtQuestCompleted.setMovementMethod(new ScrollingMovementMethod());
         txtQuestCompleted.scrollTo(0, 0);
 
-        if(quest.getWaypoints()[numClue].getCompletion().getImage() != null){
-            setImage(quest.getWaypoints()[numClue].getCompletion().getImage().getImage(), imgQuestCompleted);
-        }else{
-            imgQuestCompleted.setVisibility(View.GONE);
-        }
+
         relLayoutQuestCompleted.setVisibility(View.VISIBLE);
         btnDoneWithQuest.setText(getString(R.string.continue_to_next_hint));
         btnDoneWithQuest.setOnClickListener(new View.OnClickListener() {
@@ -716,9 +700,7 @@ public class QuestInProgressFragment extends MapMainFragment {
     public void fragmentInView() {
         updateCurrentWaypoint();
         MainActivity mainActivity = (MainActivity) getActivity();
-        if(mainActivity.mLastLocation != null){
-            drawLocationMarker(mainActivity.mLastLocation);
-        }
+
         if (this.isResumed()) {
             if (!inView) {
                 inView = true;

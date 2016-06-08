@@ -19,11 +19,13 @@ import com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager;
 import java.util.ArrayList;
 
 import carleton150.edu.carleton.carleton150.Adapters.QuestAdapter;
+import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.Interfaces.RecyclerViewClickListener;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
+import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;
 import carleton150.edu.carleton.carleton150.R;
 
 import static carleton150.edu.carleton.carleton150.R.id.txt_request_quests;
@@ -172,12 +174,18 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
                         MainActivity mainActivity = (MainActivity) getActivity();
                         mainActivity.setQuestInProgress(quest);
                         mainActivity.setResume(true);
-                        QuestInProgressFragment fr=new QuestInProgressFragment();
-                        fr.initialize(quest, true);
-                        if(questStartedListener == null){
-                            questStartedListener = mainActivity.getQuestStartedListener();
+                        boolean questCompleted = checkIfQuestCompleted(quest);
+                        if(questCompleted){
+                            showQuestCompletedFragment(quest);
+                        }else {
+                            QuestInProgressFragment fr = new QuestInProgressFragment();
+
+                            fr.initialize(quest, true);
+                            if (questStartedListener == null) {
+                                questStartedListener = mainActivity.getQuestStartedListener();
+                            }
+                            questStartedListener.questStarted(fr);
                         }
-                        questStartedListener.questStarted(fr);
                         dialog.cancel();
                     }
                 })
@@ -197,6 +205,28 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
                     }
                 })
                 .create());
+    }
+
+    private boolean checkIfQuestCompleted(Quest quest){
+        Waypoint[] waypoints = quest.getWaypoints();
+        MainActivity mainActivity = (MainActivity) getActivity();
+        int curClue = mainActivity.getPersistentQuestStorage().getInt(quest.getName(), 0);
+
+        if(curClue == waypoints.length){
+            return true;
+        }
+        return false;
+    }
+
+    private void showQuestCompletedFragment(Quest quest){
+        QuestCompletedFragment fr = new QuestCompletedFragment();
+        fr.initialize(quest);
+        if(questStartedListener == null){
+            MainActivity mainActivity = (MainActivity) getActivity();
+            questStartedListener = mainActivity.getQuestStartedListener();
+        }
+        questStartedListener.questCompleted(fr);
+        fr.setQuestStartedListener(questStartedListener);
     }
 
     /**

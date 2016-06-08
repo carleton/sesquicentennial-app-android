@@ -99,6 +99,10 @@ public class QuestCompletedFragment extends MainFragment {
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(questStartedListener == null){
+                    MainActivity mainActivity = (MainActivity) getActivity();
+                    questStartedListener = mainActivity.getQuestStartedListener();
+                }
                 questStartedListener.goBackToQuestScreen();
             }
         });

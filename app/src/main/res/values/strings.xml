@@ -89,6 +89,7 @@
     <string name="medium">Medium</string>
     <string name="hard">Hard</string>
     <string name="loading">Loading...</string>
+    <string name="default_clue_completion_message">Clue completed!</string>
     <string name="unable_to_load_image">Unable to load image. Please check your network connection and try again.</string>
 
 
