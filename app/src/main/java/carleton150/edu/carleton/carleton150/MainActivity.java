@@ -674,8 +674,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 downloadFileFromURLGeofences.execute(Constants.NEW_GEOFENCES_ENDPOINT);
                 requestingAllGeofencesNew = true;
             } else if (!requestingAllGeofencesNew && lastGeofenceUpdate != null) {
-                long hoursSinceUpdate = checkElapsedTime(lastGeofenceUpdate.getTime());
-                if (hoursSinceUpdate > 5) {
+                long minutesSinceUpdate = checkElapsedTime(lastGeofenceUpdate.getTime());
+                if (minutesSinceUpdate > 30) {
                     DownloadFileFromURL downloadFileFromURLGeofences = new DownloadFileFromURL(this, Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, this);
                     downloadFileFromURLGeofences.execute(Constants.NEW_GEOFENCES_ENDPOINT);
                     requestingAllGeofencesNew = true;
@@ -703,8 +703,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 downloadFileFromURL.execute(url);
                 requestingEvents = true;
             }else if(!requestingEvents && lastEventsUpdate !=null){
-                long hoursSinceUpdate = checkElapsedTime(lastEventsUpdate.getTime());
-                if (hoursSinceUpdate > 5) {
+                long minutesSinceUpdate = checkElapsedTime(lastEventsUpdate.getTime());
+                if (minutesSinceUpdate > 30) {
                     String url = buildEventsRequestURL();
                     DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, Constants.ICAL_FILE_NAME_WITH_EXTENSION, this);
                     downloadFileFromURL.execute(url);
@@ -712,6 +712,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             }
         }else{
+
             if(fileExists(Constants.ICAL_FILE_NAME_WITH_EXTENSION)){
                 parseIcalFeed(Constants.ICAL_FILE_NAME_WITH_EXTENSION, false);
             }else{
@@ -726,15 +727,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     /**
      *
      * @param previousTime long representation of a time
-     * @return elapsed time between previousTime and current time in hours
+     * @return elapsed time between previousTime and current time in minutes
      */
     private long checkElapsedTime(long previousTime){
         Calendar currentTime = Calendar.getInstance();
         java.util.Date currentDate = currentTime.getTime();
         long time = currentDate.getTime();
         //converting ms to hours
-        long hoursSinceUpdate = (time - previousTime) / (1000 * 60 * 60);
-        return hoursSinceUpdate;
+        long minutesSinceUpdate = (time - previousTime) / (1000 * 60);
+        return minutesSinceUpdate;
     }
 
     /**
@@ -762,8 +763,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 downloadFileFromURL.execute(Constants.QUESTS_FEED_URL);
                 requestingQuests = true;
             }else if(!requestingQuests && lastQuestUpdate != null){
-                long hoursSinceLastUpdate = checkElapsedTime(lastQuestUpdate.getTime());
-                if(hoursSinceLastUpdate > 5){
+                long minutesSinceLastUpdate = checkElapsedTime(lastQuestUpdate.getTime());
+                if(minutesSinceLastUpdate > 30){
                     DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, Constants.QUESTS_FILE_NAME_WITH_EXTENSION, this);
                     downloadFileFromURL.execute(Constants.QUESTS_FEED_URL);
                     requestingQuests = true;

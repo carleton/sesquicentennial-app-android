@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.LinkedHashMap;
 
 import carleton150.edu.carleton.carleton150.Constants;
@@ -20,6 +21,8 @@ import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
  * without checking which type of fragment is currently in view
  */
 public class MainFragment extends Fragment{
+
+    public long timeOfLastRefresh = -1;
 
     /**
      * Required empty constructor
@@ -81,6 +84,31 @@ public class MainFragment extends Fragment{
 
     public void handleNewQuests(ArrayList<Quest> newQuests){
 
+    }
+
+
+    /**
+     *
+     * @param previousTime long representation of a time
+     * @return elapsed time between previousTime and current time in minutes or -1
+     * if the page has not been refreshed
+     */
+    public long checkElapsedTime(long previousTime){
+        if (previousTime == -1){
+            return -1;
+        }
+        Calendar currentTime = Calendar.getInstance();
+        java.util.Date currentDate = currentTime.getTime();
+        long time = currentDate.getTime();
+        //converting ms to hours
+        long minutesSinceUpdate = (time - previousTime) / (1000 * 60);
+        return minutesSinceUpdate;
+    }
+
+    public void setTimeOfLastRefresh(){
+        Calendar currentTime = Calendar.getInstance();
+        java.util.Date currentDate = currentTime.getTime();
+        timeOfLastRefresh = currentDate.getTime();
     }
 }
 

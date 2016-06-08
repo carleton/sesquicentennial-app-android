@@ -22,6 +22,7 @@ import carleton150.edu.carleton.carleton150.Adapters.QuestAdapter;
 import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.carleton150.Interfaces.RecyclerViewClickListener;
 import carleton150.edu.carleton.carleton150.MainActivity;
+import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.R;
 
@@ -324,6 +325,22 @@ public class QuestFragment extends MainFragment implements RecyclerViewClickList
             if (questInfo == null) {
                 mainActivity.requestQuests();
             } else {
+                mainActivity.requestQuests();
+                handleNewQuests(questInfo);
+            }
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(isVisible()){
+            MainActivity mainActivity = (MainActivity) getActivity();
+            questInfo = mainActivity.getQuests();
+            if (questInfo == null) {
+                mainActivity.requestQuests();
+            } else {
+                mainActivity.requestQuests();
                 handleNewQuests(questInfo);
             }
         }

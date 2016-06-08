@@ -38,7 +38,6 @@ public class HomeFragment extends MainFragment {
     String curURL;
     URL secondURL = null;
     View v;
-    private long timeOfLastRefresh = -1;
     public static WebView myWebView;
     public static WebView myLoadingWebView;
     public HomeFragment() {
@@ -105,9 +104,7 @@ public class HomeFragment extends MainFragment {
             }
         });
 
-        Calendar currentTime = Calendar.getInstance();
-        java.util.Date currentDate = currentTime.getTime();
-        timeOfLastRefresh = currentDate.getTime();
+        setTimeOfLastRefresh();
         return v;
     }
 
@@ -192,31 +189,8 @@ public class HomeFragment extends MainFragment {
             }else{
                 myWebView.loadData(Constants.NO_INTERNET_HTML, "text/html", null);
             }
-            Calendar currentTime = Calendar.getInstance();
-            java.util.Date currentDate = currentTime.getTime();
-            timeOfLastRefresh = currentDate.getTime();
+            setTimeOfLastRefresh();
         }
-    }
-
-
-
-
-    /**
-     *
-     * @param previousTime long representation of a time
-     * @return elapsed time between previousTime and current time in minutes or -1
-     * if the page has not been refreshed
-     */
-    private long checkElapsedTime(long previousTime){
-        if (timeOfLastRefresh == -1){
-            return -1;
-        }
-        Calendar currentTime = Calendar.getInstance();
-        java.util.Date currentDate = currentTime.getTime();
-        long time = currentDate.getTime();
-        //converting ms to hours
-        long minutesSinceUpdate = (time - previousTime) / (1000 * 60);
-        return minutesSinceUpdate;
     }
 
     /**

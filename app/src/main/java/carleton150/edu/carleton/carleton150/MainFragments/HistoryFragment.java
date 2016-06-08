@@ -190,18 +190,6 @@ public class HistoryFragment extends MapMainFragment{
     }
 
 
-    /**
-     * Lifecycle method overridden to set up the map and check for internet connectivity
-     * when the fragment comes into focus. If fragment is not already monitoring geofences,
-     * begins monitoring geofences
-     */
-    @Override
-    public void onResume() {
-        super.onResume();
-        MainActivity mainActivity = (MainActivity) getActivity();
-        setUpMapIfNeeded();
-        mMap.setMyLocationEnabled(mainActivity.checkIfGPSEnabled());
-    }
 
     /**
      * Adds a marker to the map for each item in geofenceToAdd
@@ -417,8 +405,32 @@ public class HistoryFragment extends MapMainFragment{
             if (allGeofences == null) {
                 mainActivity.requestGeofences();
             } else {
+                mainActivity.requestGeofences();
                 addNewGeofenceInfoNew(allGeofences);
             }
         }
     }
+
+    /**
+     * Lifecycle method overridden to set up the map and check for internet connectivity
+     * when the fragment comes into focus. If fragment is not already monitoring geofences,
+     * begins monitoring geofences
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        MainActivity mainActivity = (MainActivity) getActivity();
+        setUpMapIfNeeded();
+        mMap.setMyLocationEnabled(mainActivity.checkIfGPSEnabled());
+        if(isVisible()){
+            allGeofences = mainActivity.getAllGeofencesNew();
+            if (allGeofences == null) {
+                mainActivity.requestGeofences();
+            } else {
+                mainActivity.requestGeofences();
+                addNewGeofenceInfoNew(allGeofences);
+            }
+        }
+    }
+
 }

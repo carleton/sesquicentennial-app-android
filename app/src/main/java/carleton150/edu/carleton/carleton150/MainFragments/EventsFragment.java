@@ -44,7 +44,6 @@ public class EventsFragment extends MainFragment {
     private static View v;
     private RecyclerViewPager dates;
     private LinkedHashMap<String, Integer> eventsMapByDate;
-    private int screenWidth;
     private LinearLayoutManager dateLayoutManager;
     private EventDateCardAdapter eventDateCardAdapter;
 
@@ -88,6 +87,7 @@ public class EventsFragment extends MainFragment {
         if(eventsMapByDate == null){
             mainActivity.requestEvents();
         }else{
+            mainActivity.requestEvents();
             handleNewEvents(eventsMapByDate, eventContents);
         }
 
@@ -302,6 +302,23 @@ public class EventsFragment extends MainFragment {
             if (eventsMapByDate == null || eventsList == null) {
                 mainActivity.requestEvents();
             } else {
+                mainActivity.requestEvents();
+                handleNewEvents(eventsMapByDate, eventsArray);
+            }
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(isVisible()){
+            MainActivity mainActivity = (MainActivity) getActivity();
+            eventsMapByDate = mainActivity.getEventsMapByDate();
+            ArrayList<EventContent> eventsArray = mainActivity.getAllEvents();
+            if (eventsMapByDate == null || eventsList == null) {
+                mainActivity.requestEvents();
+            } else {
+                mainActivity.requestEvents();
                 handleNewEvents(eventsMapByDate, eventsArray);
             }
         }
