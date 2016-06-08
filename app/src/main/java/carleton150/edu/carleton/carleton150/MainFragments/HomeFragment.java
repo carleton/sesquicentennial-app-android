@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.ImageButton;
 
 import org.xml.sax.XMLReader;
 
@@ -17,6 +19,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Calendar;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -24,6 +27,8 @@ import javax.xml.parsers.SAXParserFactory;
 import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.R;
+
+import static carleton150.edu.carleton.carleton150.R.id.btn_refresh;
 
 /**
  * Fragment to display a webview that contains information about the app
@@ -33,7 +38,9 @@ public class HomeFragment extends MainFragment {
     String curURL;
     URL secondURL = null;
     View v;
+    private long timeOfLastRefresh = -1;
     public static WebView myWebView;
+    public static WebView myLoadingWebView;
     public HomeFragment() {
         // Required empty public constructor
     }
@@ -57,16 +64,50 @@ public class HomeFragment extends MainFragment {
 
         runner.execute(curURL);
 
+
+
         myWebView = (WebView) v.findViewById(R.id.web_view);
+        myLoadingWebView = (WebView) v.findViewById(R.id.web_view_loading);
+        myLoadingWebView.loadData(Constants.LOADING_PAGE, "text/html", null);
         myWebView.getSettings().setUserAgentString(Constants.USER_AGENT_STRING);
         myWebView.getSettings().setJavaScriptEnabled(true);
-        myWebView.setWebViewClient(new WebViewClient());
-        MainActivity mainActivity = (MainActivity) getActivity();
+        myWebView.setWebViewClient(new WebViewClient() {
+
+            public void onPageFinished(WebView view, String url) {
+                Log.i("Loading screen", "page finished");
+                myLoadingWebView.setVisibility(View.GONE);
+                myWebView.setVisibility(View.VISIBLE);
+                super.onPageFinished(view, url);
+            }
+
+
+        });
+        final MainActivity mainActivity = (MainActivity) getActivity();
         if(mainActivity.isConnectedToNetwork()) {
+            Log.i("Loading screen", "loading url");
             myWebView.loadUrl(curURL);
         }else{
+            Log.i("Loading screen", "loading data");
             myWebView.loadData(Constants.NO_INTERNET_HTML, "text/html", null);
         }
+
+        ImageButton btnRefresh = (ImageButton) v.findViewById(btn_refresh);
+        btnRefresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mainActivity.isConnectedToNetwork()){
+                    myWebView.reload();
+                    myWebView.setVisibility(View.GONE);
+                    myLoadingWebView.setVisibility(View.VISIBLE);
+                }else{
+                    myWebView.loadData(Constants.NO_INTERNET_HTML, "text/html", null);
+                }
+            }
+        });
+
+        Calendar currentTime = Calendar.getInstance();
+        java.util.Date currentDate = currentTime.getTime();
+        timeOfLastRefresh = currentDate.getTime();
         return v;
     }
 
@@ -80,8 +121,8 @@ public class HomeFragment extends MainFragment {
         myWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if(secondURL != null){
-                    if(url.equals(secondURL.toString())) {
+                if (secondURL != null) {
+                    if (url.equals(secondURL.toString())) {
                         return false;
                     }
                 }
@@ -89,6 +130,14 @@ public class HomeFragment extends MainFragment {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 startActivity(browserIntent);
                 return true;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                Log.i("Loading screen", "page finished");
+                myLoadingWebView.setVisibility(View.GONE);
+                myWebView.setVisibility(View.VISIBLE);
+                super.onPageFinished(view, url);
             }
         });
     }
@@ -106,6 +155,7 @@ public class HomeFragment extends MainFragment {
     public void onResume() {
         super.onResume();
         if(getUserVisibleHint()){
+            refreshWebViewIfNecessary();
             MainActivity mainActivity = (MainActivity) getActivity();
             if(!mainActivity.isConnectedToNetwork()){
                 mainActivity.showNetworkNotConnectedDialog();
@@ -121,11 +171,52 @@ public class HomeFragment extends MainFragment {
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if(isVisibleToUser && isResumed()){
+            refreshWebViewIfNecessary();
             MainActivity mainActivity = (MainActivity) getActivity();
             if(!mainActivity.isConnectedToNetwork()){
                 mainActivity.showNetworkNotConnectedDialog();
             }
+
         }
+    }
+
+    /**
+     * If over five minutes have passed since the last refresh, refreshes
+     * the web view
+     */
+    private void refreshWebViewIfNecessary(){
+        MainActivity mainActivity = (MainActivity) getActivity();
+        if(checkElapsedTime(timeOfLastRefresh) > 5){
+            if(mainActivity.isConnectedToNetwork()) {
+                myWebView.reload();
+            }else{
+                myWebView.loadData(Constants.NO_INTERNET_HTML, "text/html", null);
+            }
+            Calendar currentTime = Calendar.getInstance();
+            java.util.Date currentDate = currentTime.getTime();
+            timeOfLastRefresh = currentDate.getTime();
+        }
+    }
+
+
+
+
+    /**
+     *
+     * @param previousTime long representation of a time
+     * @return elapsed time between previousTime and current time in minutes or -1
+     * if the page has not been refreshed
+     */
+    private long checkElapsedTime(long previousTime){
+        if (timeOfLastRefresh == -1){
+            return -1;
+        }
+        Calendar currentTime = Calendar.getInstance();
+        java.util.Date currentDate = currentTime.getTime();
+        long time = currentDate.getTime();
+        //converting ms to hours
+        long minutesSinceUpdate = (time - previousTime) / (1000 * 60);
+        return minutesSinceUpdate;
     }
 
     /**

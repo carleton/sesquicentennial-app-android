@@ -161,6 +161,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         adapter.initialize(this, manager);
         final NoSwipeViewPager viewPager = (NoSwipeViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(adapter);
+        //keeps all pages cached
+        viewPager.setOffscreenPageLimit(4);
         final TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
 
         tabLayout.post(new Runnable() {

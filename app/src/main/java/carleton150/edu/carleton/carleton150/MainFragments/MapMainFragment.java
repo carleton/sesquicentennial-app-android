@@ -2,6 +2,7 @@ package carleton150.edu.carleton.carleton150.MainFragments;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.View;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -72,8 +73,11 @@ public class MapMainFragment extends MainFragment {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
-            mMap = ((SupportMapFragment) getChildFragmentManager()
-                    .findFragmentById(R.id.my_map)).getMap();
+            SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.my_map);
+            if(mapFragment != null){
+                mMap = mapFragment.getMap();
+            }
+
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
                 setUpMap();
