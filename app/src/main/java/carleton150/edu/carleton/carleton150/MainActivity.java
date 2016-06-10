@@ -66,6 +66,7 @@ import carleton150.edu.carleton.carleton150.MainFragments.HomeFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.MainFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestInProgressFragment;
+import carleton150.edu.carleton.carleton150.Models.ConnectionBroadcastReceiver;
 import carleton150.edu.carleton.carleton150.Models.DownloadFileFromURL;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfo.AllGeofences;
@@ -103,6 +104,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ArrayList<Quest> questInfo = null;
     private java.util.Date lastQuestUpdate;
     private boolean resumeQuest = false;
+
+    private boolean webViewLoaded = false;
 
     //For retrieving and handling event info
     private LinkedHashMap<String, Integer> eventsMapByDate;
@@ -194,10 +197,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         //Requests information
         if(isConnectedToNetwork()) {
-            requestGeofences();
-            requestEvents();
-            requestQuests();
+           //requestGeofences();
+           //requestEvents();
+          // requestQuests();
         }
+    }
+
+    public void requestAll(){
+        requestGeofences();
+        requestEvents();
+        requestQuests();
+    }
+
+    public void setWebViewLoaded(boolean loaded){
+       this.webViewLoaded = loaded;
     }
 
     @Override
@@ -668,27 +681,31 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * them
      */
     public void requestGeofences(){
-        if(isConnectedToNetwork()) {
-            if (!requestingAllGeofencesNew && lastGeofenceUpdate == null) {
-                DownloadFileFromURL downloadFileFromURLGeofences = new DownloadFileFromURL(this, Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, this);
-                downloadFileFromURLGeofences.execute(Constants.NEW_GEOFENCES_ENDPOINT);
-                requestingAllGeofencesNew = true;
-            } else if (!requestingAllGeofencesNew && lastGeofenceUpdate != null) {
-                long minutesSinceUpdate = checkElapsedTime(lastGeofenceUpdate.getTime());
-                if (minutesSinceUpdate > Constants.MINUTES_BETWEEN_REFRESH) {
-                    DownloadFileFromURL downloadFileFromURLGeofences = new DownloadFileFromURL(this, Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, this);
-                    downloadFileFromURLGeofences.execute(Constants.NEW_GEOFENCES_ENDPOINT);
-                    requestingAllGeofencesNew = true;
+
+            if (isConnectedToNetwork()) {
+                if(webViewLoaded) {
+                    if (!requestingAllGeofencesNew && lastGeofenceUpdate == null) {
+                        DownloadFileFromURL downloadFileFromURLGeofences = new DownloadFileFromURL(this, Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, this);
+                        downloadFileFromURLGeofences.execute(Constants.NEW_GEOFENCES_ENDPOINT);
+                        requestingAllGeofencesNew = true;
+                    } else if (!requestingAllGeofencesNew && lastGeofenceUpdate != null) {
+                        long minutesSinceUpdate = checkElapsedTime(lastGeofenceUpdate.getTime());
+                        if (minutesSinceUpdate > Constants.MINUTES_BETWEEN_REFRESH) {
+                            DownloadFileFromURL downloadFileFromURLGeofences = new DownloadFileFromURL(this, Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, this);
+                            downloadFileFromURLGeofences.execute(Constants.NEW_GEOFENCES_ENDPOINT);
+                            requestingAllGeofencesNew = true;
+                        }
+                    }
+                }
+            } else if (fileExists(Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)) {
+                parseGeofences(Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, false);
+            } else {
+                showNetworkNotConnectedDialog();
+                if (adapter.getCurrentFragment() instanceof HistoryFragment) {
+                    ((HistoryFragment) adapter.getCurrentFragment()).addNewGeofenceInfoNew(null);
                 }
             }
-        }else if(fileExists(Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)){
-            parseGeofences(Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, false);
-        }else{
-            showNetworkNotConnectedDialog();
-            if(adapter.getCurrentFragment() instanceof HistoryFragment) {
-                ((HistoryFragment) adapter.getCurrentFragment()).addNewGeofenceInfoNew(null);
-            }
-        }
+
     }
 
     /**
@@ -696,19 +713,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * gets the feed from app internal storage and parses it
      */
     public void requestEvents(){
+
         if(isConnectedToNetwork()) {
-            if (!requestingEvents && lastEventsUpdate == null) {
-                String url = buildEventsRequestURL();
-                DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, Constants.ICAL_FILE_NAME_WITH_EXTENSION, this);
-                downloadFileFromURL.execute(url);
-                requestingEvents = true;
-            }else if(!requestingEvents && lastEventsUpdate !=null){
-                long minutesSinceUpdate = checkElapsedTime(lastEventsUpdate.getTime());
-                if (minutesSinceUpdate > Constants.MINUTES_BETWEEN_REFRESH) {
+            if(webViewLoaded) {
+                if (!requestingEvents && lastEventsUpdate == null) {
                     String url = buildEventsRequestURL();
                     DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, Constants.ICAL_FILE_NAME_WITH_EXTENSION, this);
                     downloadFileFromURL.execute(url);
                     requestingEvents = true;
+                } else if (!requestingEvents && lastEventsUpdate != null) {
+                    long minutesSinceUpdate = checkElapsedTime(lastEventsUpdate.getTime());
+                    if (minutesSinceUpdate > Constants.MINUTES_BETWEEN_REFRESH) {
+                        String url = buildEventsRequestURL();
+                        DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, Constants.ICAL_FILE_NAME_WITH_EXTENSION, this);
+                        downloadFileFromURL.execute(url);
+                        requestingEvents = true;
+                    }
                 }
             }
         }else{
@@ -757,23 +777,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * internal storage
      */
     public void requestQuests(){
+
         if(isConnectedToNetwork()) {
-            if (lastQuestUpdate == null && !requestingQuests) {
-                DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, Constants.QUESTS_FILE_NAME_WITH_EXTENSION, this);
-                downloadFileFromURL.execute(Constants.QUESTS_FEED_URL);
-                requestingQuests = true;
-            }else if(!requestingQuests && lastQuestUpdate != null){
-                long minutesSinceLastUpdate = checkElapsedTime(lastQuestUpdate.getTime());
-                if(minutesSinceLastUpdate > Constants.MINUTES_BETWEEN_REFRESH){
+            if(webViewLoaded) {
+                if (lastQuestUpdate == null && !requestingQuests) {
                     DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, Constants.QUESTS_FILE_NAME_WITH_EXTENSION, this);
                     downloadFileFromURL.execute(Constants.QUESTS_FEED_URL);
                     requestingQuests = true;
+                } else if (!requestingQuests && lastQuestUpdate != null) {
+                    long minutesSinceLastUpdate = checkElapsedTime(lastQuestUpdate.getTime());
+                    if (minutesSinceLastUpdate > Constants.MINUTES_BETWEEN_REFRESH) {
+                        DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, Constants.QUESTS_FILE_NAME_WITH_EXTENSION, this);
+                        downloadFileFromURL.execute(Constants.QUESTS_FEED_URL);
+                        requestingQuests = true;
+                    }
                 }
             }
         }else{
             if(fileExists(Constants.QUESTS_FILE_NAME_WITH_EXTENSION)){
-                Log.i("NEWQUESTS", "MainActivity: requestQuests : file does exist");
-                Log.i("INTERNAL STORAGE DEBUG", "MainActivity: requestQuests: file does exist");
 
                 parseQuests(Constants.QUESTS_FILE_NAME_WITH_EXTENSION, false);
             }else{
@@ -933,7 +954,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     private void buildEventContent(net.fortuna.ical4j.model.Calendar calendar, boolean isNewInfo){
 
-        Log.i("EVENT DEBUGGING", "MainActivity: buildEventContent: calendar component size is: " + calendar.getComponents().size());
         ComponentList componentList = calendar.getComponents();
         ArrayList<EventContent> eventContents = new ArrayList<>();
         boolean addComponent = true;

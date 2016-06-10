@@ -19,14 +19,21 @@ import carleton150.edu.carleton.carleton150.MainFragments.HomeFragment;
 
 public class ConnectionBroadcastReceiver extends BroadcastReceiver {
 
+    private final HomeFragment homeFragment;
+
+    public ConnectionBroadcastReceiver(HomeFragment homeFragment){
+        this.homeFragment = homeFragment;
+
+    }
     @Override
     public void onReceive(Context context, Intent intent) {
         ConnectivityManager cm = (ConnectivityManager)
                 context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         if (netInfo != null && netInfo.isConnectedOrConnecting()) {
-            if(HomeFragment.myWebView != null) {
-                HomeFragment.loadWebContent();
+            if(homeFragment.myWebView != null) {
+                homeFragment.loadWebContent();
+                //HomeFragment.loadWebContent();
             }
         }
     }

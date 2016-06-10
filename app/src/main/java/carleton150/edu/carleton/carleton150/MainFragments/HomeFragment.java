@@ -1,6 +1,8 @@
 package carleton150.edu.carleton.carleton150.MainFragments;
 
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -10,22 +12,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
 import android.widget.ImageButton;
-
-import org.xml.sax.XMLReader;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Calendar;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.MainActivity;
+import carleton150.edu.carleton.carleton150.Models.ConnectionBroadcastReceiver;
 import carleton150.edu.carleton.carleton150.R;
 
 import static carleton150.edu.carleton.carleton150.R.id.btn_refresh;
@@ -40,8 +36,24 @@ public class HomeFragment extends MainFragment {
     View v;
     public static WebView myWebView;
     public static WebView myLoadingWebView;
+
+    IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+
+    CheckRedirectURLAsyncTask runner = new CheckRedirectURLAsyncTask();
+
+
+    private ConnectionBroadcastReceiver connectionBroadcastReceiver = new ConnectionBroadcastReceiver(this);
+    private boolean connectionBroadcastReceiverRegisterred = false;
+
     public HomeFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        registerConnectionBroadcastReceiver();
+
     }
 
     /**
@@ -59,11 +71,15 @@ public class HomeFragment extends MainFragment {
         v = inflater.inflate(R.layout.fragment_info, container, false);
         curURL = Constants.INFO_URL;
 
-        CheckRedirectURLAsyncTask runner = new CheckRedirectURLAsyncTask();
-
-        runner.execute(curURL);
 
 
+
+        final MainActivity mainActivity = (MainActivity) getActivity();
+
+
+        if(mainActivity.isConnectedToNetwork()) {
+            runner.execute(curURL);
+        }
 
         myWebView = (WebView) v.findViewById(R.id.web_view);
         myLoadingWebView = (WebView) v.findViewById(R.id.web_view_loading);
@@ -73,20 +89,18 @@ public class HomeFragment extends MainFragment {
         myWebView.setWebViewClient(new WebViewClient() {
 
             public void onPageFinished(WebView view, String url) {
-                Log.i("Loading screen", "page finished");
                 myLoadingWebView.setVisibility(View.GONE);
                 myWebView.setVisibility(View.VISIBLE);
+                mainActivity.setWebViewLoaded(true);
+                mainActivity.requestAll();
                 super.onPageFinished(view, url);
             }
 
 
         });
-        final MainActivity mainActivity = (MainActivity) getActivity();
         if(mainActivity.isConnectedToNetwork()) {
-            Log.i("Loading screen", "loading url");
             myWebView.loadUrl(curURL);
         }else{
-            Log.i("Loading screen", "loading data");
             myWebView.loadData(Constants.NO_INTERNET_HTML, "text/html", null);
         }
 
@@ -95,7 +109,7 @@ public class HomeFragment extends MainFragment {
             @Override
             public void onClick(View view) {
                 if(mainActivity.isConnectedToNetwork()){
-                    myWebView.reload();
+                    myWebView.loadUrl(curURL);
                     myWebView.setVisibility(View.GONE);
                     myLoadingWebView.setVisibility(View.VISIBLE);
                 }else{
@@ -131,18 +145,29 @@ public class HomeFragment extends MainFragment {
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                Log.i("Loading screen", "page finished");
                 myLoadingWebView.setVisibility(View.GONE);
                 myWebView.setVisibility(View.VISIBLE);
+                MainActivity mainActivity = (MainActivity) getActivity();
+                mainActivity.setWebViewLoaded(true);
+                mainActivity.requestAll();
                 super.onPageFinished(view, url);
             }
         });
     }
 
 
-    public static void loadWebContent(){
-        myWebView.loadUrl(Constants.INFO_URL);
+    public void loadWebContent(){
+        if(secondURL == null){
+            try {
+                runner.execute(curURL);
+            }catch (IllegalStateException e){
+                e.printStackTrace();
+            }
+        }
+        myWebView.loadUrl(curURL);
     }
+
+
 
     /**
      * When fragment is resumed, checks if it is connected to network. If not
@@ -151,12 +176,29 @@ public class HomeFragment extends MainFragment {
     @Override
     public void onResume() {
         super.onResume();
+        MainActivity mainActivity = (MainActivity) getActivity();
+        registerConnectionBroadcastReceiver();
         if(getUserVisibleHint()){
             refreshWebViewIfNecessary();
-            MainActivity mainActivity = (MainActivity) getActivity();
             if(!mainActivity.isConnectedToNetwork()){
                 mainActivity.showNetworkNotConnectedDialog();
             }
+        }
+    }
+
+    private void registerConnectionBroadcastReceiver(){
+        if(!connectionBroadcastReceiverRegisterred) {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            mainActivity.registerReceiver(connectionBroadcastReceiver, intentFilter);
+            connectionBroadcastReceiverRegisterred = true;
+        }
+    }
+
+    private void unregisterConnectionBroadcastReceiver(){
+        if(connectionBroadcastReceiverRegisterred){
+            MainActivity mainActivity = (MainActivity) getActivity();
+            mainActivity.unregisterReceiver(connectionBroadcastReceiver);
+            connectionBroadcastReceiverRegisterred = false;
         }
     }
 
@@ -217,22 +259,27 @@ public class HomeFragment extends MainFragment {
 
         @Override
         protected String doInBackground(String... params) {
+
             try {
+
                 URL redirectUrl = new URL(Constants.INFO_URL);
                 HttpURLConnection ucon = null;
                 try {
                     ucon = (HttpURLConnection) redirectUrl.openConnection();
                     ucon.setInstanceFollowRedirects(false);
                     secondURL = new URL(ucon.getHeaderField("Location"));
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
             }
             catch (MalformedURLException e) {
                 e.printStackTrace();
             }
 
             if(secondURL == null){
+
                 return null;
             }
             return secondURL.toString();
@@ -244,8 +291,16 @@ public class HomeFragment extends MainFragment {
          */
         @Override
         protected void onPostExecute(String result) {
+
             startMonitoringLinkClicks();
         }
     }
 
+    @Override
+    public void onPause() {
+
+       unregisterConnectionBroadcastReceiver();
+        super.onPause();
+
+    }
 }
