@@ -408,6 +408,14 @@ public class HistoryFragment extends MapMainFragment{
                 mainActivity.requestGeofences();
                 addNewGeofenceInfoNew(allGeofences);
             }
+        }if(isVisibleToUser){
+            if(mMap != null){
+                mMap.setMyLocationEnabled(true);
+            }
+        }else{
+            if(mMap != null){
+                mMap.setMyLocationEnabled(false);
+            }
         }
     }
 

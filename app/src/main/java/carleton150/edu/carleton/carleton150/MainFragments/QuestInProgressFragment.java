@@ -426,6 +426,16 @@ public class QuestInProgressFragment extends MapMainFragment {
                 locationUpdatesRequested = false;
             }
         }
+
+        if(isVisibleToUser){
+            if(mMap != null){
+                mMap.setMyLocationEnabled(true);
+            }
+        }else{
+            if(mMap != null){
+                mMap.setMyLocationEnabled(false);
+            }
+        }
     }
 
     /**
