@@ -5,11 +5,13 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageButton;
@@ -83,7 +85,17 @@ public class HomeFragment extends MainFragment {
 
         myWebView = (WebView) v.findViewById(R.id.web_view);
         myLoadingWebView = (WebView) v.findViewById(R.id.web_view_loading);
+
+        myLoadingWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        if (Build.VERSION.SDK_INT >= 19) {
+            myLoadingWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        }
+        else {
+            myLoadingWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+
         myLoadingWebView.loadData(Constants.LOADING_PAGE, "text/html", null);
+        myLoadingWebView.setVisibility(View.VISIBLE);
         myWebView.getSettings().setUserAgentString(Constants.USER_AGENT_STRING);
         myWebView.getSettings().setJavaScriptEnabled(true);
         myWebView.setWebViewClient(new WebViewClient() {
