@@ -2,6 +2,7 @@ package carleton150.edu.carleton.carleton150.MainFragments;
 
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.AnimationDrawable;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -11,10 +12,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -37,7 +41,9 @@ public class HomeFragment extends MainFragment {
     URL secondURL = null;
     View v;
     public static WebView myWebView;
-    public static WebView myLoadingWebView;
+    private RelativeLayout myLoadingLayout;
+    private ImageView myLoadingAnim;
+    private AnimationDrawable myAnimationDrawable;
 
     IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
 
@@ -59,7 +65,7 @@ public class HomeFragment extends MainFragment {
     }
 
     /**
-     * opens the WebView
+     * opens the WebView, displays loading animation
      *
      * @param inflater
      * @param container
@@ -84,54 +90,80 @@ public class HomeFragment extends MainFragment {
         }
 
         myWebView = (WebView) v.findViewById(R.id.web_view);
-        myLoadingWebView = (WebView) v.findViewById(R.id.web_view_loading);
 
-        myLoadingWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        if (Build.VERSION.SDK_INT >= 19) {
-            myLoadingWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        }
-        else {
-            myLoadingWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
+        myLoadingLayout = (RelativeLayout) v.findViewById(R.id.layout_loading);
+        myLoadingAnim = (ImageView)v.findViewById(R.id.anim_web_view_loading);
+        myAnimationDrawable = (AnimationDrawable)myLoadingAnim.getDrawable();
+        showLoadingAnim();
 
-        myLoadingWebView.loadData(Constants.LOADING_PAGE, "text/html", null);
-        myLoadingWebView.setVisibility(View.VISIBLE);
         myWebView.getSettings().setUserAgentString(Constants.USER_AGENT_STRING);
         myWebView.getSettings().setJavaScriptEnabled(true);
-        myWebView.setWebViewClient(new WebViewClient() {
+        myWebView.setWebChromeClient(new WebChromeClient() {
 
-            public void onPageFinished(WebView view, String url) {
-                myLoadingWebView.setVisibility(View.GONE);
-                myWebView.setVisibility(View.VISIBLE);
-                mainActivity.setWebViewLoaded(true);
-                mainActivity.requestAll();
-                super.onPageFinished(view, url);
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                super.onProgressChanged(view, newProgress);
+                if (newProgress == 100) {
+                    myWebView.setVisibility(View.VISIBLE);
+                    mainActivity.setWebViewLoaded(true);
+                    mainActivity.requestAll();
+                    hideLoadingAnim();
+                }
             }
-
-
         });
-        if(mainActivity.isConnectedToNetwork()) {
-            myWebView.loadUrl(curURL);
-        }else{
-            myWebView.loadData(Constants.NO_INTERNET_HTML, "text/html", null);
-        }
+        loadWebView();
 
         ImageButton btnRefresh = (ImageButton) v.findViewById(btn_refresh);
         btnRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mainActivity.isConnectedToNetwork()){
-                    myWebView.loadUrl(curURL);
-                    myWebView.setVisibility(View.GONE);
-                    myLoadingWebView.setVisibility(View.VISIBLE);
-                }else{
-                    myWebView.loadData(Constants.NO_INTERNET_HTML, "text/html", null);
-                }
+                loadWebView();
             }
         });
 
         setTimeOfLastRefresh();
         return v;
+    }
+
+    /**
+     * Loads the URL in the web view, displays the loading animation
+     * until the web view is successfully loaded. If there is no
+     * internet connection, shows the web view with an error message
+     * stating that there is no internet
+     */
+    public void loadWebView(){
+        MainActivity mainActivity = (MainActivity) getActivity();
+        if(mainActivity.isConnectedToNetwork()){
+            myWebView.loadUrl(curURL);
+            myWebView.setVisibility(View.GONE);
+            showLoadingAnim();
+        }else{
+            myWebView.loadData(Constants.NO_INTERNET_HTML, "text/html", null);
+        }
+        setTimeOfLastRefresh();
+    }
+
+    /**
+     * Makes loading screen visible and starts the animation
+     */
+    private void showLoadingAnim(){
+
+       if(!myAnimationDrawable.isRunning()){
+           myAnimationDrawable.start();
+       }
+
+        myLoadingLayout.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Makes loading screen invisible and stops the animation
+     */
+    private void hideLoadingAnim(){
+
+        if(myAnimationDrawable.isRunning()){
+            myAnimationDrawable.stop();
+        }
+        myLoadingLayout.setVisibility(View.GONE);
     }
 
     /**
@@ -155,19 +187,17 @@ public class HomeFragment extends MainFragment {
                 return true;
             }
 
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                myLoadingWebView.setVisibility(View.GONE);
-                myWebView.setVisibility(View.VISIBLE);
-                MainActivity mainActivity = (MainActivity) getActivity();
-                mainActivity.setWebViewLoaded(true);
-                mainActivity.requestAll();
-                super.onPageFinished(view, url);
-            }
+
         });
     }
 
 
+    /**
+     * If we have no obtained the redirect URL and started listening
+     * for link clicks, do so. Load the url for the home page.
+     *
+     * This method is called from the ConnectionBroadcastReceiver
+     */
     public void loadWebContent(){
         if(secondURL == null){
             try {
@@ -176,7 +206,7 @@ public class HomeFragment extends MainFragment {
                 e.printStackTrace();
             }
         }
-        myWebView.loadUrl(curURL);
+        loadWebView();
     }
 
 
@@ -198,6 +228,10 @@ public class HomeFragment extends MainFragment {
         }
     }
 
+    /**
+     * Registers the ConnectionBroadcastReceiver to receive a broadcast
+     * if the internet is connected
+     */
     private void registerConnectionBroadcastReceiver(){
         if(!connectionBroadcastReceiverRegisterred) {
             MainActivity mainActivity = (MainActivity) getActivity();
@@ -206,6 +240,9 @@ public class HomeFragment extends MainFragment {
         }
     }
 
+    /**
+     * Unregisters the ConnectionBroadcastReceiver
+     */
     private void unregisterConnectionBroadcastReceiver(){
         if(connectionBroadcastReceiverRegisterred){
             MainActivity mainActivity = (MainActivity) getActivity();
@@ -236,14 +273,8 @@ public class HomeFragment extends MainFragment {
      * the web view
      */
     private void refreshWebViewIfNecessary(){
-        MainActivity mainActivity = (MainActivity) getActivity();
         if(checkElapsedTime(timeOfLastRefresh) > 5){
-            if(mainActivity.isConnectedToNetwork()) {
-                myWebView.reload();
-            }else{
-                myWebView.loadData(Constants.NO_INTERNET_HTML, "text/html", null);
-            }
-            setTimeOfLastRefresh();
+            loadWebView();
         }
     }
 
