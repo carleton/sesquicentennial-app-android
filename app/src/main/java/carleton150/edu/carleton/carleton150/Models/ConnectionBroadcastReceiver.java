@@ -33,7 +33,6 @@ public class ConnectionBroadcastReceiver extends BroadcastReceiver {
         if (netInfo != null && netInfo.isConnectedOrConnecting()) {
             if(homeFragment.myWebView != null) {
                 homeFragment.loadWebContent();
-                //HomeFragment.loadWebContent();
             }
         }
     }

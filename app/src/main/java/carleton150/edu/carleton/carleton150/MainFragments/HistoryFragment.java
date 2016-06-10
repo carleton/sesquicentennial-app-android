@@ -399,8 +399,8 @@ public class HistoryFragment extends MapMainFragment{
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
+        MainActivity mainActivity = (MainActivity) getActivity();
         if(isVisibleToUser && isResumed()) {
-            MainActivity mainActivity = (MainActivity) getActivity();
             allGeofences = mainActivity.getAllGeofencesNew();
             if (allGeofences == null) {
                 mainActivity.requestGeofences();
@@ -421,16 +421,15 @@ public class HistoryFragment extends MapMainFragment{
 
     /**
      * Lifecycle method overridden to set up the map and check for internet connectivity
-     * when the fragment comes into focus. If fragment is not already monitoring geofences,
-     * begins monitoring geofences
+     * when the fragment comes into focus.
      */
     @Override
     public void onResume() {
         super.onResume();
         MainActivity mainActivity = (MainActivity) getActivity();
         setUpMapIfNeeded();
-        mMap.setMyLocationEnabled(mainActivity.checkIfGPSEnabled());
         if(isVisible()){
+            mMap.setMyLocationEnabled(mainActivity.checkIfGPSEnabled());
             allGeofences = mainActivity.getAllGeofencesNew();
             if (allGeofences == null) {
                 mainActivity.requestGeofences();

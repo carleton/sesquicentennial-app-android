@@ -2,7 +2,6 @@ package carleton150.edu.carleton.carleton150.MainFragments;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.View;
 
 import com.google.android.gms.maps.CameraUpdateFactory;

@@ -15,12 +15,10 @@ import android.os.Handler;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -66,7 +64,6 @@ import carleton150.edu.carleton.carleton150.MainFragments.HomeFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.MainFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestFragment;
 import carleton150.edu.carleton.carleton150.MainFragments.QuestInProgressFragment;
-import carleton150.edu.carleton.carleton150.Models.ConnectionBroadcastReceiver;
 import carleton150.edu.carleton.carleton150.Models.DownloadFileFromURL;
 import carleton150.edu.carleton.carleton150.POJO.EventObject.EventContent;
 import carleton150.edu.carleton.carleton150.POJO.GeofenceInfo.AllGeofences;
@@ -181,9 +178,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     public void onTabSelected(TabLayout.Tab tab) {
                         super.onTabSelected(tab);
                         Fragment selected = adapter.getItem(tab.getPosition());
-                        if(selected instanceof QuestInProgressFragment){
+                        if (selected instanceof QuestInProgressFragment) {
                             ((QuestInProgressFragment) selected).inView();
-                        }else if(selected instanceof QuestCompletedFragment){
+                        } else if (selected instanceof QuestCompletedFragment) {
                             ((QuestCompletedFragment) selected).inView();
                         }
                     }

@@ -3,8 +3,6 @@ package carleton150.edu.carleton.carleton150.MainFragments;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
@@ -26,18 +24,13 @@ import android.widget.SlidingDrawer;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.squareup.picasso.Picasso;
 
 import carleton150.edu.carleton.carleton150.Constants;
 import carleton150.edu.carleton.carleton150.ExtraFragments.QuestCompletedFragment;
 import carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment;
 import carleton150.edu.carleton.carleton150.Interfaces.QuestStartedListener;
-import carleton150.edu.carleton.carleton150.LogMessages;
 import carleton150.edu.carleton.carleton150.MainActivity;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Quest;
 import carleton150.edu.carleton.carleton150.POJO.Quests.Waypoint;
@@ -57,7 +50,6 @@ public class QuestInProgressFragment extends MapMainFragment {
     private View v;
     private boolean resume;
     private boolean inView = false;
-    private Marker curLocationMarker;
     private boolean needToShowOnCampusDialog = true;
     private boolean locationUpdatesRequested = false;
     private SupportMapFragment mapFragment;
@@ -483,8 +475,6 @@ public class QuestInProgressFragment extends MapMainFragment {
                     mainActivity.showAlertDialog(alertString,
                             new AlertDialog.Builder(mainActivity).create());
                 }
-            } else {
-                Log.i(LogMessages.LOCATION, "QuestInProgressFragment: checkIfClueFound: location is null");
             }
         }else{
             mainActivity.buildAlertMessageNoGps();

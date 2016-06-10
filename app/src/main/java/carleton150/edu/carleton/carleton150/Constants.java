@@ -27,10 +27,10 @@ public class Constants {
     //Coordinates for setting map zoom and not allowing user to scroll too far off campus
     public static final LatLng CENTER_CAMPUS = new LatLng(44.460421, -93.152749);
 
-    public static final double MAX_LONGITUDE = -93.141134;
-    public static final double MIN_LONGITUDE = -93.161333;
-    public static final double MAX_LATITUDE = 44.488045;
-    public static final double MIN_LATITUDE = 44.458869;
+    public static final double MAX_LONGITUDE = -93.113848;
+    public static final double MIN_LONGITUDE = -93.164250;
+    public static final double MAX_LATITUDE = 44.488821;
+    public static final double MIN_LATITUDE = 44.453969;
     public static final int PROVIDER_NUMBER = 256;
     //Default zoom and bearing for camera on map
     public static final int DEFAULT_ZOOM = 15;
@@ -43,7 +43,6 @@ public class Constants {
     public static final String NEW_GEOFENCES_ENDPOINT = "https://go.carleton.edu/apphistory";
     public static final String QUESTS_FEED_URL = "https://go.carleton.edu/appquests";
 
-    //TODO: URL for events calendar : https://apps.carleton.edu/calendar
     public static final String ICAL_FEED_URL = "https://go.carleton.edu/appevents";
     public static final String ICAL_FEED_DATE_REQUEST = "/?start_date=";
     public static final String ICAL_FEED_FORMAT_REQUEST = "&format=ical";
