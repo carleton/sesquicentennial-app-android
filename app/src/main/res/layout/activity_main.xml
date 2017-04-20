@@ -35,7 +35,7 @@
 
 
 
-        <carleton150.edu.carleton.carleton150.NoSwipeViewPager
+        <carleton150.edu.carleton.reunion.NoSwipeViewPager
             android:id="@+id/pager"
             android:layout_width="match_parent"
             android:layout_height="fill_parent"
