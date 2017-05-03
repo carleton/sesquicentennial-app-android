@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="carleton150.edu.carleton.carleton150" >
+    package="carleton150.edu.carleton.reunion">
 
     <uses-sdk android:minSdkVersion="11" />
+    <uses-feature android:name="android.hardware.location.gps" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -30,14 +31,13 @@
         android:glEsVersion="0x00020000"
         android:required="true" />
 
-
-
     <application
+
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Base.AppTheme" >
+        android:theme="@style/Base.AppTheme">
 
 
         <meta-data
@@ -50,7 +50,7 @@
 
 
         <activity
-            android:name=".SplashActivity"
+            android:name="carleton150.edu.carleton.reunion.SplashActivity"
             android:theme="@style/Base.SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -60,10 +60,10 @@
         </activity>
 
         <activity
-            android:name=".MainActivity"
-            android:screenOrientation="portrait"
+            android:name="carleton150.edu.carleton.reunion.MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/Base.AppTheme.NoActionBar" >
+            android:screenOrientation="portrait"
+            android:theme="@style/Base.AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -5,7 +5,7 @@
     android:background="@color/transparent"
     android:elevation="20dp"
     android:orientation="vertical"
-    tools:context="carleton150.edu.carleton.carleton150.ExtraFragments.RecyclerViewPopoverFragment">
+    tools:context="carleton150.edu.carleton.reunion.ExtraFragments.RecyclerViewPopoverFragment">
 
     <View
         android:id="@+id/view_window_separator"

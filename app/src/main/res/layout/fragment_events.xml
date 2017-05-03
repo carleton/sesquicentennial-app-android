@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context="carleton150.edu.carleton.carleton150.MainFragments.EventsFragment">
+    tools:context="carleton150.edu.carleton.reunion.MainFragments.EventsFragment">
 
         <!-- Vertical Layout for date tabs + event item list -->
         <LinearLayout
