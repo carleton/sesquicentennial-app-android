@@ -1,10 +1,16 @@
-# Sesquicentennial Android
+# Reunion150 Android
 Android application for the Sesquicentennial Event to happen in 2016 at 
 Carleton College.
 
-### Configuration
+Ongoing, it will support Reunion events.
 
-Get a google maps API key and place it in a file that looks like the following: 
+## Configuration
+
+### Get a google maps API key
+
+The official API keys are in the webmaster@carleton.edu Google account. For development, use any key with a * permission. For production, use the one labeled 150th Android Key. If the signature of the app changes you will need to add additional package name/fingerprints to the API key restrictions.
+
+### Place it in `res/values/google_maps_api.xml`, like this:
 
 ```
 <resources>
@@ -14,9 +20,7 @@ Get a google maps API key and place it in a file that looks like the following:
 </resources>
 ```
 
-This file should be named google_maps_api.xml and should go in res/values
-
-### Build Process
+## Build Process
 
 * `git clone https://github.com/Sesquicentennial/Android`
 * open with Android Studio
