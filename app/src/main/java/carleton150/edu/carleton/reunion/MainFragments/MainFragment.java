@@ -5,6 +5,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.webkit.WebView;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -21,6 +22,12 @@ import carleton150.edu.carleton.reunion.POJO.Quests.Quest;
  * without checking which type of fragment is currently in view
  */
 public class MainFragment extends Fragment{
+
+    public static WebView myWebView;
+
+    public void loadWebContent(){
+        throw new UnsupportedOperationException("This is not a Webview");
+    }
 
     public long timeOfLastRefresh = -1;
 

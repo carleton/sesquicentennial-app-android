@@ -12,6 +12,7 @@ import carleton150.edu.carleton.reunion.MainFragments.EventsFragment;
 import carleton150.edu.carleton.reunion.MainFragments.HistoryFragment;
 import carleton150.edu.carleton.reunion.MainFragments.HomeFragment;
 import carleton150.edu.carleton.reunion.MainFragments.MainFragment;
+import carleton150.edu.carleton.reunion.MainFragments.MapFragment;
 import carleton150.edu.carleton.reunion.MainFragments.QuestFragment;
 import carleton150.edu.carleton.reunion.MainFragments.QuestInProgressFragment;
 import carleton150.edu.carleton.reunion.R;
@@ -48,7 +49,7 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
                 fragment = new EventsFragment();
                 break;
             case 2:
-                fragment = new HistoryFragment();
+                fragment = new MapFragment();
                 break;
             case 3:
                 if(mFragmentAtPos2 == null || mainActivity.getQuestInProgress() == null) {

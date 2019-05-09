@@ -6,8 +6,11 @@ configurations {
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "22.0.1"
+    buildToolsVersion '28.0.3'
 
+    lintOptions{
+        abortOnError false
+    }
     defaultConfig {
         applicationId "carleton150.edu.carleton.reunion"
         minSdkVersion 15
