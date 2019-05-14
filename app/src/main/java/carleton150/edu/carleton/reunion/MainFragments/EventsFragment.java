@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.lsjwzh.widget.recyclerviewpager.RecyclerViewPager;
@@ -22,6 +23,7 @@ import carleton150.edu.carleton.reunion.MainActivity;
 import carleton150.edu.carleton.reunion.POJO.EventObject.EventContent;
 import carleton150.edu.carleton.reunion.R;
 
+import static carleton150.edu.carleton.reunion.R.id.btn_refresh;
 import static carleton150.edu.carleton.reunion.R.id.txt_request_events;
 
 /**
@@ -83,6 +85,15 @@ public class EventsFragment extends MainFragment {
         // Build RecyclerViews to display date tabs
         buildRecyclerViewsDates();
         buildRecyclerViewEvents();
+
+        ImageButton btnRefresh = (ImageButton) v.findViewById(btn_refresh);
+        btnRefresh.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        refreshEvents();
+                    }
+                });
 
         if(eventsMapByDate == null){
             mainActivity.requestEvents();
@@ -308,19 +319,24 @@ public class EventsFragment extends MainFragment {
         }
     }
 
+    public void refreshEvents() {
+        MainActivity mainActivity = (MainActivity) getActivity();
+        eventsMapByDate = mainActivity.getEventsMapByDate();
+        ArrayList<EventContent> eventsArray = mainActivity.getAllEvents();
+        if (eventsMapByDate == null || eventsList == null) {
+            mainActivity.requestEvents();
+        } else {
+            mainActivity.requestEvents();
+            handleNewEvents(eventsMapByDate, eventsArray);
+        }
+    }
     @Override
     public void onResume() {
         super.onResume();
         if(isVisible()){
-            MainActivity mainActivity = (MainActivity) getActivity();
-            eventsMapByDate = mainActivity.getEventsMapByDate();
-            ArrayList<EventContent> eventsArray = mainActivity.getAllEvents();
-            if (eventsMapByDate == null || eventsList == null) {
-                mainActivity.requestEvents();
-            } else {
-                mainActivity.requestEvents();
-                handleNewEvents(eventsMapByDate, eventsArray);
-            }
+           refreshEvents();
         }
     }
+
+
 }
