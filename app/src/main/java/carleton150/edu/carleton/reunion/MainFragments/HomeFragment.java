@@ -79,6 +79,18 @@ public class HomeFragment extends MainFragment {
         }
 
         myWebView = (WebView) v.findViewById(R.id.web_view);
+
+        myWebView.setWebViewClient(new WebViewClient(){
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
+                    view.getContext().startActivity(
+                            new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
         myLoadingLayout = (RelativeLayout) v.findViewById(R.id.layout_loading);
         myLoadingAnim = (ImageView) v.findViewById(R.id.anim_web_view_loading);
         myAnimationDrawable = (AnimationDrawable) myLoadingAnim.getDrawable();
