@@ -2,11 +2,14 @@
 <resources>
 
 
-    <color name ="toolbar_background">#182142</color>
+    <color name ="toolbarBackground">#0b5091</color>
     <color name = "darkAccent">#121831</color>
 
     <color name="colorPrimary">#1D294B</color>
+    <color name="dateBackground">#3676b3</color>
+    <color name="dateCardBackground">#cdddec</color>
     <color name="colorPrimaryDark">#121831</color>
+    <color name="cardText">#181823</color>
     <color name="colorPrimaryDarkSlightlyTransparent">#BB121831</color>
     <color name="colorAccent">#D3BB39</color>
     <color name="colorPrimarySemiTransparent">#771D294B</color>

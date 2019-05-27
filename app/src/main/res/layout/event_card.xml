@@ -15,7 +15,7 @@
         android:layout_width="match_parent"
         android:padding="10dp"
         android:orientation="vertical"
-        android:background="@color/colorPrimarySemiTransparent"
+        android:background="@color/dateCardBackground"
         android:layout_height="wrap_content">
 
     <TextView
@@ -43,7 +43,7 @@
 
     <TextView
         android:id="@+id/txt_event_date"
-        android:textColor="@color/white"
+        android:textColor="@color/cardText"
         android:gravity="center"
         android:textStyle="bold"
         android:paddingLeft="10dp"
@@ -55,7 +55,7 @@
 
     <TextView
         android:id="@+id/txt_event_description"
-        android:textColor="@color/white"
+        android:textColor="@color/cardText"
         android:paddingTop="10dp"
         android:gravity="center"
         android:textSize="@dimen/abc_text_size_small_material"
