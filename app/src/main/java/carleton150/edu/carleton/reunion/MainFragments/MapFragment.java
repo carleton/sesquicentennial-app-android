@@ -116,7 +116,7 @@ public class MapFragment extends MainFragment {
                     }
                 });
 //        myWebView.setWebViewClient(new WebViewClient());
-//        loadWebView();
+        loadWebView();
         setTimeOfLastRefresh();
         return v;
     }

@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Log.d("create", "Set content view");
         //Sets exception handler to log exceptions not caught by app
         Thread.setDefaultUncaughtExceptionHandler(new TopExceptionHandler());
 
@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         playServicesConnectivityAlertDialogBuilder = new AlertDialog.Builder(this);
         noGpsAlertDialogBuilder = new AlertDialog.Builder(this);
         onCampusFeatureAlertDialogBuilder = new AlertDialog.Builder(this);
-
+        Log.d("create", "Finished building dialogs");
         //check availability of play services for location data
         if (checkPlayServices()) {
             //Builds and connect google API client. Creates a location request
@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         } else {
             showGooglePlayServicesUnavailableDialog();
         }
-
+        Log.d("create", "Finished instantiating Google services");
         //managing fragments an UI
         final FragmentManager manager=getSupportFragmentManager();
         adapter=new MyFragmentPagerAdapter(manager);
@@ -165,14 +165,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         //keeps all pages cached
         viewPager.setOffscreenPageLimit(4);
         final TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-
+        Log.d("create", "Built tab layout");
         tabLayout.post(new Runnable() {
             @Override
             public void run() {
                 tabLayout.setupWithViewPager(viewPager);
             }
         });
-
+        Log.d("create", "Posted views to tabs");
         tabLayout.setOnTabSelectedListener(
                 new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
                     @Override

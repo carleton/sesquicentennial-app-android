@@ -7,6 +7,7 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,7 +55,6 @@ public class HomeFragment extends MainFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         registerConnectionBroadcastReceiver();
-
     }
 
     /**
@@ -75,6 +75,7 @@ public class HomeFragment extends MainFragment {
         final MainActivity mainActivity = (MainActivity) getActivity();
 
         if (mainActivity.isConnectedToNetwork()) {
+            Log.d("webviewCreate", "Dowloading page");
             runner.execute(curURL);
         }
 
@@ -95,7 +96,6 @@ public class HomeFragment extends MainFragment {
         myLoadingAnim = (ImageView) v.findViewById(R.id.anim_web_view_loading);
         myAnimationDrawable = (AnimationDrawable) myLoadingAnim.getDrawable();
         showLoadingAnim();
-
         myWebView.getSettings().setUserAgentString(Constants.USER_AGENT_STRING);
         myWebView.getSettings().setJavaScriptEnabled(true);
         myWebView.getSettings().setDomStorageEnabled(true);
@@ -128,7 +128,7 @@ public class HomeFragment extends MainFragment {
                     }
                 });
 //        myWebView.setWebViewClient(new WebViewClient());
-//        loadWebView();
+        loadWebView();
         setTimeOfLastRefresh();
         return v;
     }

@@ -20,7 +20,7 @@
 
     <TextView
         android:id="@+id/txt_event_title"
-        android:textColor="@color/white"
+        android:textColor="@color/cardText"
         android:gravity="center"
         android:padding="10dp"
         android:textSize="@dimen/abc_text_size_large_material"
@@ -31,11 +31,11 @@
 
     <TextView
         android:id="@+id/txt_event_location"
-        android:textColor="@color/white"
+        android:textColor="@color/cardText"
         android:gravity="center"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
-        android:textStyle="bold"
+        android:textStyle="normal"
         android:textSize="@dimen/abc_text_size_medium_material"
         android:layout_marginBottom="0dp"
         android:layout_width="match_parent"
@@ -45,7 +45,7 @@
         android:id="@+id/txt_event_date"
         android:textColor="@color/cardText"
         android:gravity="center"
-        android:textStyle="bold"
+        android:textStyle="normal"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
         android:textSize="@dimen/abc_text_size_medium_material"
@@ -85,10 +85,11 @@
             android:elevation="5dp"
             android:layout_marginTop="25dp"
             android:background="@color/colorPrimaryDarkSlightlyTransparent"
-            android:textColor="@color/white"
+            android:textColor="@color/cardText"
             android:layout_height="wrap_content" />
 
         </LinearLayout>
+
 
         <ImageView
             android:id="@+id/img_icon_expand"

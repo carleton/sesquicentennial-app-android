@@ -3,6 +3,7 @@ package carleton150.edu.carleton.reunion.Adapters;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.util.Log;
 import android.view.ViewGroup;
 
 import carleton150.edu.carleton.reunion.ExtraFragments.QuestCompletedFragment;
@@ -43,6 +44,7 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
         MainFragment fragment = null;
         switch(position){
             case 0:
+                Log.d("Adapter", "Instantiating Home Fragment");
                 fragment = new HomeFragment();
                 break;
             case 1:
