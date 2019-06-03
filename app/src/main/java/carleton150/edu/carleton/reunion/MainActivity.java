@@ -1000,7 +1000,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 addComponent = true;
                 DtStart start = (DtStart) propertyList.getProperty(Property.DTSTART);
                 Date startDate = start.getDate();
-
+                System.out.println(eventContent.getTitle());
                 if(startDate.toString().contains("T")) {
                     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
                     String date = df.format(startDate);
@@ -1009,6 +1009,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 else{
                     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
                     String date = df.format(startDate);
+                    String dateEnd = date.substring(date.length()-1);
+                    String startDateEnd = startDate.toString().substring(startDate.toString().length()-1);
+                    if (!dateEnd.equals(startDateEnd)){
+                        Calendar c = Calendar.getInstance();
+                        c.setTime(startDate);
+                        c.add(Calendar.DATE, 1);
+                        System.out.println(dateEnd);
+                        date = df.format(c.getTime());
+                    }
                     eventContent.setStartTime(date);
                 }
 
