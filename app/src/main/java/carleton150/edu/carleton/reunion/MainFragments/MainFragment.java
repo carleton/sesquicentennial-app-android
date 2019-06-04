@@ -13,7 +13,6 @@ import java.util.LinkedHashMap;
 
 import carleton150.edu.carleton.reunion.Constants;
 import carleton150.edu.carleton.reunion.POJO.EventObject.EventContent;
-import carleton150.edu.carleton.reunion.POJO.Quests.Quest;
 
 /**
  * Created on 10/28/15.
@@ -89,9 +88,6 @@ public class MainFragment extends Fragment{
 
     }
 
-    public void handleNewQuests(ArrayList<Quest> newQuests){
-
-    }
 
 
     /**

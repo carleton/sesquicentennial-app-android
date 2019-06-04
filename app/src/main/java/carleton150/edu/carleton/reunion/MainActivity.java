@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -38,10 +37,6 @@ import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.property.DtStart;
 import net.fortuna.ical4j.util.CompatibilityHints;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -50,25 +45,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 
 import carleton150.edu.carleton.reunion.Adapters.MyFragmentPagerAdapter;
-import carleton150.edu.carleton.reunion.ExtraFragments.QuestCompletedFragment;
-import carleton150.edu.carleton.reunion.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.reunion.Interfaces.RetrievedFileListener;
 import carleton150.edu.carleton.reunion.MainFragments.EventsFragment;
-import carleton150.edu.carleton.reunion.MainFragments.HistoryFragment;
 import carleton150.edu.carleton.reunion.MainFragments.HomeFragment;
 import carleton150.edu.carleton.reunion.MainFragments.MainFragment;
-import carleton150.edu.carleton.reunion.MainFragments.QuestFragment;
-import carleton150.edu.carleton.reunion.MainFragments.QuestInProgressFragment;
 import carleton150.edu.carleton.reunion.Models.DownloadFileFromURL;
 import carleton150.edu.carleton.reunion.POJO.EventObject.EventContent;
 import carleton150.edu.carleton.reunion.POJO.GeofenceInfo.AllGeofences;
-import carleton150.edu.carleton.reunion.POJO.Quests.Quest;
 
 /**
  * Monitors location information and calls methods in the main view fragments
@@ -97,10 +85,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     };
 
-    private Quest questInProgress;
     private boolean requestingQuests = false;
-    private ArrayList<Quest> questInfo = null;
-    private java.util.Date lastQuestUpdate;
     private boolean resumeQuest = false;
 
     private boolean webViewLoaded = false;
@@ -146,15 +131,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         onCampusFeatureAlertDialogBuilder = new AlertDialog.Builder(this);
         Log.d("create", "Finished building dialogs");
         //check availability of play services for location data
-        if (checkPlayServices()) {
-            //Builds and connect google API client. Creates a location request
-            //for the client
-            buildGoogleApiClient();
-            createLocationRequest();
-            mGoogleApiClient.connect();
-        } else {
-            showGooglePlayServicesUnavailableDialog();
-        }
         Log.d("create", "Finished instantiating Google services");
         //managing fragments an UI
         final FragmentManager manager=getSupportFragmentManager();
@@ -174,18 +150,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
         Log.d("create", "Posted views to tabs");
         tabLayout.setOnTabSelectedListener(
-                new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
-                    @Override
-                    public void onTabSelected(TabLayout.Tab tab) {
-                        super.onTabSelected(tab);
-                        Fragment selected = adapter.getItem(tab.getPosition());
-                        if (selected instanceof QuestInProgressFragment) {
-                            ((QuestInProgressFragment) selected).inView();
-                        } else if (selected instanceof QuestCompletedFragment) {
-                            ((QuestCompletedFragment) selected).inView();
-                        }
-                    }
-                });
+                new TabLayout.ViewPagerOnTabSelectedListener(viewPager)
+        );
 
 
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
@@ -204,7 +170,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void requestAll(){
         requestGeofences();
         requestEvents();
-        requestQuests();
     }
 
     public void setWebViewLoaded(boolean loaded){
@@ -249,10 +214,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 showGooglePlayServicesUnavailableDialog();
             }
         }
-    }
-
-    public QuestStartedListener getQuestStartedListener(){
-        return adapter;
     }
 
 
@@ -477,16 +438,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    /**
-     * Shows a dialog alerting the user that the feature they are attempting to use
-     * is intended to be used on campus
-     */
-    public void showOnCampusFeatureAlertDialogQuestInProgress() {
-        AlertDialog dialog = onCampusFeatureAlertDialogBuilder.create();
-        if(!dialog.isShowing()){
-            showAlertDialog(getString(R.string.quest_in_progress_unuseable_off_campus), dialog);
-        }
-    }
 
     /**
      * shows an alert dialog with a specified message
@@ -522,12 +473,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    public void questInProgressGoBack(){
-        if(adapter.getCurrentFragment() instanceof QuestInProgressFragment ||
-                adapter.getCurrentFragment() instanceof QuestCompletedFragment){
-            adapter.backButtonPressed();
-        }
-    }
 
 
     /**
@@ -538,10 +483,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     @Override
     public void onBackPressed() {
-        if (adapter.getCurrentFragment() instanceof QuestInProgressFragment ||
-                adapter.getCurrentFragment() instanceof QuestCompletedFragment) {
-            adapter.backButtonPressed();
-        }else if(adapter.getCurrentFragment() instanceof HomeFragment){
+        if(adapter.getCurrentFragment() instanceof HomeFragment){
             boolean wentBack = ((HomeFragment)adapter.getCurrentFragment()).backPressed();
             if(!wentBack){
                 super.onBackPressed();
@@ -635,33 +577,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    /**
-     * Registers that app is no longer requesting quests, records the last quest update,
-     * and passes quests to current fragment if it is a QuestFragment
-     * @param newQuests ArrayList of Quests retrieved
-     * @param newInfo boolean flag where true means the info was retrieved from the
-     *                web, false means it was retrieved from phone's internal storage
-     */
-    public void handleNewQuests(ArrayList<Quest> newQuests, boolean newInfo) {
-        requestingQuests = false;
-        if(newQuests != null && newInfo) {
-            lastQuestUpdate = Calendar.getInstance().getTime();
-        }
-        if(newQuests != null) {
-            questInfo = newQuests;
-        }
-        if(adapter.getCurrentFragment() instanceof QuestFragment){
-            ((QuestFragment)adapter.getCurrentFragment()).handleNewQuests(questInfo);
-        }
-    }
 
-
-    /**
-     * @return an ArrayList of Quests
-     */
-    public ArrayList<Quest> getQuests(){
-        return this.questInfo;
-    }
 
 
     /**
@@ -684,9 +600,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         requestingAllGeofencesNew = false;
         if(geofences != null && isNewInfo) {
             lastGeofenceUpdate = Calendar.getInstance().getTime();
-        }
-        if(adapter.getCurrentFragment() instanceof HistoryFragment){
-            ((HistoryFragment) adapter.getCurrentFragment()).addNewGeofenceInfoNew(geofences);
         }
         this.allGeofencesNew = geofences;
     }
@@ -725,9 +638,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 parseGeofences(Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION, false);
             } else {
                 showNetworkNotConnectedDialog();
-                if (adapter.getCurrentFragment() instanceof HistoryFragment) {
-                    ((HistoryFragment) adapter.getCurrentFragment()).addNewGeofenceInfoNew(null);
-                }
             }
 
     }
@@ -796,39 +706,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return url;
     }
 
-    /**
-     * requests Quests if connected to network. Otherwise, parses quests stored in app
-     * internal storage
-     */
-    public void requestQuests(){
-
-        if(isConnectedToNetwork()) {
-            if(webViewLoaded) {
-                if (lastQuestUpdate == null && !requestingQuests) {
-                    DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, Constants.QUESTS_FILE_NAME_WITH_EXTENSION, this);
-                    downloadFileFromURL.execute(Constants.QUESTS_FEED_URL);
-                    requestingQuests = true;
-                } else if (!requestingQuests && lastQuestUpdate != null) {
-                    long minutesSinceLastUpdate = checkElapsedTime(lastQuestUpdate.getTime());
-                    if (minutesSinceLastUpdate > Constants.MINUTES_BETWEEN_REFRESH) {
-                        DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(this, Constants.QUESTS_FILE_NAME_WITH_EXTENSION, this);
-                        downloadFileFromURL.execute(Constants.QUESTS_FEED_URL);
-                        requestingQuests = true;
-                    }
-                }
-            }
-        }else{
-            if(fileExists(Constants.QUESTS_FILE_NAME_WITH_EXTENSION)){
-
-                parseQuests(Constants.QUESTS_FILE_NAME_WITH_EXTENSION, false);
-            }else{
-                showNetworkNotConnectedDialog();
-                if(adapter.getCurrentFragment()instanceof QuestFragment){
-                    ((QuestFragment)adapter.getCurrentFragment()).handleNewQuests(null);
-                }
-            }
-        }
-    }
 
     /**
      * Checks if a file exists in internal storage
@@ -902,40 +779,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         handleGeofences(allGeofencesNew, isNewInfo);
     }
 
-    /**
-     * Parses quest JSONS into an array of Quest objects
-     * @param fileNameWithExtension file where JSON is located in internal storage
-     * @param isNewInfo true if JSON was retrieved from URL, false if JSON
-     *                  was retrieved from app's internal storage
-     */
-    private void parseQuests(String fileNameWithExtension, boolean isNewInfo){
-        questInfo = new ArrayList<>();
-        if(isNewInfo){
-            lastQuestUpdate = Calendar.getInstance().getTime();
-        }
-        String jsonString = readFromFile(fileNameWithExtension);
-        final Gson gson = new Gson();
-        try {
-            JSONObject questsObject = new JSONObject(jsonString);
-            JSONArray responseArr = questsObject.getJSONArray("content");
-
-            for (int i = 0; i < responseArr.length(); i++) {
-                try {
-                    Quest responseQuest = gson.fromJson(responseArr.getString(i), Quest.class);
-                    questInfo.add(responseQuest);
-                }
-                catch (Exception e) {
-                    e.getMessage();
-                    e.printStackTrace();
-                }
-            }
-        } catch (JSONException e) {
-            Log.i("NEWGEOFENCES", "MainActivity : parseGeofences : outer catch block : error : " + e.getMessage());
-            handleNewQuests(null,false);
-            e.printStackTrace();
-        }
-        handleNewQuests(questInfo, isNewInfo);
-    }
 
     /**
      * Reads a string from a file
@@ -1123,8 +966,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 parseIcalFeed(fileNameWithExtension, true);
             }if(fileNameWithExtension.equals(Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)){
                 parseGeofences(fileNameWithExtension, true);
-            }if(fileNameWithExtension.equals(Constants.QUESTS_FILE_NAME_WITH_EXTENSION)){
-                parseQuests(fileNameWithExtension, true);
             }
         }else{
             if(fileNameWithExtension.equals(Constants.ICAL_FILE_NAME_WITH_EXTENSION)) {
@@ -1133,20 +974,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }if(fileNameWithExtension.equals(Constants.GEOFENCES_FILE_NAME_WITH_EXTENSION)){
                 handleGeofences(null, false);
                 requestingAllGeofencesNew = false;
-            }if(fileNameWithExtension.equals(Constants.QUESTS_FILE_NAME_WITH_EXTENSION)){
-                handleNewQuests(null, false);
-                requestingQuests = false;
             }
         }
     }
 
-    /**
-     *
-     * @return the quest the user is currently working on
-     */
-    public Quest getQuestInProgress() {
-        return questInProgress;
-    }
 
     /**
      *
@@ -1156,13 +987,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return resumeQuest;
     }
 
-    /**
-     *
-     * @param questInProgress quest user is currently working on
-     */
-    public void setQuestInProgress(Quest questInProgress) {
-        this.questInProgress = questInProgress;
-    }
 
     /**
      * Sets boolean to indicate if questInProgress is resumed or started over

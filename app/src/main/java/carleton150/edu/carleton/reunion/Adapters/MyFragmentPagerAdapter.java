@@ -6,23 +6,18 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.util.Log;
 import android.view.ViewGroup;
 
-import carleton150.edu.carleton.reunion.ExtraFragments.QuestCompletedFragment;
-import carleton150.edu.carleton.reunion.Interfaces.QuestStartedListener;
 import carleton150.edu.carleton.reunion.MainActivity;
 import carleton150.edu.carleton.reunion.MainFragments.EventsFragment;
-import carleton150.edu.carleton.reunion.MainFragments.HistoryFragment;
 import carleton150.edu.carleton.reunion.MainFragments.HomeFragment;
 import carleton150.edu.carleton.reunion.MainFragments.MainFragment;
 import carleton150.edu.carleton.reunion.MainFragments.MapFragment;
-import carleton150.edu.carleton.reunion.MainFragments.QuestFragment;
-import carleton150.edu.carleton.reunion.MainFragments.QuestInProgressFragment;
 import carleton150.edu.carleton.reunion.R;
 
 /**
  * Created by haleyhinze on 4/27/16.
  * FragmentStatePagerAdapter for main app fragments
  */
-public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements QuestStartedListener {
+public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter {
 
     private MainActivity mainActivity;
     private Fragment currentFragment = new HomeFragment();
@@ -53,19 +48,6 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
             case 2:
                 fragment = new MapFragment();
                 break;
-            case 3:
-                if(mFragmentAtPos2 == null || mainActivity.getQuestInProgress() == null) {
-                    mFragmentAtPos2 = new QuestFragment();
-                    ((QuestFragment) mFragmentAtPos2).initialize(this);
-                }else if(mFragmentAtPos2 instanceof QuestInProgressFragment){
-                    mFragmentAtPos2 = new QuestInProgressFragment();
-                    ((QuestInProgressFragment) mFragmentAtPos2).initialize(mainActivity.getQuestInProgress(), mainActivity.getResumed());
-                }else if (mFragmentAtPos2 instanceof QuestCompletedFragment){
-                    mFragmentAtPos2 = new QuestCompletedFragment();
-                    ((QuestCompletedFragment) mFragmentAtPos2).initialize(mainActivity.getQuestInProgress());
-                }
-                return mFragmentAtPos2;
-
         }
         return fragment;
     }
@@ -79,17 +61,6 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
     @Override
     public int getItemPosition(Object object) {
 
-        if(object instanceof QuestInProgressFragment || object instanceof QuestCompletedFragment || object instanceof QuestFragment) {
-            if(object instanceof QuestInProgressFragment && mFragmentAtPos2 instanceof QuestInProgressFragment) {
-                return POSITION_UNCHANGED;
-            }else if(object instanceof QuestFragment && mFragmentAtPos2 instanceof QuestFragment) {
-                return POSITION_UNCHANGED;
-            }else if(object instanceof QuestCompletedFragment && mFragmentAtPos2 instanceof QuestCompletedFragment) {
-                return POSITION_UNCHANGED;
-            }else {
-                return POSITION_NONE;
-            }
-        }
         return POSITION_UNCHANGED;
     }
 
@@ -97,7 +68,7 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
 
     @Override
     public int getCount() {
-        return 4;
+        return 3;
     }
 
     @Override
@@ -113,10 +84,6 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
             case 2:
                 title = mainActivity.getResources().getString(R.string.history);
                 break;
-            case 3:
-                title = mainActivity.getResources().getString(R.string.quests);
-
-
         }
         return title;
     }
@@ -129,58 +96,14 @@ public class MyFragmentPagerAdapter extends FragmentStatePagerAdapter implements
     }
 
 
-    /**
-     * When quest is started, changes QuestFragment to QuestInProgressFragment
-     * @param newFragment
-     */
-    @Override
-    public void questStarted(MainFragment newFragment) {
-        fm.beginTransaction().remove(mFragmentAtPos2).commit();
-        mFragmentAtPos2 = newFragment;
-        ((QuestInProgressFragment)newFragment).setQuestStartedListener(this);
-        notifyDataSetChanged();
-    }
 
     /**
      * If back button is pressed while QuestInProgressFragment is in view,
      * goes back to QuestFragment
      */
     public void backButtonPressed(){
-        if(mFragmentAtPos2 instanceof QuestInProgressFragment || mFragmentAtPos2 instanceof QuestCompletedFragment){
-            fm.beginTransaction().remove(mFragmentAtPos2).commit();
-            mFragmentAtPos2 = new QuestFragment();
-            ((QuestFragment) mFragmentAtPos2).initialize(this);
-            notifyDataSetChanged();
-        }else if(currentFragment instanceof QuestInProgressFragment || currentFragment instanceof QuestCompletedFragment){
-            mFragmentAtPos2 = (MainFragment) currentFragment;
-            fm.beginTransaction().remove(mFragmentAtPos2).commit();
-            mFragmentAtPos2 = new QuestFragment();
-            ((QuestFragment) mFragmentAtPos2).initialize(this);
-            notifyDataSetChanged();
-        }
     }
 
-    /**
-     * Goes back to QuestFragment from QuestInProgressFragment
-     */
-    @Override
-    public void goBackToQuestScreen() {
-        backButtonPressed();
-    }
-
-    /**
-     * Switches to QuestCompletedFragment if quest is completed
-     * @param fragment
-     */
-    @Override
-    public void questCompleted(MainFragment fragment) {
-        if(mFragmentAtPos2 instanceof QuestInProgressFragment || mFragmentAtPos2 instanceof QuestFragment){
-            fm.beginTransaction().remove(mFragmentAtPos2).commit();
-            mFragmentAtPos2 = fragment;
-            ((QuestCompletedFragment)fragment).setQuestStartedListener(this);
-            notifyDataSetChanged();
-        }
-    }
 }
 
 
