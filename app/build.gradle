@@ -9,12 +9,12 @@ android {
     buildToolsVersion "22.0.1"
 
     defaultConfig {
-        applicationId "carleton150.edu.carleton.reunion"
+        applicationId "edu.carleton.app.reunion"
         minSdkVersion 15
         targetSdkVersion 22
         multiDexEnabled true
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.2"
     }
     buildTypes {
         release {
