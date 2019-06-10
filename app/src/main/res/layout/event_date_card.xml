@@ -14,7 +14,7 @@
 
     <TextView
         android:id="@+id/event_date_title"
-        android:background="@color/colorPrimary"
+        android:background="@color/dateBackground"
         android:textColor="@color/white"
         android:gravity="center"
         android:textStyle="bold"

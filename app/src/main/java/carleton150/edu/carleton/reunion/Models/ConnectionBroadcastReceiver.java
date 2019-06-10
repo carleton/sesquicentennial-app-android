@@ -16,12 +16,13 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 import carleton150.edu.carleton.reunion.MainFragments.HomeFragment;
+import carleton150.edu.carleton.reunion.MainFragments.MainFragment;
 
 public class ConnectionBroadcastReceiver extends BroadcastReceiver {
 
-    private final HomeFragment homeFragment;
+    private final MainFragment homeFragment;
 
-    public ConnectionBroadcastReceiver(HomeFragment homeFragment){
+    public ConnectionBroadcastReceiver(MainFragment homeFragment){
         this.homeFragment = homeFragment;
 
     }

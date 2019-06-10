@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Reunion150</string>
+    <string name="app_name">Reunion</string>
     <string name="action_settings">Settings</string>
 
     <!-- TODO: Remove or change this placeholder text -->
@@ -61,7 +61,7 @@
     <string name="start_over">Start Over</string>
     <string name="resume">Resume</string>
     <string name="continue_to_next_hint">Continue to next clue</string>
-    <string name="history">History</string>
+    <string name="history">Map</string>
     <string name="events">Events</string>
     <string name="quests">Quests</string>
     <string name="home">Home</string>
@@ -91,6 +91,6 @@
     <string name="loading">Loading...</string>
     <string name="default_clue_completion_message">Clue completed!</string>
     <string name="unable_to_load_image">Unable to load image. Please check your network connection and try again.</string>
-
+    <string name="google_maps_key">AIzaSyDVCKwJLGsgv9XJzaQBvMTFizNU3CvARGA</string>
 
 </resources>

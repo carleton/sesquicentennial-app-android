@@ -7,7 +7,6 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +32,7 @@ import static carleton150.edu.carleton.reunion.R.id.btn_refresh;
 /**
  * Fragment to display a webview that contains information about the app
  */
-public class HomeFragment extends MainFragment {
+public class MapFragment extends MainFragment {
 
     String curURL;
     URL secondURL = null;
@@ -47,7 +46,7 @@ public class HomeFragment extends MainFragment {
     private ConnectionBroadcastReceiver connectionBroadcastReceiver = new ConnectionBroadcastReceiver(this);
     private boolean connectionBroadcastReceiverRegisterred = false;
 
-    public HomeFragment() {
+    public MapFragment() {
         // Required empty public constructor
     }
 
@@ -55,6 +54,7 @@ public class HomeFragment extends MainFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         registerConnectionBroadcastReceiver();
+
     }
 
     /**
@@ -71,31 +71,19 @@ public class HomeFragment extends MainFragment {
 
         // Inflate the layout for this fragment
         v = inflater.inflate(R.layout.fragment_info, container, false);
-        curURL = Constants.INFO_URL;
+        curURL = Constants.MAP_URL;
         final MainActivity mainActivity = (MainActivity) getActivity();
 
         if (mainActivity.isConnectedToNetwork()) {
-            Log.d("webviewCreate", "Dowloading page");
             runner.execute(curURL);
         }
 
         myWebView = (WebView) v.findViewById(R.id.web_view);
-
-        myWebView.setWebViewClient(new WebViewClient(){
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
-                    view.getContext().startActivity(
-                            new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        });
         myLoadingLayout = (RelativeLayout) v.findViewById(R.id.layout_loading);
         myLoadingAnim = (ImageView) v.findViewById(R.id.anim_web_view_loading);
         myAnimationDrawable = (AnimationDrawable) myLoadingAnim.getDrawable();
         showLoadingAnim();
+
         myWebView.getSettings().setUserAgentString(Constants.USER_AGENT_STRING);
         myWebView.getSettings().setJavaScriptEnabled(true);
         myWebView.getSettings().setDomStorageEnabled(true);
@@ -314,7 +302,7 @@ public class HomeFragment extends MainFragment {
 
             try {
 
-                URL redirectUrl = new URL(Constants.INFO_URL);
+                URL redirectUrl = new URL(Constants.MAP_URL);
                 HttpURLConnection ucon = null;
                 try {
                     ucon = (HttpURLConnection) redirectUrl.openConnection();
