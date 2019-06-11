@@ -12,12 +12,12 @@ android {
         abortOnError false
     }
     defaultConfig {
-        applicationId "carleton150.edu.carleton.reunion"
+        applicationId "edu.carleton.app.reunion"
         minSdkVersion 15
-        targetSdkVersion 23
+        targetSdkVersion 28
         multiDexEnabled true
-        versionCode 2
-        versionName "2.0"
+        versionCode 3
+        versionName "3.0"
     }
     buildTypes {
         release {
