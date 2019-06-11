@@ -46,7 +46,7 @@ public class Constants {
     public static final String ICAL_FEED_URL = "https://go.carleton.edu/appevents";
     public static final String ICAL_FEED_DATE_REQUEST = "/?start_date=";
     public static final String ICAL_FEED_FORMAT_REQUEST = "&format=ical";
-    public static final String INFO_URL = "http://go.carleton.edu/apphome";
+    public static final String INFO_URL = "https://go.carleton.edu/apphome";
     public static final String MAP_URL = "https://carleton.edu/map#sidebar:in";
     public static final String USER_AGENT_STRING = "ReunionApp 1.1";
 
