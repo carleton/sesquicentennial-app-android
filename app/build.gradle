@@ -1,11 +1,7 @@
 apply plugin: 'com.android.application'
 
-configurations {
-    compile.exclude group: 'commons-logging'
-}
-
 android {
-    compileSdkVersion 23
+    compileSdkVersion 28
     buildToolsVersion '28.0.3'
 
     lintOptions{

@@ -16,6 +16,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import edu.carleton.app.reunion.MainActivity;
 import edu.carleton.app.reunion.POJO.EventObject.EventContent;
@@ -32,6 +34,8 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
 
     private List<EventContent> events;
     private MainActivity context;
+    private static Pattern hoursPattern = Pattern.compile(".*?(\\d+)H.*?");
+    private static Pattern minutesPattern = Pattern.compile(".*?(\\d+)M.*?");
 
     public EventsListAdapter(MainActivity context, List<EventContent> events){
         this.events = events;
@@ -49,10 +53,11 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
         String[] dateArray = startTime.split("(-)|(T)|(:)");
         // Check if hours/minutes/seconds included
         SimpleDateFormat df;
+        SimpleDateFormat enddf;
         Calendar newStartTime;
         Log.d("Date Array", "formatStartTime: " + Arrays.toString( dateArray));
         if ((dateArray.length >= 6)) {
-            df = new SimpleDateFormat("MMM dd hh:mm a", Locale.US);
+            df = new SimpleDateFormat("EEE, MMM d h:mm a", Locale.US);
 
             newStartTime = Calendar.getInstance();
             newStartTime.set(Integer.parseInt(dateArray[0]),
@@ -60,7 +65,7 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
                     Integer.parseInt(dateArray[3]), Integer.parseInt(dateArray[4]),
                     Integer.parseInt(dateArray[5]));
         } else {
-            df = new SimpleDateFormat("MMM dd", Locale.US);
+            df = new SimpleDateFormat("EEE, MMM d", Locale.US);
             newStartTime = Calendar.getInstance();
             newStartTime.set(Integer.parseInt(dateArray[0]),
                     Integer.parseInt(dateArray[1])-1, Integer.parseInt(dateArray[2]));
@@ -72,18 +77,20 @@ public class EventsListAdapter extends  RecyclerView.Adapter<RecyclerView.ViewHo
         int eventDurationHours;
         int eventDurationMinutes;
         String[] durationArray;
+        String[] hoursArray;
+        // This is buggy, removing
         if(duration != null){
             formatDuration = duration.replace("PT", "");
-            durationArray = formatDuration.split("(H)|(M)|(S)");
-            if(durationArray.length > 0) {
-                eventDurationHours = Integer.parseInt(durationArray[0]);
-                newStartTime.add(Calendar.HOUR, eventDurationHours);
-
-            }if(durationArray.length > 1) {
-                eventDurationMinutes = Integer.parseInt(durationArray[1]);
-                newStartTime.add(Calendar.MINUTE, eventDurationMinutes);
+            Matcher hm = hoursPattern.matcher(formatDuration);
+            if (hm.matches()) {
+                newStartTime.add(Calendar.HOUR, Integer.parseInt(hm.group(1)));
             }
-            String formattedEndTime = df.format(newStartTime.getTime());
+            Matcher mm = minutesPattern.matcher(formatDuration);
+            if (mm.matches()) {
+                newStartTime.add(Calendar.MINUTE, Integer.parseInt(mm.group(1)));
+            }
+            enddf = new SimpleDateFormat("h:mm a", Locale.US);
+            String formattedEndTime = enddf.format(newStartTime.getTime());
             formattedEventTime += " - " +formattedEndTime;
 
         }
